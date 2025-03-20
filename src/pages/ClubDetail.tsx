@@ -62,7 +62,7 @@ const ClubDetailPage: React.FC = () => {
             <ClubDetailInfo club={club} />
           </div>
 
-          <div>
+          <div className="pb-12">
             <ClubEventsTabs events={events} />
           </div>
         </motion.div>
@@ -71,15 +71,18 @@ const ClubDetailPage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+          className="relative z-10"
         >
-          <ClubSidebar
-            club={club}
-            events={events}
-            isMember={isMember}
-            isJoining={isJoining}
-            handleJoinClub={handleJoinClub}
-            relatedClubs={relatedClubs}
-          />
+          <div className="sticky top-24">
+            <ClubSidebar
+              club={club}
+              events={events}
+              isMember={isMember}
+              isJoining={isJoining}
+              handleJoinClub={handleJoinClub}
+              relatedClubs={relatedClubs}
+            />
+          </div>
         </motion.div>
       </div>
     </Layout>
