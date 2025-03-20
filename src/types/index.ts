@@ -5,6 +5,8 @@ export interface Club {
   description: string;
   logoUrl: string;
   category: string;
+  status?: string;
+  rejectionReason?: string;
   memberCount: number;
   events: Event[];
 }
