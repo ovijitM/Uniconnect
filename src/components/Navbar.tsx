@@ -2,16 +2,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Menu, X, Calendar, Users, Home, LogIn, UserPlus } from 'lucide-react';
+import { Menu, X, Calendar, Users, Home, LogIn, UserPlus, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import UserProfile from './UserProfile';
+import { Toggle } from '@/components/ui/toggle';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,7 +40,7 @@ const Navbar: React.FC = () => {
   return (
     <header 
       className={`sticky top-0 z-40 w-full transition-all duration-300 ${
-        isScrolled ? 'glass-panel py-3' : 'bg-transparent py-5'
+        isScrolled ? 'glass-panel py-3 dark:bg-gray-900/80' : 'bg-transparent py-5 dark:bg-transparent'
       }`}
     >
       <div className="container mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -69,6 +73,27 @@ const Navbar: React.FC = () => {
             );
           })}
 
+          {/* Theme toggle */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Toggle 
+                className="ml-2" 
+                pressed={theme === "dark"} 
+                onPressedChange={toggleTheme}
+                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </Toggle>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}</p>
+            </TooltipContent>
+          </Tooltip>
+
           {/* Authentication buttons or user profile */}
           <div className="ml-4 flex items-center space-x-2">
             {user ? (
@@ -93,7 +118,20 @@ const Navbar: React.FC = () => {
         </nav>
 
         {/* Mobile Menu Button */}
-        <div className="md:hidden flex items-center">
+        <div className="md:hidden flex items-center space-x-2">
+          {/* Theme toggle for mobile */}
+          <Toggle 
+            pressed={theme === "dark"} 
+            onPressedChange={toggleTheme}
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {theme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </Toggle>
+          
           {user && <UserProfile />}
           <Button 
             variant="ghost" 
@@ -109,7 +147,7 @@ const Navbar: React.FC = () => {
       {/* Mobile Navigation */}
       {isMobileMenuOpen && (
         <motion.div 
-          className="md:hidden glass-panel px-4 pb-4"
+          className="md:hidden glass-panel px-4 pb-4 dark:bg-gray-900/90"
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
