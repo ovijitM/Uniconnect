@@ -9,147 +9,130 @@ import EventCard from '@/components/EventCard';
 import ClubCard from '@/components/ClubCard';
 import { Button } from '@/components/ui/button';
 import { Event, Club } from '@/types';
-
-// Mock data for initial render
-const mockEvents: Event[] = [
-  {
-    id: '1',
-    title: 'Annual Tech Conference',
-    description: 'Join us for a day of technology talks, workshops, and networking opportunities with industry professionals.',
-    date: '2023-11-15T09:00:00',
-    location: 'University Main Hall',
-    imageUrl: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
-    organizer: {
-      id: '101',
-      name: 'Computer Science Society',
-      description: '',
-      logoUrl: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-      category: 'Technology',
-      memberCount: 120,
-      events: []
-    },
-    category: 'Technology',
-    status: 'upcoming',
-    participants: 78,
-    maxParticipants: 150
-  },
-  {
-    id: '2',
-    title: 'Spring Arts Festival',
-    description: 'Celebrate creativity with performances, exhibitions, and interactive art installations from students and guest artists.',
-    date: '2023-10-05T10:00:00',
-    location: 'University Arts Center',
-    imageUrl: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
-    organizer: {
-      id: '102',
-      name: 'Fine Arts Club',
-      description: '',
-      logoUrl: 'https://images.unsplash.com/photo-1505935428862-770b6f24f629?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-      category: 'Arts',
-      memberCount: 85,
-      events: []
-    },
-    category: 'Arts',
-    status: 'ongoing',
-    participants: 150,
-    maxParticipants: 200
-  },
-  {
-    id: '3',
-    title: 'Environmental Summit',
-    description: 'Learn about sustainability initiatives and how you can contribute to a greener campus and community.',
-    date: '2023-09-20T14:00:00',
-    location: 'University Green Space',
-    imageUrl: 'https://images.unsplash.com/photo-1464082354059-27db6ce50048?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
-    organizer: {
-      id: '103',
-      name: 'Environmental Action Group',
-      description: '',
-      logoUrl: 'https://images.unsplash.com/photo-1569163139500-66446e7725ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-      category: 'Environment',
-      memberCount: 65,
-      events: []
-    },
-    category: 'Environment',
-    status: 'past',
-    participants: 112,
-    maxParticipants: null
-  },
-  {
-    id: '4',
-    title: 'Entrepreneurship Workshop',
-    description: 'Develop your business skills and learn from successful entrepreneurs in this interactive workshop.',
-    date: '2023-11-25T13:00:00',
-    location: 'Business School Auditorium',
-    imageUrl: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
-    organizer: {
-      id: '104',
-      name: 'Entrepreneurship Society',
-      description: '',
-      logoUrl: 'https://images.unsplash.com/photo-1493612276216-ee3925520721?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-      category: 'Business',
-      memberCount: 95,
-      events: []
-    },
-    category: 'Business',
-    status: 'upcoming',
-    participants: 45,
-    maxParticipants: 100
-  }
-];
-
-const mockClubs: Club[] = [
-  {
-    id: '101',
-    name: 'Computer Science Society',
-    description: 'A community for tech enthusiasts to collaborate, learn, and grow together through workshops, hackathons, and industry connections.',
-    logoUrl: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-    category: 'Technology',
-    memberCount: 120,
-    events: []
-  },
-  {
-    id: '102',
-    name: 'Fine Arts Club',
-    description: 'Dedicated to promoting artistic expression and appreciation across various mediums, from painting and sculpture to digital art.',
-    logoUrl: 'https://images.unsplash.com/photo-1505935428862-770b6f24f629?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-    category: 'Arts',
-    memberCount: 85,
-    events: []
-  },
-  {
-    id: '103',
-    name: 'Environmental Action Group',
-    description: 'Working towards a sustainable campus and community through education, advocacy, and hands-on conservation projects.',
-    logoUrl: 'https://images.unsplash.com/photo-1569163139500-66446e7725ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-    category: 'Environment',
-    memberCount: 65,
-    events: []
-  },
-  {
-    id: '104',
-    name: 'Entrepreneurship Society',
-    description: 'Fostering innovation and business acumen through mentorship, networking events, and startup competitions.',
-    logoUrl: 'https://images.unsplash.com/photo-1493612276216-ee3925520721?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-    category: 'Business',
-    memberCount: 95,
-    events: []
-  }
-];
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Index: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [clubs, setClubs] = useState<Club[]>([]);
   const [featuredEvent, setFeaturedEvent] = useState<Event | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    // In a real app, you would fetch data from an API
-    setTimeout(() => {
-      setEvents(mockEvents);
-      setClubs(mockClubs);
-      setFeaturedEvent(mockEvents[0]);
-    }, 300);
-  }, []);
+    async function fetchData() {
+      try {
+        setIsLoading(true);
+        
+        // Fetch clubs from Supabase
+        const { data: clubsData, error: clubsError } = await supabase
+          .from('clubs')
+          .select(`
+            id,
+            name,
+            description,
+            logo_url,
+            category,
+            club_members(count)
+          `)
+          .order('name')
+          .limit(4);
+        
+        if (clubsError) throw clubsError;
+        
+        // Fetch events from Supabase
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('events')
+          .select(`
+            id,
+            title,
+            description,
+            date,
+            location,
+            image_url,
+            category,
+            status,
+            max_participants,
+            club_id,
+            event_participants(count)
+          `)
+          .order('date');
+        
+        if (eventsError) throw eventsError;
+        
+        // Get club details for each event
+        const eventsWithOrganizers = await Promise.all(
+          eventsData.map(async (event) => {
+            const { data: clubData } = await supabase
+              .from('clubs')
+              .select(`
+                id,
+                name,
+                description,
+                logo_url,
+                category,
+                club_members(count)
+              `)
+              .eq('id', event.club_id)
+              .single();
+            
+            return {
+              id: event.id,
+              title: event.title,
+              description: event.description,
+              date: event.date,
+              location: event.location,
+              imageUrl: event.image_url,
+              category: event.category,
+              status: event.status,
+              participants: event.event_participants[0]?.count || 0,
+              maxParticipants: event.max_participants || undefined,
+              organizer: {
+                id: clubData.id,
+                name: clubData.name,
+                description: clubData.description,
+                logoUrl: clubData.logo_url,
+                category: clubData.category,
+                memberCount: clubData.club_members[0]?.count || 0,
+                events: []
+              }
+            };
+          })
+        );
+        
+        // Transform clubs data
+        const transformedClubs = clubsData.map(club => ({
+          id: club.id,
+          name: club.name,
+          description: club.description,
+          logoUrl: club.logo_url,
+          category: club.category,
+          memberCount: club.club_members[0]?.count || 0,
+          events: []
+        }));
+        
+        setClubs(transformedClubs);
+        setEvents(eventsWithOrganizers);
+        
+        // Set the featured event (first upcoming event)
+        const upcomingEvents = eventsWithOrganizers.filter(event => event.status === 'upcoming');
+        if (upcomingEvents.length > 0) {
+          setFeaturedEvent(upcomingEvents[0]);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast({
+          title: 'Error loading data',
+          description: 'Failed to load content. Please try again later.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchData();
+  }, [toast]);
 
   return (
     <Layout>
@@ -171,11 +154,17 @@ const Index: React.FC = () => {
           </p>
         </motion.div>
 
-        {featuredEvent && (
+        {isLoading ? (
+          <div className="mb-12">
+            <div className="animate-pulse space-y-4">
+              <div className="h-64 bg-gray-200 rounded-xl"></div>
+            </div>
+          </div>
+        ) : featuredEvent ? (
           <div className="mb-12">
             <FeaturedEvent event={featuredEvent} />
           </div>
-        )}
+        ) : null}
 
         <div className="mb-12">
           <div className="flex justify-between items-center mb-6">
@@ -187,14 +176,31 @@ const Index: React.FC = () => {
               </Button>
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events
-              .filter(event => event.status === 'upcoming')
-              .slice(0, 3)
-              .map((event, index) => (
-                <EventCard key={event.id} event={event} index={index} />
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse space-y-4">
+                  <div className="h-48 bg-gray-200 rounded-xl"></div>
+                  <div className="h-5 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
+                </div>
               ))}
-          </div>
+            </div>
+          ) : events.filter(event => event.status === 'upcoming').length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {events
+                .filter(event => event.status === 'upcoming')
+                .slice(0, 3)
+                .map((event, index) => (
+                  <EventCard key={event.id} event={event} index={index} />
+                ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <h3 className="text-lg font-medium mb-2">No upcoming events</h3>
+              <p className="text-muted-foreground">Check back later for new events.</p>
+            </div>
+          )}
         </div>
 
         <div>
@@ -207,11 +213,28 @@ const Index: React.FC = () => {
               </Button>
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {clubs.slice(0, 4).map((club, index) => (
-              <ClubCard key={club.id} club={club} index={index} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="animate-pulse space-y-4">
+                  <div className="h-48 bg-gray-200 rounded-xl"></div>
+                  <div className="h-5 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
+                </div>
+              ))}
+            </div>
+          ) : clubs.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {clubs.map((club, index) => (
+                <ClubCard key={club.id} club={club} index={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <h3 className="text-lg font-medium mb-2">No clubs available</h3>
+              <p className="text-muted-foreground">Check back later for new clubs.</p>
+            </div>
+          )}
         </div>
       </section>
     </Layout>
