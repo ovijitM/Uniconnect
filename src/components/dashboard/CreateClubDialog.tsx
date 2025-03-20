@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface CreateClubDialogProps {
   isOpen: boolean;
@@ -30,9 +31,46 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
   buttonText = "Create New Club",
   trigger
 }) => {
+  const { toast } = useToast();
+  
+  // Validate form data before submission
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a club name.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!formData.description.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a club description.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    if (!formData.category.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a club category.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
   // Handler to correctly close dialog after successful submission
   const handleSubmit = () => {
-    onSubmit();
+    if (validateForm()) {
+      onSubmit();
+      // Dialog will be closed by the parent component after successful submission
+    }
   };
 
   return (
@@ -68,6 +106,7 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
               onChange={onInputChange}
               className="col-span-3"
               required
+              placeholder="Enter club name"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
@@ -81,6 +120,7 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
               onChange={onInputChange}
               className="col-span-3"
               required
+              placeholder="Describe what your club is about"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
