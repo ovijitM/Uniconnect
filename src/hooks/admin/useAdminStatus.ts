@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 // Helper function to format time ago
 const formatTimeAgo = (dateString: string) => {
@@ -25,14 +26,15 @@ export interface ActivityItem {
   name: string;
   description: string;
   created_at: string;
+  status?: string;
 }
 
 export const useAdminStatus = () => {
-  const [systemStatus, setSystemStatus] = useState('Healthy');
+  const [systemStatus, setSystemStatus] = useState<string>('Healthy');
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [systemAlerts, setSystemAlerts] = useState<SystemAlert[]>([]);
 
-  const buildRecentActivity = (clubsData: any[], eventsData: any[]) => {
+  const buildRecentActivity = (clubsData: any[], eventsData: any[]): ActivityItem[] => {
     console.log("Building recent activity from:", { clubsData, eventsData });
     
     // Get recent club activity (newest 3 clubs)
@@ -62,12 +64,37 @@ export const useAdminStatus = () => {
     return combined;
   };
 
+  const generateSystemAlerts = (): SystemAlert[] => {
+    // Generate mock system alerts for demonstration
+    return [
+      {
+        type: 'success' as const,
+        title: 'Database Backup Complete',
+        time: '2 hours ago'
+      },
+      {
+        type: 'warning' as const,
+        title: 'High Server Load',
+        time: 'Yesterday, 8:45 PM'
+      },
+      {
+        type: 'success' as const,
+        title: 'System Update Complete',
+        time: '2 days ago'
+      }
+    ];
+  };
+
   return { 
     systemStatus, 
     recentActivity, 
     systemAlerts,
+    setSystemStatus,
     setRecentActivity,
     setSystemAlerts,
-    buildRecentActivity
+    buildRecentActivity,
+    generateSystemAlerts
   };
 };
+
+export { formatTimeAgo };

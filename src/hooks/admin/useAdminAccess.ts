@@ -1,8 +1,11 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export const useAdminAccess = () => {
-  const verifyAdminAccess = async (userId: string): Promise<boolean> => {
+  const { toast } = useToast();
+
+  const verifyAdminAccess = async (userId: string | undefined): Promise<boolean> => {
     if (!userId) return false;
     
     try {
@@ -27,5 +30,13 @@ export const useAdminAccess = () => {
     }
   };
 
-  return { verifyAdminAccess };
+  const handleAccessDenied = () => {
+    toast({
+      title: 'Access Denied',
+      description: 'You do not have admin permissions.',
+      variant: 'destructive',
+    });
+  };
+
+  return { verifyAdminAccess, handleAccessDenied };
 };
