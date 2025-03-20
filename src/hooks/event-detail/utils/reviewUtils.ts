@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { EventReview, EventReviewWithProfile } from '../types/reviewTypes';
 
@@ -37,7 +38,7 @@ export const fetchReviewsWithProfiles = async (
     
     if (countError) throw countError;
     
-    // Then fetch paginated data
+    // Then fetch paginated data with join on profiles
     const { data, error } = await supabase
       .from('event_reviews')
       .select(`
@@ -47,7 +48,10 @@ export const fetchReviewsWithProfiles = async (
         rating,
         review_text,
         created_at,
-        profiles:user_id(name, profile_image)
+        profiles (
+          name,
+          profile_image
+        )
       `)
       .eq('event_id', eventId)
       .order('created_at', { ascending: false })
@@ -58,7 +62,7 @@ export const fetchReviewsWithProfiles = async (
     console.log("Fetched paginated reviews data:", data);
     
     // Format reviews with user details
-    const formattedReviews = (data as unknown as EventReviewWithProfile[]).map(review => {
+    const formattedReviews = data.map(review => {
       return {
         id: review.id,
         eventId: review.event_id,
@@ -96,7 +100,10 @@ export const checkExistingReview = async (
         rating,
         review_text,
         created_at,
-        profiles:user_id(name, profile_image)
+        profiles (
+          name,
+          profile_image
+        )
       `)
       .eq('event_id', eventId)
       .eq('user_id', userId)
@@ -107,16 +114,15 @@ export const checkExistingReview = async (
     if (!data) return null;
     
     // Format the review
-    const review = data as unknown as EventReviewWithProfile;
     return {
-      id: review.id,
-      eventId: review.event_id,
-      userId: review.user_id,
-      rating: review.rating,
-      reviewText: review.review_text,
-      createdAt: review.created_at,
-      userName: review.profiles?.name || 'Anonymous',
-      userImage: review.profiles?.profile_image || null
+      id: data.id,
+      eventId: data.event_id,
+      userId: data.user_id,
+      rating: data.rating,
+      reviewText: data.review_text,
+      createdAt: data.created_at,
+      userName: data.profiles?.name || 'Anonymous',
+      userImage: data.profiles?.profile_image || null
     };
   } catch (error) {
     console.error('Error checking existing review:', error);
