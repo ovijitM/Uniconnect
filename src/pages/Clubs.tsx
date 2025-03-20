@@ -25,7 +25,7 @@ const ClubsPage: React.FC = () => {
       try {
         setIsLoading(true);
         
-        // Fetch clubs from Supabase
+        // Fetch clubs from Supabase - only approved clubs
         const { data, error } = await supabase
           .from('clubs')
           .select(`
@@ -36,6 +36,7 @@ const ClubsPage: React.FC = () => {
             category,
             club_members(count)
           `)
+          .eq('status', 'approved')  // Only fetch approved clubs
           .order('name');
         
         if (error) {
