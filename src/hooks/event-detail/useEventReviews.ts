@@ -19,11 +19,16 @@ export const useEventReviews = (eventId: string | undefined) => {
   const [userReview, setUserReview] = useState<EventReview | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const pageSize = 5; // Show 5 reviews per page
+  
   const { toast } = useToast();
   const { user } = useAuth();
   
-  // Fetch all reviews for the event
-  const fetchReviews = async () => {
+  // Fetch all reviews for the event with pagination
+  const fetchReviews = async (page: number = currentPage) => {
     if (!eventId) return;
     
     try {
@@ -33,13 +38,27 @@ export const useEventReviews = (eventId: string | undefined) => {
       const avgRating = await fetchAverageRating(eventId);
       setAverageRating(avgRating);
       
-      // Fetch reviews with user details
-      const formattedReviews = await fetchReviewsWithProfiles(eventId);
+      // Fetch reviews with user details (paginated)
+      const { reviews: formattedReviews, totalCount } = await fetchReviewsWithProfiles(
+        eventId,
+        page,
+        pageSize
+      );
+      
       setReviews(formattedReviews);
+      setTotalReviews(totalCount);
+      setTotalPages(Math.max(1, Math.ceil(totalCount / pageSize)));
       
       // Check if current user has a review
       if (user?.id) {
-        const userReview = formattedReviews.find(r => r.userId === user.id);
+        // We need to check all reviews to find user's review, not just the current page
+        const { reviews: allUserReviews } = await fetchReviewsWithProfiles(
+          eventId,
+          1, 
+          1000 // Large number to get all reviews (we'll optimize this later if needed)
+        );
+        
+        const userReview = allUserReviews.find(r => r.userId === user.id);
         setUserReview(userReview || null);
       }
     } catch (error) {
@@ -52,6 +71,12 @@ export const useEventReviews = (eventId: string | undefined) => {
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  // Change page
+  const changePage = (page: number) => {
+    setCurrentPage(page);
+    fetchReviews(page);
   };
   
   // Submit a new review or update existing
@@ -131,7 +156,8 @@ export const useEventReviews = (eventId: string | undefined) => {
   // Fetch reviews on component mount or when eventId changes
   useEffect(() => {
     if (eventId) {
-      fetchReviews();
+      fetchReviews(1); // Reset to first page when eventId changes
+      setCurrentPage(1);
     }
   }, [eventId, user?.id]);
   
@@ -141,8 +167,13 @@ export const useEventReviews = (eventId: string | undefined) => {
     userReview,
     isLoading,
     isSubmitting,
+    currentPage,
+    totalPages,
+    totalReviews,
+    pageSize,
     submitReview,
     deleteReview,
-    fetchReviews
+    fetchReviews,
+    changePage
   };
 };

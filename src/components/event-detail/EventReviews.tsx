@@ -19,15 +19,17 @@ const EventReviewsContent: React.FC<EventReviewsProps> = ({ eventId }) => {
     userReview, 
     isLoading, 
     isSubmitting, 
+    currentPage,
+    totalPages,
+    totalReviews,
     submitReview, 
     deleteReview,
-    fetchReviews
+    fetchReviews,
+    changePage
   } = useEventReviews(eventId);
   
   const { user } = useAuth();
   const isLoggedIn = !!user;
-  
-  const reviewCount = reviews.length;
   
   return (
     <div className="glass-panel rounded-xl p-6 space-y-4 mt-6">
@@ -37,7 +39,7 @@ const EventReviewsContent: React.FC<EventReviewsProps> = ({ eventId }) => {
         <div className="flex items-center space-x-2">
           <StarRating value={Math.round(averageRating)} readOnly />
           <span className="text-muted-foreground">
-            {averageRating.toFixed(1)} ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
+            {averageRating.toFixed(1)} ({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})
           </span>
         </div>
       </div>
@@ -53,6 +55,9 @@ const EventReviewsContent: React.FC<EventReviewsProps> = ({ eventId }) => {
             reviews={reviews} 
             isLoading={isLoading} 
             onRetry={fetchReviews}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={changePage}
           />
         </TabsContent>
         

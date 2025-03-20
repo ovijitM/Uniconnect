@@ -16,9 +16,29 @@ export const fetchAverageRating = async (eventId: string): Promise<number> => {
   }
 };
 
-// Fetch reviews with user details
-export const fetchReviewsWithProfiles = async (eventId: string): Promise<EventReview[]> => {
+// Fetch reviews with user details (with pagination)
+export const fetchReviewsWithProfiles = async (
+  eventId: string,
+  page: number = 1,
+  pageSize: number = 5
+): Promise<{ 
+  reviews: EventReview[],
+  totalCount: number 
+}> => {
   try {
+    // Calculate range for pagination
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    
+    // First get total count
+    const { count, error: countError } = await supabase
+      .from('event_reviews')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_id', eventId);
+    
+    if (countError) throw countError;
+    
+    // Then fetch paginated data
     const { data, error } = await supabase
       .from('event_reviews')
       .select(`
@@ -31,14 +51,15 @@ export const fetchReviewsWithProfiles = async (eventId: string): Promise<EventRe
         profiles:user_id(name, profile_image)
       `)
       .eq('event_id', eventId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(from, to);
     
     if (error) throw error;
     
-    console.log("Fetched reviews data:", data);
+    console.log("Fetched paginated reviews data:", data);
     
     // Format reviews with user details
-    return (data as unknown as EventReviewWithProfile[]).map(review => {
+    const formattedReviews = (data as unknown as EventReviewWithProfile[]).map(review => {
       return {
         id: review.id,
         eventId: review.event_id,
@@ -50,6 +71,11 @@ export const fetchReviewsWithProfiles = async (eventId: string): Promise<EventRe
         userImage: review.profiles?.profile_image || null
       };
     });
+    
+    return { 
+      reviews: formattedReviews,
+      totalCount: count || 0
+    };
   } catch (error) {
     console.error('Error fetching reviews with profiles:', error);
     throw error; // Propagate error to be caught by error boundary
