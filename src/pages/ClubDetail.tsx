@@ -17,6 +17,7 @@ const ClubDetailPage: React.FC = () => {
     events,
     isLoading,
     isMember,
+    isJoining,
     relatedClubs,
     isAdmin,
     isClubAdmin,
@@ -72,6 +73,7 @@ const ClubDetailPage: React.FC = () => {
             club={club}
             events={events}
             isMember={isMember}
+            isJoining={isJoining}
             handleJoinClub={handleJoinClub}
             relatedClubs={relatedClubs}
           />

@@ -1,15 +1,18 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Calendar, Mail, ExternalLink } from 'lucide-react';
+import { Users, Calendar, Mail, ExternalLink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Club } from '@/types';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface ClubSidebarProps {
   club: Club;
   events: any[];
   isMember: boolean;
+  isJoining: boolean;
   handleJoinClub: () => void;
   relatedClubs: Club[];
 }
@@ -18,42 +21,76 @@ const ClubSidebar: React.FC<ClubSidebarProps> = ({
   club, 
   events, 
   isMember, 
+  isJoining,
   handleJoinClub,
   relatedClubs 
 }) => {
+  
+  const renderJoinButton = () => {
+    if (club.status === 'approved') {
+      if (isMember) {
+        return (
+          <Button className="w-full mb-4" variant="outline" disabled>
+            <Users className="mr-2 h-4 w-4" />
+            You are a member
+          </Button>
+        );
+      } else {
+        return (
+          <Button 
+            className="w-full mb-4" 
+            onClick={handleJoinClub} 
+            disabled={isJoining}
+          >
+            {isJoining ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Joining...
+              </>
+            ) : (
+              <>
+                <Users className="mr-2 h-4 w-4" />
+                Join Club
+              </>
+            )}
+          </Button>
+        );
+      }
+    } else {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <Button className="w-full mb-4" disabled>
+                  <Users className="mr-2 h-4 w-4" />
+                  {club.status === 'pending' ? 'Pending Approval' : 'Club Rejected'}
+                </Button>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{club.status === 'pending' 
+                ? 'This club is waiting for admin approval' 
+                : 'This club has been rejected by admin'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="glass-panel rounded-xl p-6">
-        {club.status === 'approved' ? (
-          isMember ? (
-            <Button className="w-full mb-4" variant="outline" disabled>
-              <Users className="mr-2 h-4 w-4" />
-              You are a member
-            </Button>
-          ) : (
-            <Button className="w-full mb-4" onClick={handleJoinClub}>
-              <Users className="mr-2 h-4 w-4" />
-              Join Club
-            </Button>
-          )
-        ) : (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div>
-                  <Button className="w-full mb-4" disabled>
-                    <Users className="mr-2 h-4 w-4" />
-                    {club.status === 'pending' ? 'Pending Approval' : 'Club Rejected'}
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{club.status === 'pending' 
-                  ? 'This club is waiting for admin approval' 
-                  : 'This club has been rejected by admin'}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        {renderJoinButton()}
+
+        {club.status === 'rejected' && !club.rejectionReason && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              This club has been rejected by administrators.
+            </AlertDescription>
+          </Alert>
         )}
 
         <div className="space-y-4 pt-4 border-t">
