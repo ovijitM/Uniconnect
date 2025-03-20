@@ -4,6 +4,7 @@ import UpcomingEvents from './UpcomingEvents';
 import ClubsList from './ClubsList';
 import EventsTable from './EventsTable';
 import MembersTable from './MembersTable';
+import ManageClubsTable from './ManageClubsTable';
 import StatCards from './StatCards';
 
 interface ClubAdminContentProps {
@@ -18,6 +19,7 @@ interface ClubAdminContentProps {
   onEditEvent: (eventId: string) => void;
   onViewEvent: (eventId: string) => void;
   onCreateEvent: () => void;
+  onRefreshData: () => void;
 }
 
 const ClubAdminContent: React.FC<ClubAdminContentProps> = ({
@@ -31,7 +33,8 @@ const ClubAdminContent: React.FC<ClubAdminContentProps> = ({
   isLoading,
   onEditEvent,
   onViewEvent,
-  onCreateEvent
+  onCreateEvent,
+  onRefreshData
 }) => {
   return (
     <>
@@ -43,7 +46,7 @@ const ClubAdminContent: React.FC<ClubAdminContentProps> = ({
         isLoading={isLoading}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <UpcomingEvents 
           events={clubEvents}
           isLoading={isLoading}
@@ -56,6 +59,12 @@ const ClubAdminContent: React.FC<ClubAdminContentProps> = ({
           isLoading={isLoading}
         />
       </div>
+
+      <ManageClubsTable
+        clubs={adminClubs}
+        isLoading={isLoading}
+        onRefresh={onRefreshData}
+      />
 
       <EventsTable
         events={clubEvents}

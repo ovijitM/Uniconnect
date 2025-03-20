@@ -98,6 +98,7 @@ const ClubAdminDashboard: React.FC = () => {
                 onEditEvent={handleEditEvent}
                 onViewEvent={handleViewEvent}
                 onCreateEvent={() => setIsEventDialogOpen(true)}
+                onRefreshData={fetchClubAdminData}
               />
             </>
           )}

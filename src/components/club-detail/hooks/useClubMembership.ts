@@ -82,7 +82,15 @@ export const useClubMembership = (
         }
       } else {
         setIsMember(true);
-        setClub(prev => prev ? { ...prev, memberCount: prev.memberCount + 1 } : null);
+        
+        // Update the club member count
+        setClub(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            memberCount: prev.memberCount + 1
+          };
+        });
         
         toast({
           title: "Successfully joined!",

@@ -36,7 +36,14 @@ export const useClubData = () => {
           .eq('id', clubId)
           .single();
         
-        if (clubError) throw clubError;
+        if (clubError) {
+          console.error('Error fetching club data:', clubError);
+          throw clubError;
+        }
+        
+        if (!clubData) {
+          throw new Error('Club not found');
+        }
         
         // Fetch events for this club
         const { data: eventsData, error: eventsError } = await supabase
