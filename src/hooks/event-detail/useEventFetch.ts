@@ -102,10 +102,22 @@ export const useEventFetch = (eventId: string | undefined) => {
         // Add collaborators to the event
         if (collaboratorsData && collaboratorsData.length > 0) {
           formattedEvent.collaborators = collaboratorsData.map(item => {
-            // Handle the case where club_members might be an array with an object containing a numeric count
-            const memberCount = typeof item.club.club_members[0]?.count === 'number' 
-              ? item.club.club_members[0].count 
-              : 0;
+            // Handle different possible formats of club_members count
+            let memberCount = 0;
+            
+            // Type guard to handle various possible shapes of the count data
+            if (Array.isArray(item.club.club_members)) {
+              // If it's an array, it might contain an object with count property
+              if (item.club.club_members.length > 0 && typeof item.club.club_members[0] === 'object') {
+                memberCount = item.club.club_members[0]?.count || 0;
+              } else {
+                // If it's an array but not of objects, use the length
+                memberCount = item.club.club_members.length;
+              }
+            } else if (typeof item.club.club_members === 'object') {
+              // Direct object with count property
+              memberCount = (item.club.club_members as any)?.count || 0;
+            }
               
             return {
               id: item.club.id,
