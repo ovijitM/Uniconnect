@@ -29,6 +29,8 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
         return;
       }
 
+      console.log('Creating club with data:', clubFormData);
+      
       const success = await createClub(clubFormData, userId);
       if (success) {
         // Reset form and close dialog
@@ -63,6 +65,8 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
         // Refresh data
         onSuccess();
       }
+    } catch (error) {
+      console.error('Error in handleCreateClub:', error);
     } finally {
       setIsSubmitting(false);
     }

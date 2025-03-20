@@ -8,11 +8,31 @@ export const useClubCreation = () => {
 
   const createClub = async (clubFormData: ClubFormData, userId: string | undefined): Promise<boolean> => {
     try {
+      if (!userId) {
+        toast({
+          title: 'Authentication Error',
+          description: 'You must be logged in to create a club.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+
       // Transform array and JSON fields
       const regularEvents = clubFormData.regularEvents ? clubFormData.regularEvents.split(',').map(e => e.trim()) : [];
       const signatureEvents = clubFormData.signatureEvents ? clubFormData.signatureEvents.split(',').map(e => e.trim()) : [];
       const advisors = clubFormData.advisors ? clubFormData.advisors.split(',').map(e => e.trim()) : [];
-      const executiveMembers = clubFormData.executiveMembers ? JSON.parse(clubFormData.executiveMembers) : {};
+      
+      // Handle executive members - ensure it's valid JSON
+      let executiveMembers = {};
+      if (clubFormData.executiveMembers) {
+        try {
+          executiveMembers = JSON.parse(clubFormData.executiveMembers);
+        } catch (error) {
+          console.error('Error parsing executive members:', error);
+          // If parsing fails, store as is
+          executiveMembers = {};
+        }
+      }
 
       // Create the club with the new fields
       const { data: clubData, error: clubError } = await supabase
