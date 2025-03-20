@@ -1,12 +1,20 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle } from 'lucide-react';
 import BasicInfoTab from './BasicInfoTab';
 import DetailsTab from './DetailsTab';
 import LogisticsTab from './LogisticsTab';
+import EventCollaboratorsTab from './EventCollaboratorsTab';
 
 interface EventDialogWrapperProps {
   isOpen: boolean;
@@ -48,6 +56,7 @@ interface EventDialogWrapperProps {
   onSubmit: () => void;
   buttonText?: string;
   trigger?: React.ReactNode;
+  isSubmitting?: boolean;
 }
 
 const EventDialogWrapper: React.FC<EventDialogWrapperProps> = ({
@@ -57,61 +66,96 @@ const EventDialogWrapper: React.FC<EventDialogWrapperProps> = ({
   clubs,
   onInputChange,
   onSubmit,
-  buttonText = "Create Event",
-  trigger
+  buttonText = "Create",
+  trigger,
+  isSubmitting = false
 }) => {
-  // Get the current club name based on clubId
-  const currentClub = clubs.find(club => club.id === formData.clubId);
-  const clubName = currentClub ? currentClub.name : '';
+  const [activeTab, setActiveTab] = useState('basic-info');
+  const [selectedCollaborators, setSelectedCollaborators] = useState<string[]>([]);
+
+  const handleCollaboratorToggle = (clubId: string, selected: boolean) => {
+    setSelectedCollaborators(prev => {
+      if (selected) {
+        return [...prev, clubId];
+      } else {
+        return prev.filter(id => id !== clubId);
+      }
+    });
+  };
+
+  const handleSubmit = async () => {
+    // Call the provided onSubmit callback
+    await onSubmit();
+    
+    // After successful submission, if we have collaborators, we'll add them
+    // This will be handled in the component using this dialog wrapper
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Event</DialogTitle>
+          <DialogTitle>Create Event</DialogTitle>
           <DialogDescription>
-            {clubName ? (
-              <>Fill in the details below to create a new event for <span className="font-medium">{clubName}</span>.</>
-            ) : (
-              <>Fill in the details below to create a new event for your club.</>
-            )}
+            Fill in the details to create a new event for your club
           </DialogDescription>
         </DialogHeader>
         
-        <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mb-4 flex items-start gap-2">
-          <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-800">
-            <p className="font-medium">All fields marked with * are required</p>
-            <p className="mt-1">Please complete all required information across all tabs before submitting.</p>
-          </div>
-        </div>
-        
-        <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid grid-cols-3 w-full">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid grid-cols-4 w-full mb-4">
+            <TabsTrigger value="basic-info">Basic Info</TabsTrigger>
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="logistics">Logistics</TabsTrigger>
+            <TabsTrigger value="collaborators">Collaborators</TabsTrigger>
           </TabsList>
           
-          {/* Basic Information Tab */}
-          <TabsContent value="basic">
+          <TabsContent value="basic-info">
             <BasicInfoTab formData={formData} onInputChange={onInputChange} />
           </TabsContent>
           
-          {/* Details Tab */}
           <TabsContent value="details">
             <DetailsTab formData={formData} onInputChange={onInputChange} />
           </TabsContent>
           
-          {/* Logistics Tab */}
           <TabsContent value="logistics">
             <LogisticsTab formData={formData} clubs={clubs} onInputChange={onInputChange} />
           </TabsContent>
+          
+          <TabsContent value="collaborators">
+            <EventCollaboratorsTab 
+              clubId={formData.clubId} 
+              selectedCollaborators={selectedCollaborators}
+              onCollaboratorToggle={handleCollaboratorToggle}
+            />
+          </TabsContent>
         </Tabs>
         
-        <DialogFooter className="mt-6">
-          <Button type="submit" onClick={onSubmit}>{buttonText}</Button>
+        <DialogFooter>
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          {activeTab === 'collaborators' ? (
+            <Button 
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Saving...' : buttonText}
+            </Button>
+          ) : (
+            <Button 
+              onClick={() => {
+                if (activeTab === 'basic-info') setActiveTab('details');
+                else if (activeTab === 'details') setActiveTab('logistics');
+                else if (activeTab === 'logistics') setActiveTab('collaborators');
+              }}
+            >
+              Next
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

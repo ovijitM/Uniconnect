@@ -13,6 +13,7 @@ import EventDetailSkeleton from '@/components/event-detail/EventDetailSkeleton';
 import EventDetailNotFound from '@/components/event-detail/EventDetailNotFound';
 import EventThemeAndPrizes from '@/components/event-detail/EventThemeAndPrizes';
 import EventSubmissionAndContact from '@/components/event-detail/EventSubmissionAndContact';
+import EventCollaborators from '@/components/event-detail/EventCollaborators';
 
 const EventDetailPage: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -58,6 +59,13 @@ const EventDetailPage: React.FC = () => {
             title={event.title}
             status={event.status}
           />
+          
+          {event.collaborators && event.collaborators.length > 0 && (
+            <EventCollaborators
+              collaborators={event.collaborators}
+              organizer={event.organizer}
+            />
+          )}
           
           <EventThemeAndPrizes
             theme={event.theme}

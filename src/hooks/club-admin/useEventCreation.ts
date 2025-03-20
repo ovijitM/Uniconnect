@@ -9,6 +9,7 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
   const { toast } = useToast();
   const { validateEventData } = useEventValidation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCollaborators, setSelectedCollaborators] = useState<string[]>([]);
 
   // Convert array-like string inputs to actual arrays
   const convertToArray = (value: string): string[] | null => {
@@ -16,7 +17,12 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
     return value.split(',').map(item => item.trim()).filter(Boolean);
   };
 
-  const createEvent = async (eventFormData: EventFormData, setEventFormData: React.Dispatch<React.SetStateAction<EventFormData>>, setIsEventDialogOpen: React.Dispatch<React.SetStateAction<boolean>>) => {
+  const createEvent = async (
+    eventFormData: EventFormData, 
+    setEventFormData: React.Dispatch<React.SetStateAction<EventFormData>>, 
+    setIsEventDialogOpen: React.Dispatch<React.SetStateAction<boolean>>,
+    collaborators: string[] = []
+  ) => {
     try {
       setIsSubmitting(true);
       
@@ -87,6 +93,25 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
       
       if (error) throw error;
       
+      // Add collaborators if any were selected
+      if (collaborators.length > 0 && data && data.length > 0) {
+        const eventId = data[0].id;
+        
+        const collaboratorEntries = collaborators.map(clubId => ({
+          event_id: eventId,
+          club_id: clubId
+        }));
+        
+        const { error: collaboratorsError } = await supabase
+          .from('event_collaborators')
+          .insert(collaboratorEntries);
+        
+        if (collaboratorsError) {
+          console.error('Error adding collaborators:', collaboratorsError);
+          // We won't throw here as the event was successfully created
+        }
+      }
+      
       toast({
         title: 'Success',
         description: 'Event created successfully!',
@@ -126,6 +151,7 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         eventWebsite: '',
         eventHashtag: ''
       });
+      setSelectedCollaborators([]);
       setIsEventDialogOpen(false);
       
       // Refresh event data
@@ -144,6 +170,8 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
 
   return {
     isSubmitting,
-    createEvent
+    createEvent,
+    selectedCollaborators, 
+    setSelectedCollaborators
   };
 };

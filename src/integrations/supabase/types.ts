@@ -35,6 +35,48 @@ export type Database = {
           },
         ]
       }
+      club_collaborations: {
+        Row: {
+          created_at: string
+          id: string
+          requested_club_id: string
+          requester_club_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          requested_club_id: string
+          requester_club_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          requested_club_id?: string
+          requester_club_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_collaborations_requested_club_id_fkey"
+            columns: ["requested_club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_collaborations_requester_club_id_fkey"
+            columns: ["requester_club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       club_members: {
         Row: {
           club_id: string
@@ -156,6 +198,39 @@ export type Database = {
           why_join?: string | null
         }
         Relationships: []
+      }
+      event_collaborators: {
+        Row: {
+          club_id: string
+          created_at: string
+          event_id: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          event_id: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          event_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_collaborators_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_collaborators_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       event_participants: {
         Row: {

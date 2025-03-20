@@ -31,6 +31,9 @@ export interface Club {
   instagramLink?: string;
   twitterLink?: string;
   discordLink?: string;
+  
+  // New field for collaborations
+  collaborations?: Collaboration[];
 }
 
 export interface Event {
@@ -71,6 +74,27 @@ export interface Event {
   communityLink?: string;
   eventWebsite?: string;
   eventHashtag?: string;
+  
+  // New field for collaborations
+  collaborators?: Club[];
 }
 
 export type EventStatus = 'upcoming' | 'ongoing' | 'past';
+
+// New interfaces for collaborations
+export interface Collaboration {
+  id: string;
+  requesterClubId: string;
+  requestedClubId: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: string;
+  updatedAt: string;
+  requesterClub?: Club;
+  requestedClub?: Club;
+}
+
+export interface EventCollaborator {
+  eventId: string;
+  clubId: string;
+  createdAt: string;
+}

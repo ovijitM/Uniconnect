@@ -77,9 +77,41 @@ export const useEventFetch = (eventId: string | undefined) => {
           .single();
         
         if (clubError) throw clubError;
+
+        // Fetch collaborating clubs
+        const { data: collaboratorsData, error: collaboratorsError } = await supabase
+          .from('event_collaborators')
+          .select(`
+            club_id,
+            club:club_id(
+              id,
+              name,
+              description,
+              logo_url,
+              category,
+              club_members(count)
+            )
+          `)
+          .eq('event_id', eventId);
+        
+        if (collaboratorsError) throw collaboratorsError;
         
         // Format the event data using the utility function
         const formattedEvent = formatEventData(eventData, clubData);
+        
+        // Add collaborators to the event
+        if (collaboratorsData && collaboratorsData.length > 0) {
+          formattedEvent.collaborators = collaboratorsData.map(item => ({
+            id: item.club.id,
+            name: item.club.name,
+            description: item.club.description,
+            logoUrl: item.club.logo_url,
+            category: item.club.category,
+            memberCount: item.club.club_members[0]?.count || 0,
+            events: []
+          }));
+        }
+        
         setEvent(formattedEvent);
       } catch (error) {
         console.error('Error fetching event data:', error);

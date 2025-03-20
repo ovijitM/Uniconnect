@@ -11,7 +11,7 @@ const WhyJoinSection: React.FC<WhyJoinSectionProps> = ({ whyJoin }) => {
   if (!whyJoin) return null;
   
   return (
-    <Card className="border-primary/10 bg-primary/5">
+    <Card className="border-primary/10 bg-primary/5 mb-6">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
           <MessageSquareQuote className="h-6 w-6 text-primary shrink-0 mt-1" />

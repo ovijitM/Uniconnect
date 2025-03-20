@@ -12,7 +12,10 @@ import ClubEventsTabs from '@/components/club-detail/ClubEventsTabs';
 import ClubSidebar from '@/components/club-detail/ClubSidebar';
 import ClubDescription from '@/components/club-detail/ClubDescription';
 import ClubDetailInfo from '@/components/club-detail/ClubDetailInfo';
+import ClubCollaborations from '@/components/club-detail/ClubCollaborations';
+import CollaborationRequestDialog from '@/components/club-detail/CollaborationRequestDialog';
 import { Separator } from '@/components/ui/separator';
+import { useCollaborations } from '@/hooks/club-admin/useCollaborations';
 
 const ClubDetailPage: React.FC = () => {
   const {
@@ -26,6 +29,15 @@ const ClubDetailPage: React.FC = () => {
     isClubAdmin,
     handleJoinClub
   } = useClubDetail();
+
+  const {
+    incomingRequests,
+    outgoingRequests,
+    acceptedCollaborations,
+    isLoading: isLoadingCollaborations,
+    sendCollaborationRequest,
+    respondToCollaborationRequest
+  } = useCollaborations(club?.id);
 
   if (isLoading) {
     return <ClubDetailSkeleton />;
@@ -67,6 +79,27 @@ const ClubDetailPage: React.FC = () => {
           <div className="mb-10">
             <ClubDetailInfo club={club} />
           </div>
+
+          {isClubAdmin && (
+            <>
+              <Separator className="my-8" />
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-medium">Club Collaborations</h2>
+                <CollaborationRequestDialog 
+                  clubId={club.id}
+                  onSendRequest={sendCollaborationRequest}
+                />
+              </div>
+              <ClubCollaborations 
+                incomingRequests={incomingRequests}
+                outgoingRequests={outgoingRequests}
+                acceptedCollaborations={acceptedCollaborations}
+                isLoading={isLoadingCollaborations}
+                onAccept={(id) => respondToCollaborationRequest(id, true)}
+                onReject={(id) => respondToCollaborationRequest(id, false)}
+              />
+            </>
+          )}
 
           <Separator className="my-8" />
           
