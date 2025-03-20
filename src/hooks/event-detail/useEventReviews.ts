@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,10 +6,9 @@ import {
   fetchAverageRating, 
   fetchReviewsWithProfiles, 
   submitNewReview, 
-  updateExistingReview, 
   deleteUserReview,
   checkExistingReview
-} from './utils/reviewUtils';
+} from './utils/review';
 
 export type { EventReview } from './types/reviewTypes';
 
