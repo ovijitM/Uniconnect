@@ -108,7 +108,8 @@ export const useAdminData = (userId: string | undefined) => {
       id: club.id,
       name: club.name,
       description: `New club created ${formatTimeAgo(club.created_at)}`,
-      created_at: club.created_at
+      created_at: club.created_at,
+      status: club.status
     }));
 
     const recentEvents = eventsData.map(event => ({

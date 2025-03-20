@@ -27,7 +27,8 @@ const AdminDashboard: React.FC = () => {
     recentActivity, 
     systemAlerts, 
     isLoading,
-    reviewClubOrEvent 
+    reviewClubOrEvent,
+    fetchAdminData
   } = useAdminData(user.id);
 
   const handleReview = async (id: string, type: 'club' | 'event') => {
@@ -39,6 +40,10 @@ const AdminDashboard: React.FC = () => {
 
   const handleViewClub = (clubId: string) => {
     navigate(`/clubs/${clubId}`);
+  };
+
+  const handleClubStatusChange = () => {
+    fetchAdminData();
   };
 
   return (
@@ -63,6 +68,7 @@ const AdminDashboard: React.FC = () => {
           systemAlerts={systemAlerts}
           onReviewItem={handleReview}
           onViewClub={handleViewClub}
+          onClubStatusChange={handleClubStatusChange}
         />
       </div>
     </Layout>

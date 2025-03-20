@@ -55,7 +55,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
         return;
       }
 
-      // First, create the club
+      // First, create the club with status "pending"
       const { data: clubData, error: clubError } = await supabase
         .from('clubs')
         .insert({
@@ -63,6 +63,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
           description: clubFormData.description,
           category: clubFormData.category,
           logo_url: null,
+          status: 'pending'
         })
         .select();
       
@@ -92,7 +93,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       
       toast({
         title: 'Success',
-        description: 'Club created successfully!',
+        description: 'Club created successfully! It will be visible after admin approval.',
         variant: 'default',
       });
       
