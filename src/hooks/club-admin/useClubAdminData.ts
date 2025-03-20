@@ -1,7 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { useClubMembers } from './useClubMembers';
 import { useClubEvents } from './useClubEvents';
-import { useAdminClubs } from '@/hooks/admin/useAdminClubs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 

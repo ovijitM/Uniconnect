@@ -47,11 +47,11 @@ export const useEventAttendees = (eventId: string) => {
       
       // Transform the data to the desired format
       const formattedAttendees = data.map(item => ({
-        id: item.id || item.user_id + item.event_id,
+        id: item.user_id + item.event_id, // Create a composite ID since event_participants may not have an id
         user_id: item.user_id,
         event_id: item.event_id,
         created_at: item.created_at,
-        checked_in: item.checked_in || false,
+        checked_in: Boolean(item.checked_in || false),
         checked_in_at: item.checked_in_at || null,
         name: item.profiles?.name || 'Unknown',
         email: item.profiles?.email || 'No email',
@@ -77,7 +77,7 @@ export const useEventAttendees = (eventId: string) => {
       
       const { error } = await supabase
         .from('event_participants')
-        .update({ 
+        .update({
           checked_in: true,
           checked_in_at: new Date().toISOString()
         })

@@ -187,7 +187,7 @@ const AttendeeTable: React.FC<AttendeeTableProps> = ({
               <TableCell>{formatDate(attendee.created_at)}</TableCell>
               <TableCell>
                 {attendee.checked_in ? (
-                  <Badge variant="success" className="bg-green-100 text-green-800">
+                  <Badge variant="outline" className="bg-green-100 text-green-800">
                     Checked In
                   </Badge>
                 ) : (
