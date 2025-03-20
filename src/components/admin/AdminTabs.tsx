@@ -13,6 +13,8 @@ interface AdminTabsProps {
   isLoading: boolean;
   recentActivity: any[];
   systemAlerts: any[];
+  adminCount: number;
+  systemStatus: string;
   onReviewItem: (id: string, type: 'club' | 'event') => void;
   onViewClub: (clubId: string) => void;
   onClubStatusChange?: () => void;
@@ -26,6 +28,8 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
   isLoading,
   recentActivity,
   systemAlerts,
+  adminCount,
+  systemStatus,
   onReviewItem,
   onViewClub,
   onClubStatusChange
@@ -43,6 +47,10 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
           isLoading={isLoading}
           recentActivity={recentActivity}
           systemAlerts={systemAlerts}
+          usersCount={users.length}
+          clubsCount={clubs.length}
+          adminCount={adminCount}
+          systemStatus={systemStatus}
           onReviewItem={onReviewItem}
         />
       </TabsContent>

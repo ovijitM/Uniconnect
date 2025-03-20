@@ -82,6 +82,8 @@ const AdminDashboard: React.FC = () => {
           isLoading={isLoading}
           recentActivity={recentActivity}
           systemAlerts={systemAlerts}
+          adminCount={adminCount}
+          systemStatus={systemStatus}
           onReviewItem={handleReview}
           onViewClub={handleViewClub}
           onClubStatusChange={handleClubStatusChange}
