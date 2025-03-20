@@ -40,7 +40,7 @@ export interface Event {
   additionalPerks?: string[];
   judgingCriteria?: string[];
   judges?: string[];
-  schedule?: Record<string, any>;
+  schedule?: any; // Changed from Record<string, any> to any to accommodate Json type
   deliverables?: string[];
   submissionPlatform?: string;
   mentors?: string[];
