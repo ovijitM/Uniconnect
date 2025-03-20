@@ -13,6 +13,9 @@ interface FeaturedClubsSectionProps {
 }
 
 const FeaturedClubsSection: React.FC<FeaturedClubsSectionProps> = ({ clubs, isLoading }) => {
+  // Filter out only approved clubs
+  const approvedClubs = clubs.filter(club => club.status === 'approved');
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -30,9 +33,9 @@ const FeaturedClubsSection: React.FC<FeaturedClubsSectionProps> = ({ clubs, isLo
             <Skeleton key={i} className="h-48 w-full rounded-xl" />
           ))}
         </div>
-      ) : clubs.length > 0 ? (
+      ) : approvedClubs.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {clubs.slice(0, 4).map((club, index) => (
+          {approvedClubs.slice(0, 4).map((club, index) => (
             <ClubCard key={club.id} club={club} index={index} />
           ))}
         </div>

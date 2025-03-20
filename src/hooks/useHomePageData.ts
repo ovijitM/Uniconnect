@@ -16,10 +16,11 @@ export const useHomePageData = () => {
       try {
         setIsLoading(true);
         
-        // Fetch clubs from Supabase with corrected count aggregation
+        // Fetch clubs from Supabase with status filter
         const { data: clubsData, error: clubsError } = await supabase
           .from('clubs')
-          .select('*');
+          .select('*')
+          .eq('status', 'approved');
         
         if (clubsError) throw clubsError;
         
@@ -38,6 +39,7 @@ export const useHomePageData = () => {
               logoUrl: club.logo_url,
               category: club.category,
               memberCount: count || 0,
+              status: club.status,
               events: []
             };
           })
@@ -46,7 +48,8 @@ export const useHomePageData = () => {
         // Fetch events from Supabase
         const { data: eventsData, error: eventsError } = await supabase
           .from('events')
-          .select('*')
+          .select('*, clubs!inner(*)')
+          .eq('clubs.status', 'approved')
           .order('date');
         
         if (eventsError) throw eventsError;
@@ -59,11 +62,8 @@ export const useHomePageData = () => {
               .select('*', { count: 'exact', head: true })
               .eq('event_id', event.id);
             
-            const { data: clubData } = await supabase
-              .from('clubs')
-              .select('*')
-              .eq('id', event.club_id)
-              .single();
+            // Get club data (already joined in the query above)
+            const clubData = event.clubs;
             
             // Get club member count
             const { count: memberCount } = await supabase
@@ -89,6 +89,7 @@ export const useHomePageData = () => {
                 logoUrl: clubData.logo_url,
                 category: clubData.category,
                 memberCount: memberCount || 0,
+                status: clubData.status,
                 events: []
               }
             };
