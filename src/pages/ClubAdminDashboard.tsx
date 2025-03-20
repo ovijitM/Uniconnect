@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -56,6 +57,7 @@ const ClubAdminDashboard: React.FC = () => {
     category: ''
   });
   const [isClubDialogOpen, setIsClubDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Redirect if not logged in or not a club admin
   if (!user) return <Navigate to="/login" />;
@@ -63,12 +65,37 @@ const ClubAdminDashboard: React.FC = () => {
 
   const handleCreateClub = async () => {
     try {
+      if (isSubmitting) return; // Prevent multiple submissions
+      setIsSubmitting(true);
+
       if (!clubFormData.name || !clubFormData.description || !clubFormData.category) {
         toast({
           title: 'Missing Information',
           description: 'Please fill in all required fields.',
           variant: 'destructive',
         });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Check if a club with this name already exists
+      const { data: existingClubs, error: checkError } = await supabase
+        .from('clubs')
+        .select('id')
+        .eq('name', clubFormData.name);
+      
+      if (checkError) {
+        console.error('Error checking existing clubs:', checkError);
+        throw new Error(checkError.message);
+      }
+      
+      if (existingClubs && existingClubs.length > 0) {
+        toast({
+          title: 'Club Name Already Exists',
+          description: 'Please choose a different club name.',
+          variant: 'destructive',
+        });
+        setIsSubmitting(false);
         return;
       }
 
@@ -83,8 +110,15 @@ const ClubAdminDashboard: React.FC = () => {
         })
         .select();
       
-      if (clubError) throw clubError;
+      if (clubError) {
+        console.error('Error creating club:', clubError);
+        throw clubError;
+      }
       
+      if (!clubData || clubData.length === 0) {
+        throw new Error('No club data returned after creation');
+      }
+
       // Then, add the current user as an admin of the club
       const { error: adminError } = await supabase
         .from('club_admins')
@@ -93,7 +127,12 @@ const ClubAdminDashboard: React.FC = () => {
           user_id: user.id,
         });
       
-      if (adminError) throw adminError;
+      if (adminError) {
+        console.error('Error adding club admin:', adminError);
+        // If we fail to add admin, we should delete the club to avoid orphaned clubs
+        await supabase.from('clubs').delete().eq('id', clubData[0].id);
+        throw adminError;
+      }
       
       toast({
         title: 'Success',
@@ -111,13 +150,15 @@ const ClubAdminDashboard: React.FC = () => {
       
       // Refresh data
       fetchClubAdminData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating club:', error);
       toast({
         title: 'Error',
         description: 'Failed to create club. Please try again.',
         variant: 'destructive',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

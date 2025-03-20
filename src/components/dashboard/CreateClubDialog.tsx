@@ -33,6 +33,13 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
 }) => {
   const { toast } = useToast();
   
+  // Reset form data when dialog is opened
+  useEffect(() => {
+    if (isOpen === false) {
+      // The form will be reset by the parent component
+    }
+  }, [isOpen]);
+  
   // Validate form data before submission
   const validateForm = () => {
     if (!formData.name.trim()) {
