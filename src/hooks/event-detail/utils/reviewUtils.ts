@@ -65,6 +65,7 @@ export const fetchReviewsWithProfiles = async (
       let userName = 'Anonymous';
       let userImage = null;
       
+      // Add null check before trying to access properties
       if (review.profiles && typeof review.profiles === 'object' && !('error' in review.profiles)) {
         const profileData = review.profiles as any;
         userName = profileData.name || 'Anonymous';
@@ -122,6 +123,7 @@ export const checkExistingReview = async (
     let userName = 'Anonymous';
     let userImage = null;
     
+    // Add null check before trying to access properties
     if (data.profiles && typeof data.profiles === 'object' && !('error' in data.profiles)) {
       const profileData = data.profiles as any;
       userName = profileData.name || 'Anonymous';
