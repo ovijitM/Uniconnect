@@ -1,5 +1,4 @@
-
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -15,6 +14,26 @@ interface CreateClubDialogProps {
     name: string;
     description: string;
     category: string;
+    tagline?: string;
+    establishedYear?: string;
+    affiliation?: string;
+    whyJoin?: string;
+    regularEvents?: string;
+    signatureEvents?: string;
+    communityEngagement?: string;
+    whoCanJoin?: string;
+    membershipFee?: string;
+    howToJoin?: string;
+    presidentName?: string;
+    presidentContact?: string;
+    executiveMembers?: string;
+    advisors?: string;
+    phoneNumber?: string;
+    website?: string;
+    facebookLink?: string;
+    instagramLink?: string;
+    twitterLink?: string;
+    discordLink?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onSubmit: () => void;
@@ -32,13 +51,6 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
   trigger
 }) => {
   const { toast } = useToast();
-  
-  // Reset form data when dialog is opened
-  useEffect(() => {
-    if (isOpen === false) {
-      // The form will be reset by the parent component
-    }
-  }, [isOpen]);
   
   // Validate form data before submission
   const validateForm = () => {
@@ -76,7 +88,6 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
   const handleSubmit = () => {
     if (validateForm()) {
       onSubmit();
-      // Dialog will be closed by the parent component after successful submission
     }
   };
 
@@ -94,7 +105,7 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create New Club</DialogTitle>
           <DialogDescription>
@@ -102,8 +113,8 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
+          <div className="grid gap-2">
+            <Label htmlFor="name">
               Name
             </Label>
             <Input
@@ -111,13 +122,11 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
               name="name"
               value={formData.name}
               onChange={onInputChange}
-              className="col-span-3"
-              required
               placeholder="Enter club name"
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="description" className="text-right">
+          <div className="grid gap-2">
+            <Label htmlFor="description">
               Description
             </Label>
             <Textarea
@@ -125,13 +134,12 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
               name="description"
               value={formData.description}
               onChange={onInputChange}
-              className="col-span-3"
-              required
               placeholder="Describe what your club is about"
+              className="min-h-[100px]"
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="category" className="text-right">
+          <div className="grid gap-2">
+            <Label htmlFor="category">
               Category
             </Label>
             <Input
@@ -139,9 +147,7 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
               name="category"
               value={formData.category}
               onChange={onInputChange}
-              className="col-span-3"
               placeholder="e.g., Sports, Technology, Arts"
-              required
             />
           </div>
         </div>
