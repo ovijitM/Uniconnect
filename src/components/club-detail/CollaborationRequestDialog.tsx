@@ -43,6 +43,7 @@ const CollaborationRequestDialog: React.FC<CollaborationRequestDialogProps> = ({
         .select(`
           id,
           name,
+          description,
           logo_url,
           category
         `)
@@ -55,6 +56,7 @@ const CollaborationRequestDialog: React.FC<CollaborationRequestDialogProps> = ({
       const formattedResults = data.map(club => ({
         id: club.id,
         name: club.name,
+        description: club.description,
         logoUrl: club.logo_url,
         category: club.category,
         memberCount: 0,  // Not needed for search results

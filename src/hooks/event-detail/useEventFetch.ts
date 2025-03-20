@@ -101,15 +101,22 @@ export const useEventFetch = (eventId: string | undefined) => {
         
         // Add collaborators to the event
         if (collaboratorsData && collaboratorsData.length > 0) {
-          formattedEvent.collaborators = collaboratorsData.map(item => ({
-            id: item.club.id,
-            name: item.club.name,
-            description: item.club.description,
-            logoUrl: item.club.logo_url,
-            category: item.club.category,
-            memberCount: item.club.club_members[0]?.count || 0,
-            events: []
-          }));
+          formattedEvent.collaborators = collaboratorsData.map(item => {
+            // Handle the case where club_members might be an array with an object containing a numeric count
+            const memberCount = typeof item.club.club_members[0]?.count === 'number' 
+              ? item.club.club_members[0].count 
+              : 0;
+              
+            return {
+              id: item.club.id,
+              name: item.club.name,
+              description: item.club.description,
+              logoUrl: item.club.logo_url,
+              category: item.club.category,
+              memberCount: memberCount,
+              events: []
+            };
+          });
         }
         
         setEvent(formattedEvent);
