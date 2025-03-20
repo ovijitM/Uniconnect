@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import {
@@ -128,7 +129,8 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+// Create the base toast function
+function toastFunction({ ...props }: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -157,6 +159,44 @@ function toast({ ...props }: Toast) {
     update,
   }
 }
+
+// Enhanced toast with variant helpers
+interface ToastApi {
+  (props: Toast): {
+    id: string
+    dismiss: () => void
+    update: (props: ToasterToast) => void
+  }
+  success: (props: Omit<Toast, "variant">) => {
+    id: string
+    dismiss: () => void
+    update: (props: ToasterToast) => void
+  }
+  error: (props: Omit<Toast, "variant">) => {
+    id: string
+    dismiss: () => void
+    update: (props: ToasterToast) => void
+  }
+  info: (props: Omit<Toast, "variant">) => {
+    id: string
+    dismiss: () => void
+    update: (props: ToasterToast) => void
+  }
+  warning: (props: Omit<Toast, "variant">) => {
+    id: string
+    dismiss: () => void
+    update: (props: ToasterToast) => void
+  }
+}
+
+// Create enhanced toast with convenience methods
+const toast = toastFunction as ToastApi
+
+// Add variant helper methods
+toast.success = (props) => toastFunction({ ...props, variant: "success" })
+toast.error = (props) => toastFunction({ ...props, variant: "destructive" })
+toast.info = (props) => toastFunction({ ...props, variant: "default" })
+toast.warning = (props) => toastFunction({ ...props, variant: "default" })
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
