@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Pencil, PlusCircle, Trash2 } from 'lucide-react';
+import { Pencil, PlusCircle, Trash2, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useEventDeletion } from '@/hooks/club-admin/useEventDeletion';
 
@@ -14,6 +14,7 @@ interface EventsTableProps {
   onViewEvent: (eventId: string) => void;
   onCreateEvent: () => void;
   onDeleteEvent?: (eventId: string) => void;
+  onManageAttendees?: (eventId: string, eventTitle: string) => void;
 }
 
 const EventsTable: React.FC<EventsTableProps> = ({
@@ -22,7 +23,8 @@ const EventsTable: React.FC<EventsTableProps> = ({
   onEditEvent,
   onViewEvent,
   onCreateEvent,
-  onDeleteEvent
+  onDeleteEvent,
+  onManageAttendees
 }) => {
   const { toast } = useToast();
   const { openDeleteConfirmation, DeleteConfirmationDialog } = useEventDeletion(
@@ -49,6 +51,12 @@ const EventsTable: React.FC<EventsTableProps> = ({
   const handleDeleteClick = (eventId: string) => {
     if (onDeleteEvent) {
       openDeleteConfirmation(eventId);
+    }
+  };
+
+  const handleManageAttendeesClick = (eventId: string, eventTitle: string) => {
+    if (onManageAttendees) {
+      onManageAttendees(eventId, eventTitle);
     }
   };
 
@@ -108,6 +116,16 @@ const EventsTable: React.FC<EventsTableProps> = ({
                         >
                           View
                         </Button>
+                        {onManageAttendees && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleManageAttendeesClick(event.id, event.title)}
+                          >
+                            <Users className="h-4 w-4 mr-1" />
+                            Attendees
+                          </Button>
+                        )}
                         {onDeleteEvent && (
                           <Button
                             variant="outline"

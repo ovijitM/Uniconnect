@@ -26,7 +26,10 @@ const ClubAdminDashboard: React.FC = () => {
     totalMembersCount,
     averageAttendance,
     isLoading,
-    fetchClubAdminData
+    fetchClubAdminData,
+    selectedEventId,
+    selectedEventTitle,
+    selectEventForAttendeeManagement
   } = useClubAdminData(user?.id);
 
   const {
@@ -104,6 +107,9 @@ const ClubAdminDashboard: React.FC = () => {
                 onCreateEvent={() => setIsEventDialogOpen(true)}
                 onDeleteEvent={handleRefreshAfterDelete}
                 onRefreshData={fetchClubAdminData}
+                selectedEventId={selectedEventId}
+                selectedEventTitle={selectedEventTitle}
+                onSelectEvent={selectEventForAttendeeManagement}
               />
             </>
           )}

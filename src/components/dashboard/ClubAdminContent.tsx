@@ -6,6 +6,7 @@ import EventsTable from './EventsTable';
 import MembersTable from './MembersTable';
 import ManageClubsTable from './ManageClubsTable';
 import StatCards from './StatCards';
+import AttendeeManagement from './AttendeeManagement';
 
 interface ClubAdminContentProps {
   activeEventCount: number;
@@ -21,6 +22,9 @@ interface ClubAdminContentProps {
   onCreateEvent: () => void;
   onDeleteEvent: (eventId: string) => void;
   onRefreshData: () => void;
+  selectedEventId: string | null;
+  selectedEventTitle: string;
+  onSelectEvent: (eventId: string, eventTitle: string) => void;
 }
 
 const ClubAdminContent: React.FC<ClubAdminContentProps> = ({
@@ -36,7 +40,10 @@ const ClubAdminContent: React.FC<ClubAdminContentProps> = ({
   onViewEvent,
   onCreateEvent,
   onDeleteEvent,
-  onRefreshData
+  onRefreshData,
+  selectedEventId,
+  selectedEventTitle,
+  onSelectEvent
 }) => {
   return (
     <>
@@ -62,6 +69,15 @@ const ClubAdminContent: React.FC<ClubAdminContentProps> = ({
         />
       </div>
 
+      {selectedEventId && (
+        <div className="mb-6">
+          <AttendeeManagement 
+            eventId={selectedEventId}
+            eventTitle={selectedEventTitle}
+          />
+        </div>
+      )}
+
       <ManageClubsTable
         clubs={adminClubs}
         isLoading={isLoading}
@@ -75,6 +91,7 @@ const ClubAdminContent: React.FC<ClubAdminContentProps> = ({
         onViewEvent={onViewEvent}
         onCreateEvent={onCreateEvent}
         onDeleteEvent={onDeleteEvent}
+        onManageAttendees={onSelectEvent}
       />
 
       <MembersTable
