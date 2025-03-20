@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, UserRole, AuthState } from '@/types/auth';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
@@ -116,6 +117,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       const user = await mockAuth.login(email, password);
       setAuthState({ user, isLoading: false, error: null });
+      return user;
     } catch (error) {
       setAuthState(prev => ({ 
         ...prev, 
@@ -131,6 +133,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       const user = await mockAuth.signup(email, password, name, role);
       setAuthState({ user, isLoading: false, error: null });
+      return user;
     } catch (error) {
       setAuthState(prev => ({ 
         ...prev, 

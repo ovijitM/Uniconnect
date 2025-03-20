@@ -47,6 +47,12 @@ const UserProfile: React.FC = () => {
     }
   };
 
+  // Navigate to the appropriate dashboard
+  const goToDashboard = () => {
+    const dashboardPath = `/${user.role.replace('_', '-')}-dashboard`;
+    navigate(dashboardPath);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -66,9 +72,9 @@ const UserProfile: React.FC = () => {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/profile')}>
+        <DropdownMenuItem className="cursor-pointer" onClick={goToDashboard}>
           <User className="mr-2 h-4 w-4" />
-          <span>Profile</span>
+          <span>Dashboard</span>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/settings')}>
           <Settings className="mr-2 h-4 w-4" />

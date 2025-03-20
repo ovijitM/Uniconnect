@@ -36,12 +36,15 @@ const Signup: React.FC = () => {
     
     try {
       setIsSubmitting(true);
-      await signup(email, password, name, role);
+      const user = await signup(email, password, name, role);
       toast({
         title: "Success",
         description: "Your account has been created successfully",
       });
-      navigate('/');
+      
+      // Redirect based on user role
+      const dashboardPath = `/${user.role.replace('_', '-')}-dashboard`;
+      navigate(dashboardPath);
     } catch (error) {
       toast({
         title: "Error",

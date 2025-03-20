@@ -16,6 +16,10 @@ import ClubDetail from "./pages/ClubDetail";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
+import Profile from "./pages/Profile";
+import StudentDashboard from "./pages/StudentDashboard";
+import ClubAdminDashboard from "./pages/ClubAdminDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +39,10 @@ const App = () => (
               <Route path="/clubs/:clubId" element={<ClubDetail />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/student-dashboard" element={<StudentDashboard />} />
+              <Route path="/club-admin-dashboard" element={<ClubAdminDashboard />} />
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>

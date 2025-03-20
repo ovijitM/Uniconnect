@@ -32,12 +32,15 @@ const Login: React.FC = () => {
     
     try {
       setIsSubmitting(true);
-      await login(email, password);
+      const user = await login(email, password);
       toast({
         title: "Success",
         description: "You have been logged in successfully",
       });
-      navigate('/');
+      
+      // Redirect based on user role
+      const dashboardPath = `/${user.role.replace('_', '-')}-dashboard`;
+      navigate(dashboardPath);
     } catch (error) {
       toast({
         title: "Error",
