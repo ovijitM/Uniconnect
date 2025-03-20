@@ -6,19 +6,19 @@ import { Textarea } from '@/components/ui/textarea';
 
 interface DetailsTabProps {
   formData: {
-    establishedYear: string;
-    affiliation: string;
-    whyJoin: string;
-    regularEvents: string;
-    signatureEvents: string;
-    communityEngagement: string;
-    whoCanJoin: string;
-    membershipFee: string;
-    howToJoin: string;
-    presidentName: string;
-    presidentContact: string;
-    executiveMembers: string;
-    advisors: string;
+    establishedYear?: string;
+    affiliation?: string;
+    whyJoin?: string;
+    regularEvents?: string;
+    signatureEvents?: string;
+    communityEngagement?: string;
+    whoCanJoin?: string;
+    membershipFee?: string;
+    howToJoin?: string;
+    presidentName?: string;
+    presidentContact?: string;
+    executiveMembers?: string;
+    advisors?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
@@ -34,7 +34,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ formData, onInputChange }) => {
           id="establishedYear"
           name="establishedYear"
           type="number"
-          value={formData.establishedYear}
+          value={formData.establishedYear || ''}
           onChange={onInputChange}
           placeholder="e.g., 2023"
         />
@@ -47,7 +47,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ formData, onInputChange }) => {
         <Input
           id="affiliation"
           name="affiliation"
-          value={formData.affiliation}
+          value={formData.affiliation || ''}
           onChange={onInputChange}
           placeholder="Department, Organization, etc."
         />
@@ -60,7 +60,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ formData, onInputChange }) => {
         <Textarea
           id="whyJoin"
           name="whyJoin"
-          value={formData.whyJoin}
+          value={formData.whyJoin || ''}
           onChange={onInputChange}
           placeholder="Explain the benefits of joining your club"
         />
@@ -73,7 +73,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ formData, onInputChange }) => {
         <Input
           id="whoCanJoin"
           name="whoCanJoin"
-          value={formData.whoCanJoin}
+          value={formData.whoCanJoin || ''}
           onChange={onInputChange}
           placeholder="Eligibility criteria for joining"
         />
@@ -86,7 +86,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ formData, onInputChange }) => {
         <Input
           id="membershipFee"
           name="membershipFee"
-          value={formData.membershipFee}
+          value={formData.membershipFee || ''}
           onChange={onInputChange}
           placeholder="Free, $10/semester, etc."
         />
@@ -99,7 +99,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ formData, onInputChange }) => {
         <Textarea
           id="howToJoin"
           name="howToJoin"
-          value={formData.howToJoin}
+          value={formData.howToJoin || ''}
           onChange={onInputChange}
           placeholder="Describe the process to join your club"
         />

@@ -5,12 +5,12 @@ import { Input } from '@/components/ui/input';
 
 interface SocialMediaTabProps {
   formData: {
-    phoneNumber: string;
-    website: string;
-    facebookLink: string;
-    instagramLink: string;
-    twitterLink: string;
-    discordLink: string;
+    phoneNumber?: string;
+    website?: string;
+    facebookLink?: string;
+    instagramLink?: string;
+    twitterLink?: string;
+    discordLink?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
@@ -25,7 +25,7 @@ const SocialMediaTab: React.FC<SocialMediaTabProps> = ({ formData, onInputChange
         <Input
           id="phoneNumber"
           name="phoneNumber"
-          value={formData.phoneNumber}
+          value={formData.phoneNumber || ''}
           onChange={onInputChange}
           placeholder="Contact phone number"
         />
@@ -38,7 +38,7 @@ const SocialMediaTab: React.FC<SocialMediaTabProps> = ({ formData, onInputChange
         <Input
           id="website"
           name="website"
-          value={formData.website}
+          value={formData.website || ''}
           onChange={onInputChange}
           placeholder="Club website URL"
         />
@@ -51,7 +51,7 @@ const SocialMediaTab: React.FC<SocialMediaTabProps> = ({ formData, onInputChange
         <Input
           id="facebookLink"
           name="facebookLink"
-          value={formData.facebookLink}
+          value={formData.facebookLink || ''}
           onChange={onInputChange}
           placeholder="Facebook page URL"
         />
@@ -64,7 +64,7 @@ const SocialMediaTab: React.FC<SocialMediaTabProps> = ({ formData, onInputChange
         <Input
           id="instagramLink"
           name="instagramLink"
-          value={formData.instagramLink}
+          value={formData.instagramLink || ''}
           onChange={onInputChange}
           placeholder="Instagram profile URL"
         />
@@ -77,7 +77,7 @@ const SocialMediaTab: React.FC<SocialMediaTabProps> = ({ formData, onInputChange
         <Input
           id="twitterLink"
           name="twitterLink"
-          value={formData.twitterLink}
+          value={formData.twitterLink || ''}
           onChange={onInputChange}
           placeholder="Twitter profile URL"
         />
@@ -90,7 +90,7 @@ const SocialMediaTab: React.FC<SocialMediaTabProps> = ({ formData, onInputChange
         <Input
           id="discordLink"
           name="discordLink"
-          value={formData.discordLink}
+          value={formData.discordLink || ''}
           onChange={onInputChange}
           placeholder="Discord server invite URL"
         />

@@ -9,7 +9,7 @@ interface BasicInfoTabProps {
     name: string;
     description: string;
     category: string;
-    tagline: string;
+    tagline?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
@@ -67,7 +67,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
         <Input
           id="tagline"
           name="tagline"
-          value={formData.tagline}
+          value={formData.tagline || ''}
           onChange={onInputChange}
           placeholder="A short catchy phrase for your club"
         />
