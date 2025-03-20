@@ -9,15 +9,21 @@ export const useAdminClubs = () => {
 
   const fetchClubs = async () => {
     try {
+      console.log("Fetching clubs in useAdminClubs...");
+      
       const { data, error } = await supabase
         .from('clubs')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching clubs:', error);
+        throw error;
+      }
       
-      setClubs(data);
-      return data;
+      console.log(`Retrieved ${data?.length || 0} clubs`);
+      setClubs(data || []);
+      return data || [];
     } catch (error) {
       console.error('Error fetching clubs:', error);
       throw error;

@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { useAdminData } from '@/hooks/admin';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 // Import refactored components
 import AdminDashboardHeader from '@/components/admin/AdminDashboardHeader';
@@ -12,6 +13,7 @@ import AdminTabs from '@/components/admin/AdminTabs';
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   
@@ -30,6 +32,20 @@ const AdminDashboard: React.FC = () => {
     reviewClubOrEvent,
     fetchAdminData
   } = useAdminData(user.id);
+
+  useEffect(() => {
+    if (user?.id) {
+      // Explicitly call fetchAdminData when component mounts
+      fetchAdminData().catch(error => {
+        console.error("Error fetching admin data:", error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load admin dashboard data.',
+          variant: 'destructive',
+        });
+      });
+    }
+  }, [user?.id]);
 
   const handleReview = async (id: string, type: 'club' | 'event') => {
     const result = await reviewClubOrEvent(id, type);

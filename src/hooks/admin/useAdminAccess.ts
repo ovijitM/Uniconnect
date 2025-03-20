@@ -6,15 +6,21 @@ export const useAdminAccess = () => {
     if (!userId) return false;
     
     try {
+      console.log("Verifying admin access for user:", userId);
+      
       const { data: userData, error: userError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', userId)
         .single();
 
-      if (userError) throw userError;
+      if (userError) {
+        console.error('Error in verifyAdminAccess:', userError);
+        throw userError;
+      }
       
-      return userData.role === 'admin';
+      console.log("User role verification result:", userData);
+      return userData?.role === 'admin';
     } catch (error) {
       console.error('Error verifying admin access:', error);
       return false;

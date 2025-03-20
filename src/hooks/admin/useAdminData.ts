@@ -28,12 +28,18 @@ export const useAdminData = (userId: string | undefined) => {
   } = useAdminStatus();
 
   const fetchAdminData = async () => {
-    if (!userId) return;
+    if (!userId) {
+      console.log("No user ID provided to fetchAdminData");
+      return;
+    }
     
     setIsLoading(true);
     try {
+      console.log("Fetching admin data for user:", userId);
+      
       // Verify the user is an admin
       const isAdmin = await verifyAdminAccess(userId);
+      console.log("Admin access verification result:", isAdmin);
       
       if (!isAdmin) {
         toast({
@@ -46,11 +52,15 @@ export const useAdminData = (userId: string | undefined) => {
       }
 
       // Fetch users and clubs
+      console.log("Fetching users data...");
       const usersData = await fetchUsers();
+      console.log("Fetching clubs data...");
       const clubsData = await fetchClubs();
+      console.log("Fetching events data...");
       const eventsData = await fetchEvents();
       
       // Build recent activity
+      console.log("Building recent activity...");
       const activity = buildRecentActivity(clubsData, eventsData);
       setRecentActivity(activity);
 
@@ -73,6 +83,8 @@ export const useAdminData = (userId: string | undefined) => {
         }
       ]);
       
+      console.log("Admin data fetching complete");
+      
     } catch (error) {
       console.error('Error fetching admin data:', error);
       toast({
@@ -80,16 +92,19 @@ export const useAdminData = (userId: string | undefined) => {
         description: 'Failed to load admin dashboard data.',
         variant: 'destructive',
       });
+      throw error; // Re-throw to allow handling in component
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (userId) {
-      fetchAdminData();
-    }
-  }, [userId]);
+  // Initial data fetch on mount - we'll let component control this instead
+  // to better handle errors and provide feedback to user
+  // useEffect(() => {
+  //   if (userId) {
+  //     fetchAdminData();
+  //   }
+  // }, [userId]);
 
   return {
     users,
