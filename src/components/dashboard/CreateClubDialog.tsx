@@ -30,16 +30,25 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
   buttonText = "Create New Club",
   trigger
 }) => {
+  // Handler to correctly close dialog after successful submission
+  const handleSubmit = () => {
+    onSubmit();
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        {trigger || (
+      {trigger ? (
+        <DialogTrigger asChild>
+          {trigger}
+        </DialogTrigger>
+      ) : (
+        <DialogTrigger asChild>
           <Button variant="outline">
             <PlusCircle className="mr-2 h-4 w-4" />
             {buttonText}
           </Button>
-        )}
-      </DialogTrigger>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Create New Club</DialogTitle>
@@ -90,7 +99,7 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
           </div>
         </div>
         <DialogFooter>
-          <Button type="submit" onClick={onSubmit}>Create Club</Button>
+          <Button type="submit" onClick={handleSubmit}>Create Club</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -35,7 +35,7 @@ const NoClubsView: React.FC<NoClubsViewProps> = ({
         onSubmit={handleCreateClub}
         buttonText="Create Your First Club"
         trigger={
-          <Button size="lg">
+          <Button size="lg" onClick={() => setIsDialogOpen(true)}>
             <PlusCircle className="mr-2 h-5 w-5" />
             Create Your First Club
           </Button>

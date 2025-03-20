@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users } from 'lucide-react';
+import { Users, Calendar, Tag } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface ClubsListProps {
   clubs: any[];
@@ -25,15 +26,21 @@ const ClubsList: React.FC<ClubsListProps> = ({ clubs, isLoading }) => {
         ) : clubs.length > 0 ? (
           <div className="space-y-4">
             {clubs.map(club => (
-              <div key={club.id} className="flex items-center p-3 bg-secondary/50 rounded-lg">
+              <div key={club.id} className="flex items-center p-3 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors">
                 <div className="bg-primary/10 p-2 rounded-full mr-3">
                   <Users className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold">{club.name}</h4>
-                  <p className="text-sm text-muted-foreground truncate max-w-[200px]">
-                    {club.category}
+                  <p className="text-sm text-muted-foreground line-clamp-1">
+                    {club.description}
                   </p>
+                  <div className="mt-1">
+                    <Badge variant="outline" className="mr-1">
+                      <Tag className="h-3 w-3 mr-1" />
+                      {club.category}
+                    </Badge>
+                  </div>
                 </div>
               </div>
             ))}
