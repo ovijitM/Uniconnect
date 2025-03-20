@@ -33,7 +33,31 @@ export const useEventDetail = (eventId: string | undefined) => {
             status,
             max_participants,
             club_id,
-            event_participants(count)
+            event_participants(count),
+            event_type,
+            tagline,
+            registration_deadline,
+            online_platform,
+            eligibility,
+            team_size,
+            registration_link,
+            entry_fee,
+            theme,
+            sub_tracks,
+            prize_pool,
+            prize_categories,
+            additional_perks,
+            judging_criteria,
+            judges,
+            schedule,
+            deliverables,
+            submission_platform,
+            mentors,
+            sponsors,
+            contact_email,
+            community_link,
+            event_website,
+            event_hashtag
           `)
           .eq('id', eventId)
           .single();
@@ -92,7 +116,33 @@ export const useEventDetail = (eventId: string | undefined) => {
             category: clubData.category,
             memberCount: clubData.club_members[0]?.count || 0,
             events: []
-          }
+          },
+          
+          // New fields
+          eventType: eventData.event_type,
+          tagline: eventData.tagline,
+          registrationDeadline: eventData.registration_deadline,
+          onlinePlatform: eventData.online_platform,
+          eligibility: eventData.eligibility,
+          teamSize: eventData.team_size,
+          registrationLink: eventData.registration_link,
+          entryFee: eventData.entry_fee,
+          theme: eventData.theme,
+          subTracks: eventData.sub_tracks,
+          prizePool: eventData.prize_pool,
+          prizeCategories: eventData.prize_categories,
+          additionalPerks: eventData.additional_perks,
+          judgingCriteria: eventData.judging_criteria,
+          judges: eventData.judges,
+          schedule: eventData.schedule,
+          deliverables: eventData.deliverables,
+          submissionPlatform: eventData.submission_platform,
+          mentors: eventData.mentors,
+          sponsors: eventData.sponsors,
+          contactEmail: eventData.contact_email,
+          communityLink: eventData.community_link,
+          eventWebsite: eventData.event_website,
+          eventHashtag: eventData.event_hashtag
         };
         
         setEvent(formattedEvent);

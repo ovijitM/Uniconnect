@@ -23,6 +23,32 @@ export interface Event {
   status: 'upcoming' | 'ongoing' | 'past';
   participants: number;
   maxParticipants?: number;
+  
+  // New fields
+  eventType?: string;
+  tagline?: string;
+  registrationDeadline?: string;
+  onlinePlatform?: string;
+  eligibility?: string;
+  teamSize?: string;
+  registrationLink?: string;
+  entryFee?: string;
+  theme?: string;
+  subTracks?: string[];
+  prizePool?: string;
+  prizeCategories?: string[];
+  additionalPerks?: string[];
+  judgingCriteria?: string[];
+  judges?: string[];
+  schedule?: Record<string, any>;
+  deliverables?: string[];
+  submissionPlatform?: string;
+  mentors?: string[];
+  sponsors?: string[];
+  contactEmail?: string;
+  communityLink?: string;
+  eventWebsite?: string;
+  eventHashtag?: string;
 }
 
 export type EventStatus = 'upcoming' | 'ongoing' | 'past';

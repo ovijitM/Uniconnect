@@ -125,44 +125,116 @@ export type Database = {
       }
       events: {
         Row: {
+          additional_perks: string[] | null
           category: string
           club_id: string
+          community_link: string | null
+          contact_email: string | null
           created_at: string
           date: string
+          deliverables: string[] | null
           description: string
+          eligibility: string | null
+          entry_fee: string | null
+          event_hashtag: string | null
+          event_type: string
+          event_website: string | null
           id: string
           image_url: string | null
+          judges: string[] | null
+          judging_criteria: string[] | null
           location: string
           max_participants: number | null
+          mentors: string[] | null
+          online_platform: string | null
+          prize_categories: string[] | null
+          prize_pool: string | null
+          registration_deadline: string | null
+          registration_link: string | null
+          schedule: Json | null
+          sponsors: string[] | null
           status: Database["public"]["Enums"]["event_status"]
+          sub_tracks: string[] | null
+          submission_platform: string | null
+          tagline: string | null
+          team_size: string | null
+          theme: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          additional_perks?: string[] | null
           category: string
           club_id: string
+          community_link?: string | null
+          contact_email?: string | null
           created_at?: string
           date: string
+          deliverables?: string[] | null
           description: string
+          eligibility?: string | null
+          entry_fee?: string | null
+          event_hashtag?: string | null
+          event_type?: string
+          event_website?: string | null
           id?: string
           image_url?: string | null
+          judges?: string[] | null
+          judging_criteria?: string[] | null
           location: string
           max_participants?: number | null
+          mentors?: string[] | null
+          online_platform?: string | null
+          prize_categories?: string[] | null
+          prize_pool?: string | null
+          registration_deadline?: string | null
+          registration_link?: string | null
+          schedule?: Json | null
+          sponsors?: string[] | null
           status?: Database["public"]["Enums"]["event_status"]
+          sub_tracks?: string[] | null
+          submission_platform?: string | null
+          tagline?: string | null
+          team_size?: string | null
+          theme?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          additional_perks?: string[] | null
           category?: string
           club_id?: string
+          community_link?: string | null
+          contact_email?: string | null
           created_at?: string
           date?: string
+          deliverables?: string[] | null
           description?: string
+          eligibility?: string | null
+          entry_fee?: string | null
+          event_hashtag?: string | null
+          event_type?: string
+          event_website?: string | null
           id?: string
           image_url?: string | null
+          judges?: string[] | null
+          judging_criteria?: string[] | null
           location?: string
           max_participants?: number | null
+          mentors?: string[] | null
+          online_platform?: string | null
+          prize_categories?: string[] | null
+          prize_pool?: string | null
+          registration_deadline?: string | null
+          registration_link?: string | null
+          schedule?: Json | null
+          sponsors?: string[] | null
           status?: Database["public"]["Enums"]["event_status"]
+          sub_tracks?: string[] | null
+          submission_platform?: string | null
+          tagline?: string | null
+          team_size?: string | null
+          theme?: string | null
           title?: string
           updated_at?: string
         }

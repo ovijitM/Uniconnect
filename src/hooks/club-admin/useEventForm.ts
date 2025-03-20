@@ -13,7 +13,32 @@ export const useEventForm = (userId: string | undefined, onSuccess: () => void) 
     location: '',
     category: '',
     maxParticipants: '',
-    clubId: ''
+    clubId: '',
+    
+    // Initialize new fields
+    tagline: '',
+    eventType: 'in-person',
+    registrationDeadline: '',
+    onlinePlatform: '',
+    eligibility: '',
+    teamSize: '',
+    registrationLink: '',
+    entryFee: 'Free',
+    theme: '',
+    subTracks: '',
+    prizePool: '',
+    prizeCategories: '',
+    additionalPerks: '',
+    judgingCriteria: '',
+    judges: '',
+    deliverables: '',
+    submissionPlatform: '',
+    mentors: '',
+    sponsors: '',
+    contactEmail: '',
+    communityLink: '',
+    eventWebsite: '',
+    eventHashtag: ''
   });
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
 
@@ -54,6 +79,12 @@ export const useEventForm = (userId: string | undefined, onSuccess: () => void) 
         return;
       }
       
+      // Convert array-like string inputs to actual arrays
+      const convertToArray = (value: string): string[] | null => {
+        if (!value.trim()) return null;
+        return value.split(',').map(item => item.trim()).filter(Boolean);
+      };
+      
       const { data, error } = await supabase
         .from('events')
         .insert({
@@ -64,7 +95,32 @@ export const useEventForm = (userId: string | undefined, onSuccess: () => void) 
           category: eventFormData.category,
           max_participants: eventFormData.maxParticipants ? parseInt(eventFormData.maxParticipants) : null,
           club_id: eventFormData.clubId,
-          status: 'upcoming'
+          status: 'upcoming',
+          
+          // New fields
+          tagline: eventFormData.tagline || null,
+          event_type: eventFormData.eventType,
+          registration_deadline: eventFormData.registrationDeadline ? new Date(eventFormData.registrationDeadline).toISOString() : null,
+          online_platform: eventFormData.onlinePlatform || null,
+          eligibility: eventFormData.eligibility || null,
+          team_size: eventFormData.teamSize || null,
+          registration_link: eventFormData.registrationLink || null,
+          entry_fee: eventFormData.entryFee || 'Free',
+          theme: eventFormData.theme || null,
+          sub_tracks: convertToArray(eventFormData.subTracks),
+          prize_pool: eventFormData.prizePool || null,
+          prize_categories: convertToArray(eventFormData.prizeCategories),
+          additional_perks: convertToArray(eventFormData.additionalPerks),
+          judging_criteria: convertToArray(eventFormData.judgingCriteria),
+          judges: convertToArray(eventFormData.judges),
+          deliverables: convertToArray(eventFormData.deliverables),
+          submission_platform: eventFormData.submissionPlatform || null,
+          mentors: convertToArray(eventFormData.mentors),
+          sponsors: convertToArray(eventFormData.sponsors),
+          contact_email: eventFormData.contactEmail || null,
+          community_link: eventFormData.communityLink || null,
+          event_website: eventFormData.eventWebsite || null,
+          event_hashtag: eventFormData.eventHashtag || null
         })
         .select();
       
@@ -84,7 +140,30 @@ export const useEventForm = (userId: string | undefined, onSuccess: () => void) 
         location: '',
         category: '',
         maxParticipants: '',
-        clubId: ''
+        clubId: '',
+        tagline: '',
+        eventType: 'in-person',
+        registrationDeadline: '',
+        onlinePlatform: '',
+        eligibility: '',
+        teamSize: '',
+        registrationLink: '',
+        entryFee: 'Free',
+        theme: '',
+        subTracks: '',
+        prizePool: '',
+        prizeCategories: '',
+        additionalPerks: '',
+        judgingCriteria: '',
+        judges: '',
+        deliverables: '',
+        submissionPlatform: '',
+        mentors: '',
+        sponsors: '',
+        contactEmail: '',
+        communityLink: '',
+        eventWebsite: '',
+        eventHashtag: ''
       });
       setIsEventDialogOpen(false);
       

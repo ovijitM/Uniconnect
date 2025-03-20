@@ -11,6 +11,8 @@ import EventActions from '@/components/event-detail/EventActions';
 import OrganizerCard from '@/components/event-detail/OrganizerCard';
 import EventDetailSkeleton from '@/components/event-detail/EventDetailSkeleton';
 import EventDetailNotFound from '@/components/event-detail/EventDetailNotFound';
+import EventThemeAndPrizes from '@/components/event-detail/EventThemeAndPrizes';
+import EventSubmissionAndContact from '@/components/event-detail/EventSubmissionAndContact';
 
 const EventDetailPage: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -41,6 +43,7 @@ const EventDetailPage: React.FC = () => {
         status={event.status}
         organizerId={event.organizer.id}
         organizerName={event.organizer.name}
+        tagline={event.tagline}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -54,6 +57,27 @@ const EventDetailPage: React.FC = () => {
             imageUrl={event.imageUrl}
             title={event.title}
             status={event.status}
+          />
+          
+          <EventThemeAndPrizes
+            theme={event.theme}
+            subTracks={event.subTracks}
+            prizePool={event.prizePool}
+            prizeCategories={event.prizeCategories}
+            additionalPerks={event.additionalPerks}
+            judgingCriteria={event.judgingCriteria}
+            judges={event.judges}
+          />
+          
+          <EventSubmissionAndContact
+            deliverables={event.deliverables}
+            submissionPlatform={event.submissionPlatform}
+            mentors={event.mentors}
+            sponsors={event.sponsors}
+            contactEmail={event.contactEmail}
+            communityLink={event.communityLink}
+            eventWebsite={event.eventWebsite}
+            eventHashtag={event.eventHashtag}
           />
         </motion.div>
 
@@ -69,6 +93,13 @@ const EventDetailPage: React.FC = () => {
               location={event.location}
               participants={event.participants}
               maxParticipants={event.maxParticipants}
+              eventType={event.eventType}
+              onlinePlatform={event.onlinePlatform}
+              registrationDeadline={event.registrationDeadline}
+              registrationLink={event.registrationLink}
+              entryFee={event.entryFee}
+              teamSize={event.teamSize}
+              eligibility={event.eligibility}
             />
 
             <EventActions 

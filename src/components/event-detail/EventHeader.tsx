@@ -11,6 +11,7 @@ interface EventHeaderProps {
   status: string;
   organizerId: string;
   organizerName: string;
+  tagline?: string;
 }
 
 const EventHeader: React.FC<EventHeaderProps> = ({
@@ -19,7 +20,8 @@ const EventHeader: React.FC<EventHeaderProps> = ({
   category,
   status,
   organizerId,
-  organizerName
+  organizerName,
+  tagline
 }) => {
   const statusColors = {
     upcoming: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -48,7 +50,10 @@ const EventHeader: React.FC<EventHeaderProps> = ({
             </Link>
           </div>
         </div>
-        <h1 className="text-3xl font-semibold mb-4">{title}</h1>
+        <h1 className="text-3xl font-semibold mb-2">{title}</h1>
+        {tagline && (
+          <p className="text-lg text-muted-foreground mb-4 italic">{tagline}</p>
+        )}
         <p className="text-muted-foreground whitespace-pre-line">{description}</p>
       </div>
     </>
