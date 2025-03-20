@@ -1,16 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { useState } from 'react';
-import { Check, X } from 'lucide-react';
+import ClubsTableContent from './clubs-table/ClubsTableContent';
+import RejectDialog from './clubs-table/RejectDialog';
 
 interface Club {
   id: string;
@@ -68,6 +62,12 @@ const ClubsTable: React.FC<ClubsTableProps> = ({
     }
   };
 
+  const openRejectDialog = (clubId: string) => {
+    setSelectedClubId(clubId);
+    setRejectionReason('');
+    setIsRejectDialogOpen(true);
+  };
+
   const handleRejectClub = async () => {
     if (!selectedClubId || !rejectionReason.trim()) return;
 
@@ -105,24 +105,6 @@ const ClubsTable: React.FC<ClubsTableProps> = ({
     }
   };
 
-  const openRejectDialog = (clubId: string) => {
-    setSelectedClubId(clubId);
-    setRejectionReason('');
-    setIsRejectDialogOpen(true);
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return <Badge className="bg-green-500">Approved</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive">Rejected</Badge>;
-      case 'pending':
-      default:
-        return <Badge variant="outline" className="bg-yellow-100">Pending</Badge>;
-    }
-  };
-
   return (
     <>
       <Card>
@@ -131,104 +113,24 @@ const ClubsTable: React.FC<ClubsTableProps> = ({
           <CardDescription>All clubs in the system</CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="h-96 bg-gray-200 rounded-lg animate-pulse" />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {clubs.map(club => (
-                  <TableRow key={club.id}>
-                    <TableCell className="font-medium">{club.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{club.category}</Badge>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(club.status)}</TableCell>
-                    <TableCell>{new Date(club.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {club.status === 'pending' && (
-                          <>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleApproveClub(club.id)}
-                              disabled={processingId === club.id}
-                              className="bg-green-100 hover:bg-green-200"
-                            >
-                              <Check className="h-4 w-4 mr-1" /> Approve
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => openRejectDialog(club.id)}
-                              disabled={processingId === club.id}
-                              className="bg-red-100 hover:bg-red-200"
-                            >
-                              <X className="h-4 w-4 mr-1" /> Reject
-                            </Button>
-                          </>
-                        )}
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => onViewClub(club.id)}
-                        >
-                          View
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <ClubsTableContent
+            clubs={clubs}
+            isLoading={isLoading}
+            processingId={processingId}
+            onApprove={handleApproveClub}
+            onReject={openRejectDialog}
+            onView={onViewClub}
+          />
         </CardContent>
       </Card>
 
-      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reject Club</DialogTitle>
-            <DialogDescription>
-              Please provide a reason for rejecting this club. This will be visible to the club admin.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Label htmlFor="rejectionReason" className="text-right">
-              Rejection Reason
-            </Label>
-            <Textarea
-              id="rejectionReason"
-              placeholder="Enter rejection reason"
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              className="mt-2"
-              rows={4}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleRejectClub}
-              disabled={!rejectionReason.trim()}
-            >
-              Reject Club
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <RejectDialog
+        isOpen={isRejectDialogOpen}
+        onOpenChange={setIsRejectDialogOpen}
+        rejectionReason={rejectionReason}
+        setRejectionReason={setRejectionReason}
+        onConfirm={handleRejectClub}
+      />
     </>
   );
 };
