@@ -66,7 +66,7 @@ export const useStudentData = () => {
         if (allClubsError) throw allClubsError;
         setClubs(allClubs || []);
         
-        // Fetch upcoming events - fix the relationship specification
+        // Fetch upcoming events with explicit foreign key reference
         const { data: upcomingEvents, error: upcomingEventsError } = await supabase
           .from('events')
           .select(`
