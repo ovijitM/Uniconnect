@@ -56,7 +56,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       }
 
       // Check if a club with this name already exists
-      const { data: existingClubs, error: check Error } = await supabase
+      const { data: existingClubs, error: checkError } = await supabase
         .from('clubs')
         .select('id')
         .eq('name', clubFormData.name);
