@@ -56,16 +56,21 @@ export const useEventReviews = (eventId: string | undefined) => {
       if (error) throw error;
       
       // Format reviews with user details
-      const formattedReviews = data.map(review => ({
-        id: review.id,
-        eventId: review.event_id,
-        userId: review.user_id,
-        rating: review.rating,
-        reviewText: review.review_text,
-        createdAt: review.created_at,
-        userName: review.profiles?.name || 'Anonymous',
-        userImage: review.profiles?.profile_image || null
-      }));
+      const formattedReviews = data.map(review => {
+        // Safely access profiles data with type checking
+        const profileData = review.profiles as { name?: string; profile_image?: string } | null;
+        
+        return {
+          id: review.id,
+          eventId: review.event_id,
+          userId: review.user_id,
+          rating: review.rating,
+          reviewText: review.review_text,
+          createdAt: review.created_at,
+          userName: profileData?.name || 'Anonymous',
+          userImage: profileData?.profile_image || null
+        };
+      });
       
       setReviews(formattedReviews);
       
