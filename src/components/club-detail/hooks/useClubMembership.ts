@@ -6,7 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Club } from '@/types';
 
-export const useClubMembership = (club: Club | null, setClub: (club: Club | null) => void) => {
+export const useClubMembership = (
+  club: Club | null, 
+  setClub: React.Dispatch<React.SetStateAction<Club | null>>
+) => {
   const { clubId } = useParams<{ clubId: string }>();
   const [isMember, setIsMember] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
