@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -113,7 +114,11 @@ export const useStudentData = () => {
       }
       
       if (existing) {
-        toast.info('You are already a member of this club');
+        toast({
+          title: 'Already a member',
+          description: 'You are already a member of this club',
+          variant: 'default',
+        });
         return;
       }
       
@@ -127,7 +132,11 @@ export const useStudentData = () => {
       
       if (error) throw error;
       
-      toast.success('Successfully joined the club');
+      toast({
+        title: 'Success',
+        description: 'Successfully joined the club',
+        variant: 'default',
+      });
       
       // Update the local state
       const club = clubs.find(c => c.id === clubId);
@@ -136,7 +145,11 @@ export const useStudentData = () => {
       }
     } catch (error) {
       console.error('Error joining club:', error);
-      toast.error('Failed to join club');
+      toast({
+        title: 'Error',
+        description: 'Failed to join club',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -158,7 +171,11 @@ export const useStudentData = () => {
       }
       
       if (existing) {
-        toast.info('You are already registered for this event');
+        toast({
+          title: 'Already registered',
+          description: 'You are already registered for this event',
+          variant: 'default',
+        });
         return;
       }
       
@@ -172,7 +189,11 @@ export const useStudentData = () => {
       
       if (error) throw error;
       
-      toast.success('Successfully registered for the event');
+      toast({
+        title: 'Success',
+        description: 'Successfully registered for the event',
+        variant: 'default',
+      });
       
       // Update the local state
       const event = events.find(e => e.id === eventId);
@@ -181,7 +202,11 @@ export const useStudentData = () => {
       }
     } catch (error) {
       console.error('Error registering for event:', error);
-      toast.error('Failed to register for event');
+      toast({
+        title: 'Error',
+        description: 'Failed to register for event',
+        variant: 'destructive',
+      });
     }
   };
 
