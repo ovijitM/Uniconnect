@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/contexts/AuthContext';
-import { useClubAdminData } from '@/hooks/useClubAdminData';
+import { useClubAdminData } from '@/hooks/club-admin/useClubAdminData';
 import { useClubAdminForms } from '@/hooks/club-admin/useClubAdminForms';
 
 // Components

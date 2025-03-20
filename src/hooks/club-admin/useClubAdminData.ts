@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useAdminClubs } from './club-admin/useAdminClubs';
-import { useClubEvents } from './club-admin/useClubEvents';
-import { useClubMembers } from './club-admin/useClubMembers';
+import { useAdminClubs } from './useAdminClubs';
+import { useClubEvents } from './useClubEvents';
+import { useClubMembers } from './useClubMembers';
 
 export const useClubAdminData = (userId: string | undefined) => {
   const { toast } = useToast();
