@@ -2,12 +2,18 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 interface LogisticsTabProps {
   formData: {
     clubId: string;
     eventType?: string;
     registrationDeadline?: string;
+    registrationLink?: string;
+    contactEmail?: string;
+    submissionPlatform?: string;
+    communityLink?: string;
+    eventWebsite?: string;
   };
   clubs: any[];
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
@@ -23,7 +29,7 @@ const LogisticsTab: React.FC<LogisticsTabProps> = ({ formData, clubs, onInputCha
       {clubs.length > 1 ? (
         <div className="grid gap-2">
           <Label htmlFor="clubId">
-            Select Club*
+            Select Club* <span className="text-xs text-muted-foreground">(Required)</span>
           </Label>
           <select
             id="clubId"
@@ -51,7 +57,7 @@ const LogisticsTab: React.FC<LogisticsTabProps> = ({ formData, clubs, onInputCha
       
       <div className="grid gap-2">
         <Label htmlFor="eventType">
-          Event Type
+          Event Type* <span className="text-xs text-muted-foreground">(Required)</span>
         </Label>
         <select
           id="eventType"
@@ -59,6 +65,7 @@ const LogisticsTab: React.FC<LogisticsTabProps> = ({ formData, clubs, onInputCha
           value={formData.eventType || 'in-person'}
           onChange={onInputChange}
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+          required
         >
           <option value="in-person">In-person</option>
           <option value="online">Online</option>
@@ -68,7 +75,7 @@ const LogisticsTab: React.FC<LogisticsTabProps> = ({ formData, clubs, onInputCha
       
       <div className="grid gap-2">
         <Label htmlFor="registrationDeadline">
-          Registration Deadline
+          Registration Deadline* <span className="text-xs text-muted-foreground">(Required)</span>
         </Label>
         <Input
           id="registrationDeadline"
@@ -76,6 +83,77 @@ const LogisticsTab: React.FC<LogisticsTabProps> = ({ formData, clubs, onInputCha
           type="datetime-local"
           value={formData.registrationDeadline || ''}
           onChange={onInputChange}
+          required
+        />
+      </div>
+      
+      <div className="grid gap-2">
+        <Label htmlFor="registrationLink">
+          Registration Link
+        </Label>
+        <Input
+          id="registrationLink"
+          name="registrationLink"
+          type="url"
+          value={formData.registrationLink || ''}
+          onChange={onInputChange}
+          placeholder="Link to external registration form/page"
+        />
+      </div>
+      
+      <div className="grid gap-2">
+        <Label htmlFor="contactEmail">
+          Contact Email* <span className="text-xs text-muted-foreground">(Required)</span>
+        </Label>
+        <Input
+          id="contactEmail"
+          name="contactEmail"
+          type="email"
+          value={formData.contactEmail || ''}
+          onChange={onInputChange}
+          required
+          placeholder="Email for inquiries"
+        />
+      </div>
+      
+      <div className="grid gap-2">
+        <Label htmlFor="submissionPlatform">
+          Submission Platform
+        </Label>
+        <Input
+          id="submissionPlatform"
+          name="submissionPlatform"
+          value={formData.submissionPlatform || ''}
+          onChange={onInputChange}
+          placeholder="e.g., Google Forms, Devpost, GitHub"
+        />
+      </div>
+      
+      <div className="grid gap-2">
+        <Label htmlFor="communityLink">
+          Community Link
+        </Label>
+        <Input
+          id="communityLink"
+          name="communityLink"
+          type="url"
+          value={formData.communityLink || ''}
+          onChange={onInputChange}
+          placeholder="Discord, Slack, WhatsApp, etc."
+        />
+      </div>
+      
+      <div className="grid gap-2">
+        <Label htmlFor="eventWebsite">
+          Event Website
+        </Label>
+        <Input
+          id="eventWebsite"
+          name="eventWebsite"
+          type="url"
+          value={formData.eventWebsite || ''}
+          onChange={onInputChange}
+          placeholder="Official event website"
         />
       </div>
     </div>

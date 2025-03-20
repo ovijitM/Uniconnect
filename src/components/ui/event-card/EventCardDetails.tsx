@@ -27,6 +27,13 @@ const EventCardDetails: React.FC<EventCardDetailsProps> = ({
     year: 'numeric',
   });
 
+  const formattedEventType = eventType ? (
+    eventType === 'in-person' ? 'In-person' : 
+    eventType === 'online' ? 'Online' : 
+    eventType === 'hybrid' ? 'Hybrid' : 
+    eventType
+  ) : 'In-person';
+
   return (
     <>
       <div className="mb-2">
@@ -46,12 +53,10 @@ const EventCardDetails: React.FC<EventCardDetailsProps> = ({
           <MapPin className="w-4 h-4 mr-2" />
           {location}
         </div>
-        {eventType && (
-          <div className="flex items-center text-sm text-muted-foreground">
-            <Tag className="w-4 h-4 mr-2" />
-            {eventType}
-          </div>
-        )}
+        <div className="flex items-center text-sm text-muted-foreground">
+          <Tag className="w-4 h-4 mr-2" />
+          {formattedEventType}
+        </div>
       </div>
     </>
   );

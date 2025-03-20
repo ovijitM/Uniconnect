@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertCircle } from 'lucide-react';
 import BasicInfoTab from './BasicInfoTab';
 import DetailsTab from './DetailsTab';
 import LogisticsTab from './LogisticsTab';
@@ -77,6 +78,14 @@ const EventDialogWrapper: React.FC<EventDialogWrapperProps> = ({
             )}
           </DialogDescription>
         </DialogHeader>
+        
+        <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mb-4 flex items-start gap-2">
+          <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-amber-800">
+            <p className="font-medium">All fields marked with * are required</p>
+            <p className="mt-1">Please complete all required information across all tabs before submitting.</p>
+          </div>
+        </div>
         
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid grid-cols-3 w-full">

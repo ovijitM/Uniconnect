@@ -40,12 +40,32 @@ export const useHomePageData = () => {
               category: club.category,
               memberCount: count || 0,
               status: club.status,
-              events: []
+              events: [],
+              tagline: club.tagline,
+              establishedYear: club.established_year,
+              affiliation: club.affiliation,
+              whyJoin: club.why_join,
+              regularEvents: club.regular_events,
+              signatureEvents: club.signature_events,
+              communityEngagement: club.community_engagement,
+              whoCanJoin: club.who_can_join,
+              membershipFee: club.membership_fee,
+              howToJoin: club.how_to_join,
+              presidentName: club.president_name,
+              presidentContact: club.president_contact,
+              executiveMembers: club.executive_members,
+              advisors: club.advisors,
+              phoneNumber: club.phone_number,
+              website: club.website,
+              facebookLink: club.facebook_link,
+              instagramLink: club.instagram_link,
+              twitterLink: club.twitter_link,
+              discordLink: club.discord_link
             };
           })
         );
         
-        // Fetch events from Supabase
+        // Fetch events from Supabase with club join and approved status filter
         const { data: eventsData, error: eventsError } = await supabase
           .from('events')
           .select('*, clubs!inner(*)')
@@ -82,6 +102,30 @@ export const useHomePageData = () => {
               status: event.status,
               participants: participantsCount || 0,
               maxParticipants: event.max_participants || undefined,
+              eventType: event.event_type,
+              tagline: event.tagline,
+              registrationDeadline: event.registration_deadline,
+              onlinePlatform: event.online_platform,
+              eligibility: event.eligibility,
+              teamSize: event.team_size,
+              registrationLink: event.registration_link,
+              entryFee: event.entry_fee,
+              theme: event.theme,
+              subTracks: event.sub_tracks,
+              prizePool: event.prize_pool,
+              prizeCategories: event.prize_categories,
+              additionalPerks: event.additional_perks,
+              judgingCriteria: event.judging_criteria,
+              judges: event.judges,
+              schedule: event.schedule,
+              deliverables: event.deliverables,
+              submissionPlatform: event.submission_platform,
+              mentors: event.mentors,
+              sponsors: event.sponsors,
+              contactEmail: event.contact_email,
+              communityLink: event.community_link,
+              eventWebsite: event.event_website,
+              eventHashtag: event.event_hashtag,
               organizer: {
                 id: clubData.id,
                 name: clubData.name,
@@ -90,7 +134,27 @@ export const useHomePageData = () => {
                 category: clubData.category,
                 memberCount: memberCount || 0,
                 status: clubData.status,
-                events: []
+                events: [],
+                tagline: clubData.tagline,
+                establishedYear: clubData.established_year,
+                affiliation: clubData.affiliation,
+                whyJoin: clubData.why_join,
+                regularEvents: clubData.regular_events,
+                signatureEvents: clubData.signature_events,
+                communityEngagement: clubData.community_engagement,
+                whoCanJoin: clubData.who_can_join,
+                membershipFee: clubData.membership_fee,
+                howToJoin: clubData.how_to_join,
+                presidentName: clubData.president_name,
+                presidentContact: clubData.president_contact,
+                executiveMembers: clubData.executive_members,
+                advisors: clubData.advisors,
+                phoneNumber: clubData.phone_number,
+                website: clubData.website,
+                facebookLink: clubData.facebook_link,
+                instagramLink: clubData.instagram_link,
+                twitterLink: clubData.twitter_link,
+                discordLink: clubData.discord_link
               }
             };
           })

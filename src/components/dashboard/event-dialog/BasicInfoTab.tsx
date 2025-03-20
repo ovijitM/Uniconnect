@@ -19,7 +19,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
     <div className="space-y-4 py-4">
       <div className="grid gap-2">
         <Label htmlFor="title">
-          Title*
+          Title* <span className="text-xs text-muted-foreground">(Required)</span>
         </Label>
         <Input
           id="title"
@@ -27,12 +27,13 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
           value={formData.title}
           onChange={onInputChange}
           required
+          placeholder="Enter event title"
         />
       </div>
       
       <div className="grid gap-2">
         <Label htmlFor="description">
-          Description*
+          Description* <span className="text-xs text-muted-foreground">(Required)</span>
         </Label>
         <Textarea
           id="description"
@@ -41,12 +42,13 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
           onChange={onInputChange}
           required
           className="min-h-[100px]"
+          placeholder="Provide a detailed description of your event"
         />
       </div>
       
       <div className="grid gap-2">
         <Label htmlFor="category">
-          Category*
+          Category* <span className="text-xs text-muted-foreground">(Required)</span>
         </Label>
         <Input
           id="category"
@@ -54,6 +56,21 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
           value={formData.category}
           onChange={onInputChange}
           required
+          placeholder="e.g., Tech, Cultural, Sports"
+        />
+      </div>
+      
+      <div className="grid gap-2">
+        <Label htmlFor="tagline">
+          Tagline* <span className="text-xs text-muted-foreground">(Required)</span>
+        </Label>
+        <Input
+          id="tagline"
+          name="tagline"
+          value={formData.tagline || ''}
+          onChange={onInputChange}
+          required
+          placeholder="A short, catchy phrase about your event"
         />
       </div>
     </div>
