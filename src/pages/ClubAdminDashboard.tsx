@@ -1,29 +1,20 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
-import { PlusCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
 import { useClubAdminData } from '@/hooks/useClubAdminData';
+import { useClubAdminForms } from '@/hooks/useClubAdminForms';
 
 // Components
-import StatCards from '@/components/dashboard/StatCards';
-import UpcomingEvents from '@/components/dashboard/UpcomingEvents';
-import ClubsList from '@/components/dashboard/ClubsList';
-import EventsTable from '@/components/dashboard/EventsTable';
-import MembersTable from '@/components/dashboard/MembersTable';
-import CreateClubDialog from '@/components/dashboard/CreateClubDialog';
-import CreateEventDialog from '@/components/dashboard/CreateEventDialog';
+import ClubAdminHeader from '@/components/dashboard/ClubAdminHeader';
+import ClubAdminContent from '@/components/dashboard/ClubAdminContent';
 import NoClubsView from '@/components/dashboard/NoClubsView';
 
 const ClubAdminDashboard: React.FC = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   
   const {
@@ -38,212 +29,22 @@ const ClubAdminDashboard: React.FC = () => {
     fetchClubAdminData
   } = useClubAdminData(user?.id);
 
-  // New event form state
-  const [eventFormData, setEventFormData] = useState({
-    title: '',
-    description: '',
-    date: '',
-    location: '',
-    category: '',
-    maxParticipants: '',
-    clubId: ''
-  });
-  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
-  
-  // New club form state
-  const [clubFormData, setClubFormData] = useState({
-    name: '',
-    description: '',
-    category: ''
-  });
-  const [isClubDialogOpen, setIsClubDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    eventFormData,
+    isEventDialogOpen,
+    setIsEventDialogOpen,
+    clubFormData,
+    isClubDialogOpen,
+    setIsClubDialogOpen,
+    handleCreateClub,
+    handleCreateEvent,
+    handleEventInputChange,
+    handleClubInputChange
+  } = useClubAdminForms(user?.id, fetchClubAdminData);
 
   // Redirect if not logged in or not a club admin
   if (!user) return <Navigate to="/login" />;
   if (user.role !== 'club_admin') return <Navigate to={`/${user.role.replace('_', '-')}-dashboard`} />;
-
-  const handleCreateClub = async () => {
-    try {
-      if (isSubmitting) return; // Prevent multiple submissions
-      setIsSubmitting(true);
-
-      if (!clubFormData.name || !clubFormData.description || !clubFormData.category) {
-        toast({
-          title: 'Missing Information',
-          description: 'Please fill in all required fields.',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Check if a club with this name already exists
-      const { data: existingClubs, error: checkError } = await supabase
-        .from('clubs')
-        .select('id')
-        .eq('name', clubFormData.name);
-      
-      if (checkError) {
-        console.error('Error checking existing clubs:', checkError);
-        throw new Error(checkError.message);
-      }
-      
-      if (existingClubs && existingClubs.length > 0) {
-        toast({
-          title: 'Club Name Already Exists',
-          description: 'Please choose a different club name.',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      // First, create the club
-      const { data: clubData, error: clubError } = await supabase
-        .from('clubs')
-        .insert({
-          name: clubFormData.name,
-          description: clubFormData.description,
-          category: clubFormData.category,
-          logo_url: null,
-        })
-        .select();
-      
-      if (clubError) {
-        console.error('Error creating club:', clubError);
-        throw clubError;
-      }
-      
-      if (!clubData || clubData.length === 0) {
-        throw new Error('No club data returned after creation');
-      }
-
-      // Then, add the current user as an admin of the club
-      const { error: adminError } = await supabase
-        .from('club_admins')
-        .insert({
-          club_id: clubData[0].id,
-          user_id: user.id,
-        });
-      
-      if (adminError) {
-        console.error('Error adding club admin:', adminError);
-        // If we fail to add admin, we should delete the club to avoid orphaned clubs
-        await supabase.from('clubs').delete().eq('id', clubData[0].id);
-        throw adminError;
-      }
-      
-      toast({
-        title: 'Success',
-        description: 'Club created successfully!',
-        variant: 'default',
-      });
-      
-      // Reset form and close dialog
-      setClubFormData({
-        name: '',
-        description: '',
-        category: ''
-      });
-      setIsClubDialogOpen(false);
-      
-      // Refresh data
-      fetchClubAdminData();
-    } catch (error: any) {
-      console.error('Error creating club:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create club. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleCreateEvent = async () => {
-    try {
-      if (!eventFormData.clubId) {
-        // If no club is selected and there are clubs available
-        if (adminClubs.length > 0) {
-          eventFormData.clubId = adminClubs[0].id;
-        } else {
-          toast({
-            title: 'Error',
-            description: 'You must create a club first before creating events.',
-            variant: 'destructive',
-          });
-          return;
-        }
-      }
-      
-      // Validate required fields
-      if (!eventFormData.title || !eventFormData.description || !eventFormData.date || 
-          !eventFormData.location || !eventFormData.category) {
-        toast({
-          title: 'Missing Information',
-          description: 'Please fill in all required fields.',
-          variant: 'destructive',
-        });
-        return;
-      }
-      
-      const { data, error } = await supabase
-        .from('events')
-        .insert({
-          title: eventFormData.title,
-          description: eventFormData.description,
-          date: new Date(eventFormData.date).toISOString(),
-          location: eventFormData.location,
-          category: eventFormData.category,
-          max_participants: eventFormData.maxParticipants ? parseInt(eventFormData.maxParticipants) : null,
-          club_id: eventFormData.clubId,
-          status: 'upcoming'
-        })
-        .select();
-      
-      if (error) throw error;
-      
-      toast({
-        title: 'Success',
-        description: 'Event created successfully!',
-        variant: 'default',
-      });
-      
-      // Reset form and close dialog
-      setEventFormData({
-        title: '',
-        description: '',
-        date: '',
-        location: '',
-        category: '',
-        maxParticipants: '',
-        clubId: ''
-      });
-      setIsEventDialogOpen(false);
-      
-      // Refresh event data
-      fetchClubAdminData();
-    } catch (error) {
-      console.error('Error creating event:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create event. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleEventInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setEventFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleClubInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setClubFormData(prev => ({ ...prev, [name]: value }));
-  };
 
   const handleViewEvent = (eventId: string) => {
     navigate(`/events/${eventId}`);
@@ -271,62 +72,32 @@ const ClubAdminDashboard: React.FC = () => {
             />
           ) : (
             <>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                <h1 className="text-3xl font-bold">Club Admin Dashboard</h1>
-                
-                <div className="flex gap-3">
-                  <CreateClubDialog
-                    isOpen={isClubDialogOpen}
-                    onOpenChange={setIsClubDialogOpen}
-                    formData={clubFormData}
-                    onInputChange={handleClubInputChange}
-                    onSubmit={handleCreateClub}
-                  />
-                  
-                  <CreateEventDialog
-                    isOpen={isEventDialogOpen}
-                    onOpenChange={setIsEventDialogOpen}
-                    formData={eventFormData}
-                    clubs={adminClubs}
-                    onInputChange={handleEventInputChange}
-                    onSubmit={handleCreateEvent}
-                  />
-                </div>
-              </div>
+              <ClubAdminHeader 
+                isClubDialogOpen={isClubDialogOpen}
+                setIsClubDialogOpen={setIsClubDialogOpen}
+                clubFormData={clubFormData}
+                onClubInputChange={handleClubInputChange}
+                onCreateClub={handleCreateClub}
+                isEventDialogOpen={isEventDialogOpen}
+                setIsEventDialogOpen={setIsEventDialogOpen}
+                eventFormData={eventFormData}
+                clubs={adminClubs}
+                onEventInputChange={handleEventInputChange}
+                onCreateEvent={handleCreateEvent}
+              />
 
-              <StatCards
+              <ClubAdminContent 
                 activeEventCount={activeEventCount}
                 totalMembersCount={totalMembersCount}
                 pastEventCount={pastEventCount}
                 averageAttendance={averageAttendance}
-                isLoading={isLoading}
-              />
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <UpcomingEvents 
-                  events={clubEvents}
-                  isLoading={isLoading}
-                  onEditEvent={handleEditEvent}
-                  onViewEvent={handleViewEvent}
-                />
-
-                <ClubsList 
-                  clubs={adminClubs}
-                  isLoading={isLoading}
-                />
-              </div>
-
-              <EventsTable
-                events={clubEvents}
+                clubEvents={clubEvents}
+                adminClubs={adminClubs}
+                clubMembers={clubMembers}
                 isLoading={isLoading}
                 onEditEvent={handleEditEvent}
                 onViewEvent={handleViewEvent}
                 onCreateEvent={() => setIsEventDialogOpen(true)}
-              />
-
-              <MembersTable
-                members={clubMembers}
-                isLoading={isLoading}
               />
             </>
           )}
