@@ -19,6 +19,8 @@ const EventCard: React.FC<EventCardProps> = ({ event, index = 0 }) => {
   useEffect(() => {
     const fetchRating = async () => {
       try {
+        if (!event.id) return;
+        
         const { data, error } = await supabase
           .rpc('get_event_avg_rating', { event_id: event.id });
         

@@ -15,6 +15,20 @@ export interface EventReview {
   userImage?: string;
 }
 
+// Define an interface for the raw data returned from Supabase
+interface EventReviewWithProfile {
+  id: string;
+  event_id: string;
+  user_id: string;
+  rating: number;
+  review_text: string | null;
+  created_at: string;
+  profiles: {
+    name: string;
+    profile_image: string | null;
+  } | null;
+}
+
 export const useEventReviews = (eventId: string | undefined) => {
   const [reviews, setReviews] = useState<EventReview[]>([]);
   const [averageRating, setAverageRating] = useState<number>(0);
@@ -55,11 +69,10 @@ export const useEventReviews = (eventId: string | undefined) => {
       
       if (error) throw error;
       
+      console.log("Fetched reviews data:", data);
+      
       // Format reviews with user details
-      const formattedReviews = data.map(review => {
-        // Safely access profiles data with type checking
-        const profileData = review.profiles as { name?: string; profile_image?: string } | null;
-        
+      const formattedReviews = (data as unknown as EventReviewWithProfile[]).map(review => {
         return {
           id: review.id,
           eventId: review.event_id,
@@ -67,8 +80,8 @@ export const useEventReviews = (eventId: string | undefined) => {
           rating: review.rating,
           reviewText: review.review_text,
           createdAt: review.created_at,
-          userName: profileData?.name || 'Anonymous',
-          userImage: profileData?.profile_image || null
+          userName: review.profiles?.name || 'Anonymous',
+          userImage: review.profiles?.profile_image || null
         };
       });
       

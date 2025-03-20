@@ -43,11 +43,16 @@ export const useEventAttendees = (eventId: string) => {
       console.log("Fetching attendees for event:", eventId);
       
       // Get all participants for the event and their profile information
+      // Fix: Use proper relation by fetching user profiles directly
       const { data, error } = await supabase
         .from('event_participants')
         .select(`
-          *,
-          profiles:user_id (
+          created_at,
+          event_id,
+          user_id,
+          checked_in,
+          checked_in_at,
+          profiles:user_id(
             id,
             name,
             email,
