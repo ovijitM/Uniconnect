@@ -38,7 +38,8 @@ export const fetchReviewsWithProfiles = async (
     
     if (countError) throw countError;
     
-    // Then fetch paginated data with join on profiles
+    // Then fetch paginated data with profile information
+    // Join with profiles table using the user_id column
     const { data, error } = await supabase
       .from('event_reviews')
       .select(`
@@ -48,10 +49,7 @@ export const fetchReviewsWithProfiles = async (
         rating,
         review_text,
         created_at,
-        profiles (
-          name,
-          profile_image
-        )
+        profiles:profiles!user_id(name, profile_image)
       `)
       .eq('event_id', eventId)
       .order('created_at', { ascending: false })
@@ -63,6 +61,9 @@ export const fetchReviewsWithProfiles = async (
     
     // Format reviews with user details
     const formattedReviews = data.map(review => {
+      // Safely access profile data
+      const profileData = review.profiles as { name: string; profile_image: string | null } | null;
+      
       return {
         id: review.id,
         eventId: review.event_id,
@@ -70,8 +71,8 @@ export const fetchReviewsWithProfiles = async (
         rating: review.rating,
         reviewText: review.review_text,
         createdAt: review.created_at,
-        userName: review.profiles?.name || 'Anonymous',
-        userImage: review.profiles?.profile_image || null
+        userName: profileData?.name || 'Anonymous',
+        userImage: profileData?.profile_image || null
       };
     });
     
@@ -100,10 +101,7 @@ export const checkExistingReview = async (
         rating,
         review_text,
         created_at,
-        profiles (
-          name,
-          profile_image
-        )
+        profiles:profiles!user_id(name, profile_image)
       `)
       .eq('event_id', eventId)
       .eq('user_id', userId)
@@ -113,6 +111,9 @@ export const checkExistingReview = async (
     
     if (!data) return null;
     
+    // Safely access profile data
+    const profileData = data.profiles as { name: string; profile_image: string | null } | null;
+    
     // Format the review
     return {
       id: data.id,
@@ -121,8 +122,8 @@ export const checkExistingReview = async (
       rating: data.rating,
       reviewText: data.review_text,
       createdAt: data.created_at,
-      userName: data.profiles?.name || 'Anonymous',
-      userImage: data.profiles?.profile_image || null
+      userName: profileData?.name || 'Anonymous',
+      userImage: profileData?.profile_image || null
     };
   } catch (error) {
     console.error('Error checking existing review:', error);
