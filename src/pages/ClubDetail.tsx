@@ -12,6 +12,7 @@ import ClubEventsTabs from '@/components/club-detail/ClubEventsTabs';
 import ClubSidebar from '@/components/club-detail/ClubSidebar';
 import ClubDescription from '@/components/club-detail/ClubDescription';
 import ClubDetailInfo from '@/components/club-detail/ClubDetailInfo';
+import { Separator } from '@/components/ui/separator';
 
 const ClubDetailPage: React.FC = () => {
   const {
@@ -56,16 +57,21 @@ const ClubDetailPage: React.FC = () => {
             isClubAdmin={isClubAdmin} 
           />
 
-          <div className="mb-10">
+          <div className="mb-8">
             <h2 className="text-xl font-medium mb-4">About</h2>
             <ClubDescription description={club.description} />
           </div>
+          
+          <Separator className="my-8" />
           
           <div className="mb-10">
             <ClubDetailInfo club={club} />
           </div>
 
+          <Separator className="my-8" />
+          
           <div className="pb-12">
+            <h2 className="text-xl font-medium mb-6">Club Events</h2>
             <ClubEventsTabs events={events} />
           </div>
         </motion.div>

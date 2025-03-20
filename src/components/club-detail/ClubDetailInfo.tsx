@@ -3,6 +3,7 @@ import React from 'react';
 import { Club } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs';
 import WhyJoinSection from './sections/WhyJoinSection';
 import ActivitiesSection from './sections/ActivitiesSection';
 import MembershipSection from './sections/MembershipSection';
@@ -15,29 +16,33 @@ interface ClubDetailInfoProps {
 
 const ClubDetailInfo: React.FC<ClubDetailInfoProps> = ({ club }) => {
   return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="space-y-6">
-          <WhyJoinSection whyJoin={club.whyJoin} />
-          
-          <Separator />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <ActivitiesSection 
-              regularEvents={club.regularEvents}
-              signatureEvents={club.signatureEvents}
-              communityEngagement={club.communityEngagement}
-            />
-            
-            <MembershipSection 
-              whoCanJoin={club.whoCanJoin}
-              membershipFee={club.membershipFee}
-              howToJoin={club.howToJoin}
-            />
-          </div>
-          
-          <Separator />
-          
+    <div className="space-y-6">
+      <WhyJoinSection whyJoin={club.whyJoin} />
+      
+      <Tabs defaultValue="activities" className="w-full">
+        <TabsList className="w-full grid grid-cols-3">
+          <TabsTrigger value="activities">Activities & Events</TabsTrigger>
+          <TabsTrigger value="membership">Membership</TabsTrigger>
+          <TabsTrigger value="leadership">Leadership & Contact</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="activities" className="mt-6">
+          <ActivitiesSection 
+            regularEvents={club.regularEvents}
+            signatureEvents={club.signatureEvents}
+            communityEngagement={club.communityEngagement}
+          />
+        </TabsContent>
+        
+        <TabsContent value="membership" className="mt-6">
+          <MembershipSection 
+            whoCanJoin={club.whoCanJoin}
+            membershipFee={club.membershipFee}
+            howToJoin={club.howToJoin}
+          />
+        </TabsContent>
+        
+        <TabsContent value="leadership" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <LeadershipSection 
               presidentName={club.presidentName}
@@ -55,9 +60,9 @@ const ClubDetailInfo: React.FC<ClubDetailInfoProps> = ({ club }) => {
               discordLink={club.discordLink}
             />
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
