@@ -65,11 +65,14 @@ export const fetchReviewsWithProfiles = async (
       let userName = 'Anonymous';
       let userImage = null;
       
-      // Add null check before trying to access properties
-      if (review.profiles && review.profiles !== null && typeof review.profiles === 'object' && !('error' in review.profiles)) {
-        const profileData = review.profiles as Record<string, any>;
-        userName = profileData.name || 'Anonymous';
-        userImage = profileData.profile_image || null;
+      // Add explicit null check before trying to access properties
+      if (review.profiles && typeof review.profiles === 'object' && review.profiles !== null) {
+        // Only proceed if profiles is not null and is an object
+        if (!('error' in review.profiles)) {
+          const profileData = review.profiles as Record<string, any>;
+          userName = profileData.name || 'Anonymous';
+          userImage = profileData.profile_image || null;
+        }
       }
       
       return {
@@ -123,11 +126,14 @@ export const checkExistingReview = async (
     let userName = 'Anonymous';
     let userImage = null;
     
-    // Add null check before trying to access properties
-    if (data.profiles && data.profiles !== null && typeof data.profiles === 'object' && !('error' in data.profiles)) {
-      const profileData = data.profiles as Record<string, any>;
-      userName = profileData.name || 'Anonymous';
-      userImage = profileData.profile_image || null;
+    // Add explicit null check before trying to access properties
+    if (data.profiles && typeof data.profiles === 'object' && data.profiles !== null) {
+      // Only proceed if profiles is not null and is an object
+      if (!('error' in data.profiles)) {
+        const profileData = data.profiles as Record<string, any>;
+        userName = profileData.name || 'Anonymous';
+        userImage = profileData.profile_image || null;
+      }
     }
     
     // Format the review
