@@ -31,86 +31,111 @@ interface EventReviewWithProfile {
 
 // Utility function to fetch average rating
 const fetchAverageRating = async (eventId: string) => {
-  const { data, error } = await supabase
-    .rpc('get_event_avg_rating', { event_id: eventId });
-  
-  if (error) throw error;
-  return Number(data) || 0;
+  try {
+    const { data, error } = await supabase
+      .rpc('get_event_avg_rating', { event_id: eventId });
+    
+    if (error) throw error;
+    return Number(data) || 0;
+  } catch (error) {
+    console.error('Error fetching average rating:', error);
+    throw error;
+  }
 };
 
 // Utility function to fetch reviews with user details
 const fetchReviewsWithProfiles = async (eventId: string) => {
-  const { data, error } = await supabase
-    .from('event_reviews')
-    .select(`
-      id,
-      event_id,
-      user_id,
-      rating,
-      review_text,
-      created_at,
-      profiles:user_id(name, profile_image)
-    `)
-    .eq('event_id', eventId)
-    .order('created_at', { ascending: false });
-  
-  if (error) throw error;
-  
-  console.log("Fetched reviews data:", data);
-  
-  // Format reviews with user details
-  return (data as unknown as EventReviewWithProfile[]).map(review => {
-    return {
-      id: review.id,
-      eventId: review.event_id,
-      userId: review.user_id,
-      rating: review.rating,
-      reviewText: review.review_text,
-      createdAt: review.created_at,
-      userName: review.profiles?.name || 'Anonymous',
-      userImage: review.profiles?.profile_image || null
-    };
-  });
+  try {
+    const { data, error } = await supabase
+      .from('event_reviews')
+      .select(`
+        id,
+        event_id,
+        user_id,
+        rating,
+        review_text,
+        created_at,
+        profiles:user_id(name, profile_image)
+      `)
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    console.log("Fetched reviews data:", data);
+    
+    // Format reviews with user details
+    return (data as unknown as EventReviewWithProfile[]).map(review => {
+      return {
+        id: review.id,
+        eventId: review.event_id,
+        userId: review.user_id,
+        rating: review.rating,
+        reviewText: review.review_text,
+        createdAt: review.created_at,
+        userName: review.profiles?.name || 'Anonymous',
+        userImage: review.profiles?.profile_image || null
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching reviews with profiles:', error);
+    throw error;
+  }
 };
 
 // Utility function to submit a new review
 const submitNewReview = async (eventId: string, userId: string, rating: number, reviewText: string) => {
-  const reviewData = {
-    event_id: eventId,
-    user_id: userId,
-    rating,
-    review_text: reviewText || null,
-  };
-  
-  const { error } = await supabase
-    .from('event_reviews')
-    .insert(reviewData);
-  
-  if (error) throw error;
+  try {
+    const reviewData = {
+      event_id: eventId,
+      user_id: userId,
+      rating,
+      review_text: reviewText || null,
+    };
+    
+    const { error } = await supabase
+      .from('event_reviews')
+      .insert(reviewData);
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error submitting new review:', error);
+    throw error;
+  }
 };
 
 // Utility function to update an existing review
 const updateExistingReview = async (reviewId: string, rating: number, reviewText: string) => {
-  const { error } = await supabase
-    .from('event_reviews')
-    .update({ 
-      rating, 
-      review_text: reviewText || null, 
-      updated_at: new Date().toISOString() 
-    })
-    .eq('id', reviewId);
-  
-  if (error) throw error;
+  try {
+    const { error } = await supabase
+      .from('event_reviews')
+      .update({ 
+        rating, 
+        review_text: reviewText || null, 
+        updated_at: new Date().toISOString() 
+      })
+      .eq('id', reviewId);
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error updating existing review:', error);
+    throw error;
+  }
 };
 
 // Utility function to delete a review
 const deleteUserReview = async (reviewId: string) => {
-  const { error } = await supabase
-    .from('event_reviews')
-    .delete()
-    .eq('id', reviewId);
-  
-  if (error) throw error;
+  try {
+    const { error } = await supabase
+      .from('event_reviews')
+      .delete()
+      .eq('id', reviewId);
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error deleting user review:', error);
+    throw error;
+  }
 };
 
 export const useEventReviews = (eventId: string | undefined) => {
@@ -175,7 +200,6 @@ export const useEventReviews = (eventId: string | undefined) => {
         toast({
           title: 'Review updated',
           description: 'Your review has been updated successfully',
-          variant: 'success',
         });
       } else {
         // Insert new review
@@ -184,7 +208,6 @@ export const useEventReviews = (eventId: string | undefined) => {
         toast({
           title: 'Review submitted',
           description: 'Thank you for your feedback!',
-          variant: 'success',
         });
       }
       
@@ -214,7 +237,6 @@ export const useEventReviews = (eventId: string | undefined) => {
       toast({
         title: 'Review deleted',
         description: 'Your review has been removed',
-        variant: 'info',
       });
       
       setUserReview(null);
@@ -233,7 +255,9 @@ export const useEventReviews = (eventId: string | undefined) => {
   
   // Fetch reviews on component mount or when eventId changes
   useEffect(() => {
-    fetchReviews();
+    if (eventId) {
+      fetchReviews();
+    }
   }, [eventId, user?.id]);
   
   return {

@@ -98,14 +98,6 @@ export const useAdminData = (userId: string | undefined) => {
     }
   };
 
-  // Initial data fetch on mount - we'll let component control this instead
-  // to better handle errors and provide feedback to user
-  // useEffect(() => {
-  //   if (userId) {
-  //     fetchAdminData();
-  //   }
-  // }, [userId]);
-
   return {
     users,
     clubs,
