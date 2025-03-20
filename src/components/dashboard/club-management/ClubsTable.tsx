@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2 } from 'lucide-react';
 import ClubStatusBadge from './ClubStatusBadge';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface ClubsTableProps {
   clubs: Club[];

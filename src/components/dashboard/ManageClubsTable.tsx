@@ -5,16 +5,7 @@ import { useClubManagement } from '@/hooks/club-admin/useClubManagement';
 import ClubsTable from './club-management/ClubsTable';
 import EditClubDialog from './club-management/EditClubDialog';
 import DeleteClubDialog from './club-management/DeleteClubDialog';
-
-interface Club {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  status: string;
-  logo_url?: string;
-  rejection_reason?: string;
-}
+import { Club } from '@/types';
 
 interface ManageClubsTableProps {
   clubs: Club[];

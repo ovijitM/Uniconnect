@@ -78,14 +78,14 @@ const EditClubDialog: React.FC<EditClubDialogProps> = ({
               rows={4}
             />
           </div>
-          {selectedClub?.status === 'rejected' && selectedClub?.rejection_reason && (
+          {selectedClub?.status === 'rejected' && selectedClub?.rejectionReason && (
             <div className="grid grid-cols-4 items-start gap-4">
               <div className="text-right mt-1">
                 <AlertTriangle className="h-4 w-4 text-red-500 ml-auto" />
               </div>
               <div className="col-span-3 p-3 bg-red-50 border border-red-100 rounded text-sm">
                 <p className="font-semibold text-red-600 mb-1">Rejection Reason:</p>
-                <p className="text-red-600">{selectedClub.rejection_reason}</p>
+                <p className="text-red-600">{selectedClub.rejectionReason}</p>
               </div>
             </div>
           )}
