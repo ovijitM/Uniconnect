@@ -41,7 +41,7 @@ export const useClubCreation = () => {
           name: clubFormData.name,
           description: clubFormData.description,
           category: clubFormData.category,
-          logo_url: null,
+          logo_url: clubFormData.logoUrl,
           status: 'pending',
           // New fields
           tagline: clubFormData.tagline || null,

@@ -13,6 +13,7 @@ interface CreateClubDialogProps {
     description: string;
     category: string;
     tagline?: string;
+    logoUrl?: string;
     establishedYear?: string;
     affiliation?: string;
     whyJoin?: string;

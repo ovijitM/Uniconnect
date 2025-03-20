@@ -20,13 +20,14 @@ const SocialMediaTab: React.FC<SocialMediaTabProps> = ({ formData, onInputChange
     <div className="space-y-4 py-4">
       <div className="grid gap-2">
         <Label htmlFor="phoneNumber">
-          Phone Number
+          Phone Number*
         </Label>
         <Input
           id="phoneNumber"
           name="phoneNumber"
           value={formData.phoneNumber || ''}
           onChange={onInputChange}
+          required
           placeholder="Contact phone number"
         />
       </div>

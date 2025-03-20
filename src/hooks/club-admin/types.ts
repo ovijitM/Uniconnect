@@ -25,6 +25,7 @@ export interface ClubFormData {
   instagramLink: string;
   twitterLink: string;
   discordLink: string;
+  logoUrl: string; // Added profile image link field
 }
 
 export interface EventFormData {

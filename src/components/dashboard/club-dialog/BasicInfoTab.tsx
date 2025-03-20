@@ -10,6 +10,7 @@ interface BasicInfoTabProps {
     description: string;
     category: string;
     tagline?: string;
+    logoUrl?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
@@ -62,14 +63,29 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
       
       <div className="grid gap-2">
         <Label htmlFor="tagline">
-          Tagline
+          Tagline*
         </Label>
         <Input
           id="tagline"
           name="tagline"
           value={formData.tagline || ''}
           onChange={onInputChange}
+          required
           placeholder="A short catchy phrase for your club"
+        />
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="logoUrl">
+          Logo URL*
+        </Label>
+        <Input
+          id="logoUrl"
+          name="logoUrl"
+          value={formData.logoUrl || ''}
+          onChange={onInputChange}
+          required
+          placeholder="URL to your club's logo image"
         />
       </div>
     </div>

@@ -15,6 +15,7 @@ interface ClubDialogWrapperProps {
     description: string;
     category: string;
     tagline?: string;
+    logoUrl?: string;
     establishedYear?: string;
     affiliation?: string;
     whyJoin?: string;
@@ -57,7 +58,7 @@ const ClubDialogWrapper: React.FC<ClubDialogWrapperProps> = ({
         <DialogHeader>
           <DialogTitle>Create New Club</DialogTitle>
           <DialogDescription>
-            Fill in the details below to create a new club.
+            Fill in the details below to create a new club. All fields marked with * are required.
           </DialogDescription>
         </DialogHeader>
         

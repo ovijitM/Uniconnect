@@ -27,7 +27,8 @@ export const useClubFormState = () => {
     facebookLink: '',
     instagramLink: '',
     twitterLink: '',
-    discordLink: ''
+    discordLink: '',
+    logoUrl: '' // Added profile image link field
   });
   const [isClubDialogOpen, setIsClubDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
