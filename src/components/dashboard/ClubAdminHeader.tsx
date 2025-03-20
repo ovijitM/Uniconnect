@@ -1,8 +1,7 @@
-
 import React from 'react';
 import CreateClubDialog from './CreateClubDialog';
 import CreateEventDialog from './CreateEventDialog';
-import { ClubFormData, EventFormData } from '@/hooks/useClubAdminForms';
+import { ClubFormData, EventFormData } from '@/hooks/club-admin/useClubAdminForms';
 
 interface ClubAdminHeaderProps {
   isClubDialogOpen: boolean;

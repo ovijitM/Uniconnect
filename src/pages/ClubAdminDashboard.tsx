@@ -6,7 +6,7 @@ import { Navigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClubAdminData } from '@/hooks/useClubAdminData';
-import { useClubAdminForms } from '@/hooks/useClubAdminForms';
+import { useClubAdminForms } from '@/hooks/club-admin/useClubAdminForms';
 
 // Components
 import ClubAdminHeader from '@/components/dashboard/ClubAdminHeader';
