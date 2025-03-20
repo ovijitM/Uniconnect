@@ -62,10 +62,11 @@ export const useAdminData = (userId: string | undefined) => {
       // Build recent activity
       console.log("Building recent activity...");
       const activity = buildRecentActivity(clubsData, eventsData);
+      console.log("Recent activity data:", activity);
       setRecentActivity(activity);
 
       // Set mock system alerts for demonstration
-      setSystemAlerts([
+      const alerts = [
         {
           type: 'success',
           title: 'Database Backup Complete',
@@ -81,7 +82,9 @@ export const useAdminData = (userId: string | undefined) => {
           title: 'System Update Complete',
           time: '2 days ago'
         }
-      ]);
+      ];
+      console.log("Setting system alerts:", alerts);
+      setSystemAlerts(alerts);
       
       console.log("Admin data fetching complete");
       

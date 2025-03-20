@@ -35,7 +35,7 @@ const RecentActivityPanel: React.FC<RecentActivityPanelProps> = ({
               <div key={i} className="h-20 bg-gray-200 rounded-lg animate-pulse" />
             ))}
           </div>
-        ) : recentActivity.length > 0 ? (
+        ) : recentActivity && recentActivity.length > 0 ? (
           <div className="space-y-4">
             {recentActivity.map(item => (
               <div key={`${item.type}-${item.id}`} className="flex items-center p-3 bg-secondary/50 rounded-lg">

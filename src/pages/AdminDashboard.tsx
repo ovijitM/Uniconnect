@@ -35,6 +35,7 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     if (user?.id) {
+      console.log("AdminDashboard: Initializing data fetch");
       // Explicitly call fetchAdminData when component mounts
       fetchAdminData().catch(error => {
         console.error("Error fetching admin data:", error);
@@ -46,6 +47,14 @@ const AdminDashboard: React.FC = () => {
       });
     }
   }, [user?.id]);
+
+  console.log("AdminDashboard: Current data state", {
+    users: users?.length || 0,
+    clubs: clubs?.length || 0,
+    recentActivity: recentActivity?.length || 0,
+    systemAlerts: systemAlerts?.length || 0,
+    isLoading
+  });
 
   const handleReview = async (id: string, type: 'club' | 'event') => {
     const result = await reviewClubOrEvent(id, type);

@@ -13,15 +13,31 @@ const formatTimeAgo = (dateString: string) => {
   return `${Math.floor(diffInSeconds / 86400)} days ago`;
 };
 
+export interface SystemAlert {
+  type: 'success' | 'warning' | 'error';
+  title: string;
+  time: string;
+}
+
+export interface ActivityItem {
+  id: string;
+  type: 'club' | 'event';
+  name: string;
+  description: string;
+  created_at: string;
+}
+
 export const useAdminStatus = () => {
   const [systemStatus, setSystemStatus] = useState('Healthy');
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
-  const [systemAlerts, setSystemAlerts] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+  const [systemAlerts, setSystemAlerts] = useState<SystemAlert[]>([]);
 
   const buildRecentActivity = (clubsData: any[], eventsData: any[]) => {
+    console.log("Building recent activity from:", { clubsData, eventsData });
+    
     // Get recent club activity (newest 3 clubs)
     const recentClubs = clubsData.slice(0, 3).map(club => ({
-      type: 'club',
+      type: 'club' as const,
       id: club.id,
       name: club.name,
       description: `New club created ${formatTimeAgo(club.created_at)}`,
@@ -30,7 +46,7 @@ export const useAdminStatus = () => {
     }));
 
     const recentEvents = eventsData.map(event => ({
-      type: 'event',
+      type: 'event' as const,
       id: event.id,
       name: event.title,
       description: `Event created by ${event.clubs?.name || 'Unknown Club'}`,
@@ -38,9 +54,12 @@ export const useAdminStatus = () => {
     }));
 
     // Combine and sort recent activity
-    return [...recentClubs, ...recentEvents]
+    const combined = [...recentClubs, ...recentEvents]
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 5);
+      
+    console.log("Combined recent activity:", combined);
+    return combined;
   };
 
   return { 
