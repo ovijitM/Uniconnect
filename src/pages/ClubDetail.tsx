@@ -59,6 +59,9 @@ const ClubDetailPage: React.FC = () => {
           <div className="mb-10">
             <h2 className="text-xl font-medium mb-4">About</h2>
             <ClubDescription description={club.description} />
+          </div>
+          
+          <div className="mb-10">
             <ClubDetailInfo club={club} />
           </div>
 

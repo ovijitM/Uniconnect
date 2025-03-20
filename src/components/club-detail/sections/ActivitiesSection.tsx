@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Badge } from '@/components/ui/badge';
 
 interface ActivitiesSectionProps {
   regularEvents?: string[];
@@ -25,23 +26,27 @@ const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({
       
       {regularEvents && regularEvents.length > 0 && (
         <div className="mb-4">
-          <h4 className="font-medium text-sm mb-1">Regular Events</h4>
-          <ul className="list-disc list-inside text-muted-foreground text-sm pl-2 space-y-1">
+          <h4 className="font-medium text-sm mb-2">Regular Events</h4>
+          <div className="flex flex-wrap gap-2">
             {regularEvents.map((event, index) => (
-              <li key={index}>{event}</li>
+              <Badge key={index} variant="secondary" className="px-3 py-1">
+                {event}
+              </Badge>
             ))}
-          </ul>
+          </div>
         </div>
       )}
       
       {signatureEvents && signatureEvents.length > 0 && (
         <div className="mb-4">
-          <h4 className="font-medium text-sm mb-1">Signature Events</h4>
-          <ul className="list-disc list-inside text-muted-foreground text-sm pl-2 space-y-1">
+          <h4 className="font-medium text-sm mb-2">Signature Events</h4>
+          <div className="flex flex-wrap gap-2">
             {signatureEvents.map((event, index) => (
-              <li key={index}>{event}</li>
+              <Badge key={index} variant="outline" className="px-3 py-1 border-primary/30 bg-primary/5">
+                {event}
+              </Badge>
             ))}
-          </ul>
+          </div>
         </div>
       )}
       
