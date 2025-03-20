@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import Layout from '@/components/Layout';
-import { useClubDetail } from '@/components/club-detail/useClubDetail';
+import { useClubDetail } from '@/components/club-detail/hooks/useClubDetail';
 import ClubDetailSkeleton from '@/components/club-detail/ClubDetailSkeleton';
 import ClubDetailNotFound from '@/components/club-detail/ClubDetailNotFound';
 import ClubHeader from '@/components/club-detail/ClubHeader';

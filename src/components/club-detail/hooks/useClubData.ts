@@ -4,47 +4,14 @@ import { useParams } from 'react-router-dom';
 import { Club, Event } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
-export const useClubDetail = () => {
+export const useClubData = () => {
   const { clubId } = useParams<{ clubId: string }>();
   const [club, setClub] = useState<Club | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isMember, setIsMember] = useState(false);
   const [relatedClubs, setRelatedClubs] = useState<Club[]>([]);
-  const [isJoining, setIsJoining] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isClubAdmin, setIsClubAdmin] = useState(false);
-
-  useEffect(() => {
-    if (user && user.role === 'admin') {
-      setIsAdmin(true);
-    }
-  }, [user]);
-  
-  useEffect(() => {
-    async function checkClubAdmin() {
-      if (!user || !clubId) return;
-      
-      const { data, error } = await supabase
-        .from('club_admins')
-        .select('*')
-        .eq('club_id', clubId)
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('Error checking club admin status:', error);
-      } else {
-        setIsClubAdmin(!!data);
-      }
-    }
-    
-    checkClubAdmin();
-  }, [user, clubId]);
 
   useEffect(() => {
     async function fetchClubData() {
@@ -90,22 +57,6 @@ export const useClubDetail = () => {
           .order('date');
         
         if (eventsError) throw eventsError;
-        
-        // Check if current user is a member
-        if (user) {
-          const { data: membershipData, error: membershipError } = await supabase
-            .from('club_members')
-            .select('*')
-            .eq('club_id', clubId)
-            .eq('user_id', user.id)
-            .maybeSingle();
-          
-          setIsMember(!!membershipData);
-          
-          if (membershipError) {
-            console.error('Error checking membership:', membershipError);
-          }
-        }
         
         // Fetch related clubs (same category)
         const { data: relatedData, error: relatedError } = await supabase
@@ -183,82 +134,13 @@ export const useClubDetail = () => {
     }
     
     fetchClubData();
-  }, [clubId, toast, user]);
-
-  const handleJoinClub = async () => {
-    try {
-      if (!user) {
-        toast({
-          title: "Authentication required",
-          description: "Please log in to join clubs",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (!clubId) return;
-      
-      setIsJoining(true);
-      
-      // Check if the club is approved before joining
-      if (club?.status !== 'approved') {
-        toast({
-          title: "Cannot join this club",
-          description: "This club is not approved yet",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      const { error } = await supabase
-        .from('club_members')
-        .insert({
-          club_id: clubId,
-          user_id: user.id
-        });
-      
-      if (error) {
-        if (error.code === '23505') {
-          // Duplicate key error - user is already a member
-          toast({
-            title: "Already a member",
-            description: "You're already a member of this club",
-            variant: "default",
-          });
-        } else {
-          throw error;
-        }
-      } else {
-        setIsMember(true);
-        setClub(prev => prev ? { ...prev, memberCount: prev.memberCount + 1 } : null);
-        
-        toast({
-          title: "Successfully joined!",
-          description: `You're now a member of ${club?.name}`,
-          variant: "default",
-        });
-      }
-    } catch (error) {
-      console.error('Error joining club:', error);
-      toast({
-        title: "Failed to join club",
-        description: "There was an error joining the club. Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsJoining(false);
-    }
-  };
+  }, [clubId, toast]);
 
   return {
     club,
+    setClub,
     events,
     isLoading,
-    isMember,
-    isJoining,
-    relatedClubs,
-    isAdmin,
-    isClubAdmin,
-    handleJoinClub
+    relatedClubs
   };
 };
