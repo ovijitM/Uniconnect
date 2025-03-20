@@ -30,11 +30,6 @@ const ClubHeader: React.FC<ClubHeaderProps> = ({ club, isAdmin, isClubAdmin }) =
   return (
     <div className="flex flex-col sm:flex-row items-center gap-6 mb-8">
       <div className="w-32 h-32 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
-        <div 
-          className={`absolute inset-0 bg-gray-200 transition-opacity duration-500 ${
-            isLoaded ? 'opacity-0' : 'opacity-100'
-          }`}
-        />
         {currentSrc && (
           <img 
             src={currentSrc} 
