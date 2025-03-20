@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { EventReview, EventReviewWithProfile } from '../types/reviewTypes';
 
@@ -82,6 +81,49 @@ export const fetchReviewsWithProfiles = async (
   }
 };
 
+// Check if user has already submitted a review for this event
+export const checkExistingReview = async (
+  eventId: string,
+  userId: string
+): Promise<EventReview | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('event_reviews')
+      .select(`
+        id,
+        event_id,
+        user_id,
+        rating,
+        review_text,
+        created_at,
+        profiles:user_id(name, profile_image)
+      `)
+      .eq('event_id', eventId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    
+    if (error) throw error;
+    
+    if (!data) return null;
+    
+    // Format the review
+    const review = data as unknown as EventReviewWithProfile;
+    return {
+      id: review.id,
+      eventId: review.event_id,
+      userId: review.user_id,
+      rating: review.rating,
+      reviewText: review.review_text,
+      createdAt: review.created_at,
+      userName: review.profiles?.name || 'Anonymous',
+      userImage: review.profiles?.profile_image || null
+    };
+  } catch (error) {
+    console.error('Error checking existing review:', error);
+    throw error;
+  }
+};
+
 // Submit a new review
 export const submitNewReview = async (
   eventId: string, 
@@ -90,6 +132,15 @@ export const submitNewReview = async (
   reviewText: string
 ): Promise<{ success: boolean; data: any }> => {
   try {
+    // Check if the user already has a review for this event
+    const existingReview = await checkExistingReview(eventId, userId);
+    
+    if (existingReview) {
+      // If review exists, update it instead of creating a new one
+      return await updateExistingReview(existingReview.id, rating, reviewText);
+    }
+    
+    // Otherwise create a new review
     const reviewData = {
       event_id: eventId,
       user_id: userId,

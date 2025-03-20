@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,7 +7,8 @@ import {
   fetchReviewsWithProfiles, 
   submitNewReview, 
   updateExistingReview, 
-  deleteUserReview 
+  deleteUserReview,
+  checkExistingReview
 } from './utils/reviewUtils';
 
 export type { EventReview } from './types/reviewTypes';
@@ -27,18 +27,15 @@ export const useEventReviews = (eventId: string | undefined) => {
   const { toast } = useToast();
   const { user } = useAuth();
   
-  // Fetch all reviews for the event with pagination
   const fetchReviews = async (page: number = currentPage) => {
     if (!eventId) return;
     
     try {
       setIsLoading(true);
       
-      // Fetch average rating
       const avgRating = await fetchAverageRating(eventId);
       setAverageRating(avgRating);
       
-      // Fetch reviews with user details (paginated)
       const { reviews: formattedReviews, totalCount } = await fetchReviewsWithProfiles(
         eventId,
         page,
@@ -49,17 +46,13 @@ export const useEventReviews = (eventId: string | undefined) => {
       setTotalReviews(totalCount);
       setTotalPages(Math.max(1, Math.ceil(totalCount / pageSize)));
       
-      // Check if current user has a review
       if (user?.id) {
-        // We need to check all reviews to find user's review, not just the current page
-        const { reviews: allUserReviews } = await fetchReviewsWithProfiles(
-          eventId,
-          1, 
-          1000 // Large number to get all reviews (we'll optimize this later if needed)
-        );
-        
-        const userReview = allUserReviews.find(r => r.userId === user.id);
-        setUserReview(userReview || null);
+        try {
+          const userReview = await checkExistingReview(eventId, user.id);
+          setUserReview(userReview);
+        } catch (error) {
+          console.error('Error checking for user review:', error);
+        }
       }
     } catch (error) {
       console.error('Error fetching reviews:', error);
@@ -73,13 +66,11 @@ export const useEventReviews = (eventId: string | undefined) => {
     }
   };
   
-  // Change page
   const changePage = (page: number) => {
     setCurrentPage(page);
     fetchReviews(page);
   };
   
-  // Submit a new review or update existing
   const submitReview = async (rating: number, reviewText: string) => {
     if (!eventId || !user?.id) {
       toast({
@@ -93,25 +84,15 @@ export const useEventReviews = (eventId: string | undefined) => {
     try {
       setIsSubmitting(true);
       
-      if (userReview) {
-        // Update existing review
-        await updateExistingReview(userReview.id, rating, reviewText);
-        
-        toast({
-          title: 'Review updated',
-          description: 'Your review has been updated successfully',
-        });
-      } else {
-        // Insert new review
-        await submitNewReview(eventId, user.id, rating, reviewText);
-        
-        toast({
-          title: 'Review submitted',
-          description: 'Thank you for your feedback!',
-        });
-      }
+      await submitNewReview(eventId, user.id, rating, reviewText);
       
-      // Refresh reviews
+      toast({
+        title: userReview ? 'Review updated' : 'Review submitted',
+        description: userReview 
+          ? 'Your review has been updated successfully' 
+          : 'Thank you for your feedback!',
+      });
+      
       await fetchReviews();
     } catch (error: any) {
       console.error('Error submitting review:', error);
@@ -125,7 +106,6 @@ export const useEventReviews = (eventId: string | undefined) => {
     }
   };
   
-  // Delete a review
   const deleteReview = async () => {
     if (!userReview || !user?.id) return;
     
@@ -153,10 +133,9 @@ export const useEventReviews = (eventId: string | undefined) => {
     }
   };
   
-  // Fetch reviews on component mount or when eventId changes
   useEffect(() => {
     if (eventId) {
-      fetchReviews(1); // Reset to first page when eventId changes
+      fetchReviews(1);
       setCurrentPage(1);
     }
   }, [eventId, user?.id]);
