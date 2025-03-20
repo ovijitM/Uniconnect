@@ -110,7 +110,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       console.error('Error creating club:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create club. Please try again.',
+        description: `Failed to create club: ${error.message || 'Please try again.'}`,
         variant: 'destructive',
       });
     } finally {
