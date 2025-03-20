@@ -234,16 +234,22 @@ export type Database = {
       }
       event_participants: {
         Row: {
+          checked_in: boolean | null
+          checked_in_at: string | null
           created_at: string
           event_id: string
           user_id: string
         }
         Insert: {
+          checked_in?: boolean | null
+          checked_in_at?: string | null
           created_at?: string
           event_id: string
           user_id: string
         }
         Update: {
+          checked_in?: boolean | null
+          checked_in_at?: string | null
           created_at?: string
           event_id?: string
           user_id?: string

@@ -43,20 +43,24 @@ export const useEventAttendees = (eventId: string) => {
       
       if (error) throw error;
       
-      console.log(`Retrieved ${data?.length || 0} attendees`);
+      console.log(`Retrieved ${data?.length || 0} attendees`, data);
       
-      // Transform the data to the desired format
-      const formattedAttendees = data.map(item => ({
-        id: item.user_id + item.event_id, // Create a composite ID since event_participants may not have an id
-        user_id: item.user_id,
-        event_id: item.event_id,
-        created_at: item.created_at,
-        checked_in: Boolean(item.checked_in || false),
-        checked_in_at: item.checked_in_at || null,
-        name: item.profiles?.name || 'Unknown',
-        email: item.profiles?.email || 'No email',
-        profile_image: item.profiles?.profile_image || null
-      }));
+      // Transform the data to the desired format with proper type checking
+      const formattedAttendees = data.map(item => {
+        // Create a properly typed attendee object
+        const attendee: Attendee = {
+          id: item.user_id + item.event_id, // Create a composite ID
+          user_id: item.user_id,
+          event_id: item.event_id,
+          created_at: item.created_at,
+          checked_in: Boolean(item.checked_in || false),
+          checked_in_at: item.checked_in_at || null,
+          name: item.profiles?.name || 'Unknown',
+          email: item.profiles?.email || 'No email',
+          profile_image: item.profiles?.profile_image || null
+        };
+        return attendee;
+      });
       
       setAttendees(formattedAttendees);
     } catch (error) {
@@ -75,6 +79,7 @@ export const useEventAttendees = (eventId: string) => {
     try {
       console.log("Checking in attendee:", attendeeId);
       
+      // Update the event_participants table with the checked_in status
       const { error } = await supabase
         .from('event_participants')
         .update({
