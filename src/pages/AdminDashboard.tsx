@@ -5,14 +5,10 @@ import Layout from '@/components/Layout';
 import { useAdminData } from '@/hooks/useAdminData';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Import refactored components
 import AdminDashboardHeader from '@/components/admin/AdminDashboardHeader';
-import RecentActivityPanel from '@/components/admin/RecentActivityPanel';
-import SystemAlertsPanel from '@/components/admin/SystemAlertsPanel';
-import UsersTable from '@/components/admin/UsersTable';
-import ClubsTable from '@/components/admin/ClubsTable';
+import AdminTabs from '@/components/admin/AdminTabs';
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -57,42 +53,17 @@ const AdminDashboard: React.FC = () => {
           isLoading={isLoading}
         />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="clubs">Clubs</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <RecentActivityPanel 
-                isLoading={isLoading}
-                recentActivity={recentActivity}
-                onReviewItem={handleReview}
-              />
-              <SystemAlertsPanel 
-                isLoading={isLoading}
-                systemAlerts={systemAlerts}
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="users">
-            <UsersTable 
-              users={users}
-              isLoading={isLoading}
-            />
-          </TabsContent>
-
-          <TabsContent value="clubs">
-            <ClubsTable 
-              clubs={clubs}
-              isLoading={isLoading}
-              onViewClub={handleViewClub}
-            />
-          </TabsContent>
-        </Tabs>
+        <AdminTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          users={users}
+          clubs={clubs}
+          isLoading={isLoading}
+          recentActivity={recentActivity}
+          systemAlerts={systemAlerts}
+          onReviewItem={handleReview}
+          onViewClub={handleViewClub}
+        />
       </div>
     </Layout>
   );
