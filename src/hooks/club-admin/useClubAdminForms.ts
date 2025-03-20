@@ -21,6 +21,7 @@ export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData
     setEventFormData,
     isEventDialogOpen,
     setIsEventDialogOpen,
+    isSubmitting: isEventSubmitting,
     handleEventInputChange,
     handleCreateEvent
   } = useEventForm(userId, fetchClubAdminData);
@@ -40,6 +41,7 @@ export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData
     setEventFormData,
     isEventDialogOpen,
     setIsEventDialogOpen,
+    isEventSubmitting,
     handleEventInputChange,
     handleCreateEvent
   };
