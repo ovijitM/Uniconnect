@@ -4,16 +4,29 @@ import { EventReview } from '@/hooks/event-detail/useEventReviews';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import { StarRating } from '@/components/ui/star-rating';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface EventReviewsListProps {
   reviews: EventReview[];
   isLoading: boolean;
+  error?: string | null;
 }
 
 const EventReviewsList: React.FC<EventReviewsListProps> = ({
   reviews,
-  isLoading
+  isLoading,
+  error
 }) => {
+  if (error) {
+    return (
+      <Alert variant="destructive" className="my-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
+  
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -33,7 +46,7 @@ const EventReviewsList: React.FC<EventReviewsListProps> = ({
     );
   }
   
-  if (reviews.length === 0) {
+  if (!reviews || reviews.length === 0) {
     return (
       <div className="text-center py-6">
         <p className="text-muted-foreground">

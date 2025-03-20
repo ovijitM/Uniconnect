@@ -39,7 +39,7 @@ const fetchAverageRating = async (eventId: string) => {
     return Number(data) || 0;
   } catch (error) {
     console.error('Error fetching average rating:', error);
-    throw error;
+    return 0; // Return default value on error
   }
 };
 
@@ -79,7 +79,7 @@ const fetchReviewsWithProfiles = async (eventId: string) => {
     });
   } catch (error) {
     console.error('Error fetching reviews with profiles:', error);
-    throw error;
+    return []; // Return empty array on error
   }
 };
 
@@ -93,11 +93,14 @@ const submitNewReview = async (eventId: string, userId: string, rating: number, 
       review_text: reviewText || null,
     };
     
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('event_reviews')
-      .insert(reviewData);
+      .insert(reviewData)
+      .select(); // Add select to get the inserted record
     
     if (error) throw error;
+    
+    return { success: true, data };
   } catch (error) {
     console.error('Error submitting new review:', error);
     throw error;
@@ -107,16 +110,19 @@ const submitNewReview = async (eventId: string, userId: string, rating: number, 
 // Utility function to update an existing review
 const updateExistingReview = async (reviewId: string, rating: number, reviewText: string) => {
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('event_reviews')
       .update({ 
         rating, 
         review_text: reviewText || null, 
         updated_at: new Date().toISOString() 
       })
-      .eq('id', reviewId);
+      .eq('id', reviewId)
+      .select(); // Add select to get the updated record
     
     if (error) throw error;
+    
+    return { success: true, data };
   } catch (error) {
     console.error('Error updating existing review:', error);
     throw error;
@@ -132,6 +138,8 @@ const deleteUserReview = async (reviewId: string) => {
       .eq('id', reviewId);
     
     if (error) throw error;
+    
+    return { success: true };
   } catch (error) {
     console.error('Error deleting user review:', error);
     throw error;
@@ -212,12 +220,12 @@ export const useEventReviews = (eventId: string | undefined) => {
       }
       
       // Refresh reviews
-      fetchReviews();
-    } catch (error) {
+      await fetchReviews();
+    } catch (error: any) {
       console.error('Error submitting review:', error);
       toast({
         title: 'Error',
-        description: 'Failed to submit review. Please try again.',
+        description: error.message || 'Failed to submit review. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -240,12 +248,12 @@ export const useEventReviews = (eventId: string | undefined) => {
       });
       
       setUserReview(null);
-      fetchReviews();
-    } catch (error) {
+      await fetchReviews();
+    } catch (error: any) {
       console.error('Error deleting review:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete review',
+        description: error.message || 'Failed to delete review',
         variant: 'destructive',
       });
     } finally {

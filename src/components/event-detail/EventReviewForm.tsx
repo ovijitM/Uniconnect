@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { EventReview } from '@/hooks/event-detail/useEventReviews';
 import { StarRating } from '@/components/ui/star-rating';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 interface EventReviewFormProps {
   userReview: EventReview | null;
@@ -22,10 +24,22 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
 }) => {
   const [rating, setRating] = useState<number>(userReview?.rating || 5);
   const [reviewText, setReviewText] = useState<string>(userReview?.reviewText || '');
+  const [error, setError] = useState<string | null>(null);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(rating, reviewText);
+    setError(null);
+    
+    if (rating < 1) {
+      setError("Please select a rating");
+      return;
+    }
+    
+    try {
+      await onSubmit(rating, reviewText);
+    } catch (err) {
+      setError("Failed to submit review. Please try again.");
+    }
   };
   
   if (!isLoggedIn) {
@@ -38,6 +52,13 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
   
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
       <div>
         <label className="block text-sm font-medium mb-2">
           Your Rating
@@ -68,7 +89,7 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
           type="submit"
           disabled={isSubmitting}
         >
-          {userReview ? 'Update Review' : 'Submit Review'}
+          {isSubmitting ? 'Submitting...' : userReview ? 'Update Review' : 'Submit Review'}
         </Button>
         
         {userReview && (
@@ -78,7 +99,7 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
             variant="outline"
             disabled={isSubmitting}
           >
-            Delete Review
+            {isSubmitting ? 'Processing...' : 'Delete Review'}
           </Button>
         )}
       </div>
