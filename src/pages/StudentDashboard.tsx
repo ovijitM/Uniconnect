@@ -3,16 +3,35 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Users, Clock, Bell } from 'lucide-react';
+import { Calendar, Users, Clock, Bell, Info } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { useStudentData } from '@/hooks/useStudentData';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
+import AvailableClubs from '@/components/student/AvailableClubs';
+import UpcomingEventsStudent from '@/components/student/UpcomingEventsStudent';
+import StudentClubs from '@/components/student/StudentClubs';
+import RegisteredEvents from '@/components/student/RegisteredEvents';
 
 const StudentDashboard: React.FC = () => {
   const { user } = useAuth();
+  const { 
+    isLoading, 
+    clubs, 
+    events, 
+    joinedClubs, 
+    registeredEvents, 
+    joinClub, 
+    registerForEvent 
+  } = useStudentData();
   
   // Redirect if not logged in or not a student
   if (!user) return <Navigate to="/login" />;
   if (user.role !== 'student') return <Navigate to={`/${user.role.replace('_', '-')}-dashboard`} />;
+
+  const joinedClubIds = joinedClubs.map(club => club.id);
+  const registeredEventIds = registeredEvents.map(event => event.id);
 
   return (
     <Layout>
@@ -34,10 +53,14 @@ const StudentDashboard: React.FC = () => {
                 <CardDescription>Events you've registered for</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold flex items-center">
-                  <Calendar className="mr-2 h-6 w-6 text-primary" />
-                  3
-                </div>
+                {isLoading ? (
+                  <Skeleton className="h-10 w-3/4" />
+                ) : (
+                  <div className="text-3xl font-bold flex items-center">
+                    <Calendar className="mr-2 h-6 w-6 text-primary" />
+                    {registeredEvents.filter(e => e.status !== 'past').length}
+                  </div>
+                )}
               </CardContent>
             </Card>
             
@@ -47,10 +70,14 @@ const StudentDashboard: React.FC = () => {
                 <CardDescription>Clubs you're a member of</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold flex items-center">
-                  <Users className="mr-2 h-6 w-6 text-primary" />
-                  2
-                </div>
+                {isLoading ? (
+                  <Skeleton className="h-10 w-3/4" />
+                ) : (
+                  <div className="text-3xl font-bold flex items-center">
+                    <Users className="mr-2 h-6 w-6 text-primary" />
+                    {joinedClubs.length}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -60,97 +87,63 @@ const StudentDashboard: React.FC = () => {
                 <CardDescription>Events you've attended</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold flex items-center">
-                  <Clock className="mr-2 h-6 w-6 text-primary" />
-                  5
-                </div>
+                {isLoading ? (
+                  <Skeleton className="h-10 w-3/4" />
+                ) : (
+                  <div className="text-3xl font-bold flex items-center">
+                    <Clock className="mr-2 h-6 w-6 text-primary" />
+                    {registeredEvents.filter(e => e.status === 'past').length}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Notifications</CardTitle>
-                <CardDescription>Recent alerts</CardDescription>
+                <CardTitle className="text-lg">Available Clubs</CardTitle>
+                <CardDescription>Clubs you can join</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold flex items-center">
-                  <Bell className="mr-2 h-6 w-6 text-primary" />
-                  2
-                </div>
+                {isLoading ? (
+                  <Skeleton className="h-10 w-3/4" />
+                ) : (
+                  <div className="text-3xl font-bold flex items-center">
+                    <Info className="mr-2 h-6 w-6 text-primary" />
+                    {clubs.filter(club => !joinedClubIds.includes(club.id)).length}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>Upcoming Events</CardTitle>
-                <CardDescription>Events you've registered for</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center p-3 bg-secondary/50 rounded-lg">
-                    <div className="bg-primary/10 p-2 rounded-full mr-3">
-                      <Calendar className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">Computer Science Career Fair</h4>
-                      <p className="text-sm text-muted-foreground">Tomorrow, 10:00 AM - 4:00 PM</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-3 bg-secondary/50 rounded-lg">
-                    <div className="bg-primary/10 p-2 rounded-full mr-3">
-                      <Calendar className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">Programming Workshop</h4>
-                      <p className="text-sm text-muted-foreground">Friday, 2:00 PM - 5:00 PM</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-3 bg-secondary/50 rounded-lg">
-                    <div className="bg-primary/10 p-2 rounded-full mr-3">
-                      <Calendar className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">Networking Mixer</h4>
-                      <p className="text-sm text-muted-foreground">Next Monday, 6:00 PM - 8:00 PM</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <UpcomingEventsStudent 
+              events={events}
+              registeredEventIds={registeredEventIds}
+              isLoading={isLoading}
+              onRegisterEvent={registerForEvent}
+            />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Clubs</CardTitle>
-                <CardDescription>Clubs you're a member of</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center p-3 bg-secondary/50 rounded-lg">
-                    <div className="bg-primary/10 p-2 rounded-full mr-3">
-                      <Users className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">Computer Science Club</h4>
-                      <p className="text-sm text-muted-foreground">Member since Oct 2023</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center p-3 bg-secondary/50 rounded-lg">
-                    <div className="bg-primary/10 p-2 rounded-full mr-3">
-                      <Users className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">Photography Society</h4>
-                      <p className="text-sm text-muted-foreground">Member since Jan 2024</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <StudentClubs 
+              clubs={joinedClubs}
+              isLoading={isLoading}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <AvailableClubs 
+              clubs={clubs}
+              joinedClubIds={joinedClubIds}
+              isLoading={isLoading}
+              onJoinClub={joinClub}
+            />
+            
+            <div className="lg:col-span-2">
+              <RegisteredEvents 
+                events={registeredEvents}
+                isLoading={isLoading}
+              />
+            </div>
           </div>
         </motion.div>
       </div>
