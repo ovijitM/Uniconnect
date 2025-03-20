@@ -37,6 +37,8 @@ const EventCard: React.FC<EventCardProps> = ({ event, index = 0 }) => {
           description={event.description}
           date={event.date}
           location={event.location}
+          eventType={event.eventType}
+          tagline={event.tagline}
         />
       </EventCardBase>
     </Link>

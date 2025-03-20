@@ -20,7 +20,7 @@ export const useClubData = () => {
       try {
         setIsLoading(true);
         
-        // Fetch club details
+        // Fetch club details with all the new fields
         const { data: clubData, error: clubError } = await supabase
           .from('clubs')
           .select(`
@@ -31,7 +31,27 @@ export const useClubData = () => {
             category,
             status,
             rejection_reason,
-            club_members(count)
+            club_members(count),
+            tagline,
+            established_year,
+            affiliation,
+            why_join,
+            regular_events,
+            signature_events,
+            community_engagement,
+            who_can_join,
+            membership_fee,
+            how_to_join,
+            president_name,
+            president_contact,
+            executive_members,
+            advisors,
+            phone_number,
+            website,
+            facebook_link,
+            instagram_link,
+            twitter_link,
+            discord_link
           `)
           .eq('id', clubId)
           .single();
@@ -58,14 +78,38 @@ export const useClubData = () => {
             category,
             status,
             max_participants,
-            event_participants(count)
+            event_participants(count),
+            event_type,
+            tagline,
+            registration_deadline,
+            online_platform,
+            eligibility,
+            team_size,
+            registration_link,
+            entry_fee,
+            theme,
+            sub_tracks,
+            prize_pool,
+            prize_categories,
+            additional_perks,
+            judging_criteria,
+            judges,
+            schedule,
+            deliverables,
+            submission_platform,
+            mentors,
+            sponsors,
+            contact_email,
+            community_link,
+            event_website,
+            event_hashtag
           `)
           .eq('club_id', clubId)
           .order('date');
         
         if (eventsError) throw eventsError;
         
-        // Fetch related clubs (same category)
+        // Fetch related clubs (same category) with all fields
         const { data: relatedData, error: relatedError } = await supabase
           .from('clubs')
           .select(`
@@ -75,7 +119,9 @@ export const useClubData = () => {
             logo_url,
             category,
             status,
-            club_members(count)
+            club_members(count),
+            tagline,
+            established_year
           `)
           .eq('category', clubData.category)
           .eq('status', 'approved')
@@ -93,12 +139,14 @@ export const useClubData = () => {
             category: club.category,
             status: club.status,
             memberCount: club.club_members[0]?.count || 0,
-            events: []
+            events: [],
+            tagline: club.tagline,
+            establishedYear: club.established_year
           }));
           setRelatedClubs(formattedRelatedClubs);
         }
         
-        // Format the club data
+        // Format the club data with all new fields
         const formattedClub: Club = {
           id: clubData.id,
           name: clubData.name,
@@ -108,10 +156,32 @@ export const useClubData = () => {
           status: clubData.status,
           rejectionReason: clubData.rejection_reason,
           memberCount: clubData.club_members[0]?.count || 0,
-          events: []
+          events: [],
+          
+          // New fields
+          tagline: clubData.tagline,
+          establishedYear: clubData.established_year,
+          affiliation: clubData.affiliation,
+          whyJoin: clubData.why_join,
+          regularEvents: clubData.regular_events,
+          signatureEvents: clubData.signature_events,
+          communityEngagement: clubData.community_engagement,
+          whoCanJoin: clubData.who_can_join,
+          membershipFee: clubData.membership_fee,
+          howToJoin: clubData.how_to_join,
+          presidentName: clubData.president_name,
+          presidentContact: clubData.president_contact,
+          executiveMembers: clubData.executive_members,
+          advisors: clubData.advisors,
+          phoneNumber: clubData.phone_number,
+          website: clubData.website,
+          facebookLink: clubData.facebook_link,
+          instagramLink: clubData.instagram_link,
+          twitterLink: clubData.twitter_link,
+          discordLink: clubData.discord_link
         };
         
-        // Format the events data
+        // Format the events data with all the new fields
         const formattedEvents: Event[] = eventsData.map(event => ({
           id: event.id,
           title: event.title,
@@ -123,7 +193,33 @@ export const useClubData = () => {
           category: event.category,
           status: event.status,
           participants: event.event_participants[0]?.count || 0,
-          maxParticipants: event.max_participants || undefined
+          maxParticipants: event.max_participants || undefined,
+          
+          // New fields
+          eventType: event.event_type,
+          tagline: event.tagline,
+          registrationDeadline: event.registration_deadline,
+          onlinePlatform: event.online_platform,
+          eligibility: event.eligibility,
+          teamSize: event.team_size,
+          registrationLink: event.registration_link,
+          entryFee: event.entry_fee,
+          theme: event.theme,
+          subTracks: event.sub_tracks,
+          prizePool: event.prize_pool,
+          prizeCategories: event.prize_categories,
+          additionalPerks: event.additional_perks,
+          judgingCriteria: event.judging_criteria,
+          judges: event.judges,
+          schedule: event.schedule,
+          deliverables: event.deliverables,
+          submissionPlatform: event.submission_platform,
+          mentors: event.mentors,
+          sponsors: event.sponsors,
+          contactEmail: event.contact_email,
+          communityLink: event.community_link,
+          eventWebsite: event.event_website,
+          eventHashtag: event.event_hashtag
         }));
         
         setClub(formattedClub);

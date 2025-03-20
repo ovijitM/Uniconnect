@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Calendar } from 'lucide-react';
+import { Users, Calendar, Tag } from 'lucide-react';
 import { Club } from '@/types';
 import { useLazyImage } from '@/utils/animations';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -49,7 +49,15 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, index = 0 }) => {
                 {club.category}
               </Badge>
             </div>
+            {club.tagline && (
+              <p className="text-sm text-muted-foreground mb-2 italic">{club.tagline}</p>
+            )}
             <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{club.description}</p>
+            {club.establishedYear && (
+              <p className="text-xs text-muted-foreground mb-2">
+                Est. {club.establishedYear}
+              </p>
+            )}
           </CardContent>
           <CardFooter className="px-4 pb-4 pt-0 flex justify-between">
             <div className="flex items-center text-sm text-muted-foreground">
