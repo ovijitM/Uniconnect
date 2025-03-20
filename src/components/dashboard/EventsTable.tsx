@@ -3,7 +3,18 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Pencil, PlusCircle } from 'lucide-react';
+import { Pencil, PlusCircle, Trash2 } from 'lucide-react';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
 
 interface EventsTableProps {
   events: any[];
@@ -11,6 +22,7 @@ interface EventsTableProps {
   onEditEvent: (eventId: string) => void;
   onViewEvent: (eventId: string) => void;
   onCreateEvent: () => void;
+  onDeleteEvent?: (eventId: string) => void;
 }
 
 const EventsTable: React.FC<EventsTableProps> = ({
@@ -18,8 +30,13 @@ const EventsTable: React.FC<EventsTableProps> = ({
   isLoading,
   onEditEvent,
   onViewEvent,
-  onCreateEvent
+  onCreateEvent,
+  onDeleteEvent
 }) => {
+  const { toast } = useToast();
+  const [eventToDelete, setEventToDelete] = React.useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
@@ -30,6 +47,31 @@ const EventsTable: React.FC<EventsTableProps> = ({
       minute: 'numeric',
       hour12: true
     }).format(date);
+  };
+
+  const handleDeleteClick = (eventId: string) => {
+    setEventToDelete(eventId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (eventToDelete && onDeleteEvent) {
+      try {
+        await onDeleteEvent(eventToDelete);
+        toast({
+          title: "Event deleted",
+          description: "The event has been successfully deleted.",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete the event. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+    setIsDeleteDialogOpen(false);
+    setEventToDelete(null);
   };
 
   return (
@@ -88,6 +130,16 @@ const EventsTable: React.FC<EventsTableProps> = ({
                         >
                           View
                         </Button>
+                        {onDeleteEvent && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteClick(event.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -109,6 +161,27 @@ const EventsTable: React.FC<EventsTableProps> = ({
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the event and all related data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete Event
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

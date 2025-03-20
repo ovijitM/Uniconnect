@@ -7,6 +7,7 @@ import Layout from '@/components/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClubAdminData } from '@/hooks/club-admin/useClubAdminData';
 import { useClubAdminForms } from '@/hooks/club-admin/useClubAdminForms';
+import { useEventDeletion } from '@/hooks/club-admin/useEventDeletion';
 
 // Components
 import ClubAdminHeader from '@/components/dashboard/ClubAdminHeader';
@@ -42,6 +43,8 @@ const ClubAdminDashboard: React.FC = () => {
     handleClubInputChange
   } = useClubAdminForms(user?.id, fetchClubAdminData);
 
+  const { deleteEvent } = useEventDeletion(fetchClubAdminData);
+
   // Redirect if not logged in or not a club admin
   if (!user) return <Navigate to="/login" />;
   if (user.role !== 'club_admin') return <Navigate to={`/${user.role.replace('_', '-')}-dashboard`} />;
@@ -52,6 +55,10 @@ const ClubAdminDashboard: React.FC = () => {
 
   const handleEditEvent = (eventId: string) => {
     navigate(`/events/${eventId}/edit`);
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    await deleteEvent(eventId);
   };
 
   return (
@@ -98,6 +105,7 @@ const ClubAdminDashboard: React.FC = () => {
                 onEditEvent={handleEditEvent}
                 onViewEvent={handleViewEvent}
                 onCreateEvent={() => setIsEventDialogOpen(true)}
+                onDeleteEvent={handleDeleteEvent}
                 onRefreshData={fetchClubAdminData}
               />
             </>

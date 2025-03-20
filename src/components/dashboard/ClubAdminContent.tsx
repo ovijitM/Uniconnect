@@ -19,6 +19,7 @@ interface ClubAdminContentProps {
   onEditEvent: (eventId: string) => void;
   onViewEvent: (eventId: string) => void;
   onCreateEvent: () => void;
+  onDeleteEvent: (eventId: string) => void;
   onRefreshData: () => void;
 }
 
@@ -34,6 +35,7 @@ const ClubAdminContent: React.FC<ClubAdminContentProps> = ({
   onEditEvent,
   onViewEvent,
   onCreateEvent,
+  onDeleteEvent,
   onRefreshData
 }) => {
   return (
@@ -72,6 +74,7 @@ const ClubAdminContent: React.FC<ClubAdminContentProps> = ({
         onEditEvent={onEditEvent}
         onViewEvent={onViewEvent}
         onCreateEvent={onCreateEvent}
+        onDeleteEvent={onDeleteEvent}
       />
 
       <MembersTable
