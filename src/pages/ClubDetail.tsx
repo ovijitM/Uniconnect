@@ -35,6 +35,7 @@ const ClubDetailPage: React.FC = () => {
     outgoingRequests,
     acceptedCollaborations,
     isLoading: isLoadingCollaborations,
+    isPending,
     sendCollaborationRequest,
     respondToCollaborationRequest
   } = useCollaborations(club?.id);
@@ -95,6 +96,7 @@ const ClubDetailPage: React.FC = () => {
                 outgoingRequests={outgoingRequests}
                 acceptedCollaborations={acceptedCollaborations}
                 isLoading={isLoadingCollaborations}
+                isPending={isPending}
                 onAccept={(id) => respondToCollaborationRequest(id, true)}
                 onReject={(id) => respondToCollaborationRequest(id, false)}
               />
