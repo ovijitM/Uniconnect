@@ -49,7 +49,7 @@ export const fetchReviewsWithProfiles = async (
         rating,
         review_text,
         created_at,
-        profiles:profiles!user_id(name, profile_image)
+        profiles:user_id(name, profile_image)
       `)
       .eq('event_id', eventId)
       .order('created_at', { ascending: false })
@@ -61,8 +61,15 @@ export const fetchReviewsWithProfiles = async (
     
     // Format reviews with user details
     const formattedReviews = data.map(review => {
-      // Safely access profile data
-      const profileData = review.profiles as { name: string; profile_image: string | null } | null;
+      // Safely access profile data with proper type handling
+      let userName = 'Anonymous';
+      let userImage = null;
+      
+      if (review.profiles && typeof review.profiles === 'object' && !('error' in review.profiles)) {
+        const profileData = review.profiles as any;
+        userName = profileData.name || 'Anonymous';
+        userImage = profileData.profile_image || null;
+      }
       
       return {
         id: review.id,
@@ -71,8 +78,8 @@ export const fetchReviewsWithProfiles = async (
         rating: review.rating,
         reviewText: review.review_text,
         createdAt: review.created_at,
-        userName: profileData?.name || 'Anonymous',
-        userImage: profileData?.profile_image || null
+        userName,
+        userImage
       };
     });
     
@@ -101,7 +108,7 @@ export const checkExistingReview = async (
         rating,
         review_text,
         created_at,
-        profiles:profiles!user_id(name, profile_image)
+        profiles:user_id(name, profile_image)
       `)
       .eq('event_id', eventId)
       .eq('user_id', userId)
@@ -111,8 +118,15 @@ export const checkExistingReview = async (
     
     if (!data) return null;
     
-    // Safely access profile data
-    const profileData = data.profiles as { name: string; profile_image: string | null } | null;
+    // Safely access profile data with proper type handling
+    let userName = 'Anonymous';
+    let userImage = null;
+    
+    if (data.profiles && typeof data.profiles === 'object' && !('error' in data.profiles)) {
+      const profileData = data.profiles as any;
+      userName = profileData.name || 'Anonymous';
+      userImage = profileData.profile_image || null;
+    }
     
     // Format the review
     return {
@@ -122,8 +136,8 @@ export const checkExistingReview = async (
       rating: data.rating,
       reviewText: data.review_text,
       createdAt: data.created_at,
-      userName: profileData?.name || 'Anonymous',
-      userImage: profileData?.profile_image || null
+      userName,
+      userImage
     };
   } catch (error) {
     console.error('Error checking existing review:', error);
