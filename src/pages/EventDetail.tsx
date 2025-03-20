@@ -14,6 +14,7 @@ import EventDetailNotFound from '@/components/event-detail/EventDetailNotFound';
 import EventThemeAndPrizes from '@/components/event-detail/EventThemeAndPrizes';
 import EventSubmissionAndContact from '@/components/event-detail/EventSubmissionAndContact';
 import EventCollaborators from '@/components/event-detail/EventCollaborators';
+import EventReviews from '@/components/event-detail/EventReviews';
 
 const EventDetailPage: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -87,6 +88,11 @@ const EventDetailPage: React.FC = () => {
             eventWebsite={event.eventWebsite}
             eventHashtag={event.eventHashtag}
           />
+          
+          {/* Add Event Reviews Component */}
+          {eventId && (
+            <EventReviews eventId={eventId} />
+          )}
         </motion.div>
 
         <motion.div 

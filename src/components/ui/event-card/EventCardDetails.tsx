@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Calendar, MapPin, Tag } from 'lucide-react';
+import { Calendar, MapPin, Tag, Star } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface EventCardDetailsProps {
   organizerName: string;
@@ -10,6 +11,7 @@ interface EventCardDetailsProps {
   location: string;
   eventType?: string;
   tagline?: string;
+  rating?: number;
 }
 
 const EventCardDetails: React.FC<EventCardDetailsProps> = ({
@@ -19,7 +21,8 @@ const EventCardDetails: React.FC<EventCardDetailsProps> = ({
   date,
   location,
   eventType,
-  tagline
+  tagline,
+  rating
 }) => {
   const formattedDate = new Date(date).toLocaleDateString('en-US', {
     month: 'short',
@@ -57,6 +60,12 @@ const EventCardDetails: React.FC<EventCardDetailsProps> = ({
           <Tag className="w-4 h-4 mr-2" />
           {formattedEventType}
         </div>
+        {rating !== undefined && rating > 0 && (
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Star className={cn("w-4 h-4 mr-2", rating > 0 && "fill-yellow-400 text-yellow-400")} />
+            {rating.toFixed(1)} / 5
+          </div>
+        )}
       </div>
     </>
   );

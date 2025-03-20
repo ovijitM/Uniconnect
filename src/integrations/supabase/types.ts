@@ -258,6 +258,44 @@ export type Database = {
           },
         ]
       }
+      event_reviews: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          rating: number
+          review_text: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          rating: number
+          review_text?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          rating?: number
+          review_text?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_reviews_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           additional_perks: string[] | null
@@ -418,6 +456,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_event_avg_rating: {
+        Args: {
+          event_id: string
+        }
+        Returns: number
+      }
       get_user_role: {
         Args: {
           user_id: string
