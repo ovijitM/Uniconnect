@@ -1,4 +1,3 @@
-
 import * as React from "react"
 
 import {
@@ -195,8 +194,8 @@ const toast = toastFunction as ToastApi
 // Add variant helper methods
 toast.success = (props) => toastFunction({ ...props, variant: "success" })
 toast.error = (props) => toastFunction({ ...props, variant: "destructive" })
-toast.info = (props) => toastFunction({ ...props, variant: "default" })
-toast.warning = (props) => toastFunction({ ...props, variant: "default" })
+toast.info = (props) => toastFunction({ ...props, variant: "info" })
+toast.warning = (props) => toastFunction({ ...props, variant: "warning" })
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
