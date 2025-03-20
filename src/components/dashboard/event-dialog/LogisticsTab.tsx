@@ -14,9 +14,13 @@ interface LogisticsTabProps {
 }
 
 const LogisticsTab: React.FC<LogisticsTabProps> = ({ formData, clubs, onInputChange }) => {
+  // Get the current club name based on clubId
+  const currentClub = clubs.find(club => club.id === formData.clubId);
+  const clubName = currentClub ? currentClub.name : '';
+
   return (
     <div className="space-y-4 py-4">
-      {clubs.length > 1 && (
+      {clubs.length > 1 ? (
         <div className="grid gap-2">
           <Label htmlFor="clubId">
             Select Club*
@@ -35,7 +39,15 @@ const LogisticsTab: React.FC<LogisticsTabProps> = ({ formData, clubs, onInputCha
             ))}
           </select>
         </div>
-      )}
+      ) : clubs.length === 1 ? (
+        <div className="grid gap-2">
+          <Label htmlFor="organizing-club">Organizing Club</Label>
+          <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted px-3 py-2 text-sm font-medium">
+            {clubs[0].name}
+            <input type="hidden" name="clubId" value={clubs[0].id} />
+          </div>
+        </div>
+      ) : null}
       
       <div className="grid gap-2">
         <Label htmlFor="eventType">

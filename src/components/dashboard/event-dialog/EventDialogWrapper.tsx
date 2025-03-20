@@ -59,6 +59,10 @@ const EventDialogWrapper: React.FC<EventDialogWrapperProps> = ({
   buttonText = "Create Event",
   trigger
 }) => {
+  // Get the current club name based on clubId
+  const currentClub = clubs.find(club => club.id === formData.clubId);
+  const clubName = currentClub ? currentClub.name : '';
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
@@ -66,7 +70,11 @@ const EventDialogWrapper: React.FC<EventDialogWrapperProps> = ({
         <DialogHeader>
           <DialogTitle>Create New Event</DialogTitle>
           <DialogDescription>
-            Fill in the details below to create a new event for your club.
+            {clubName ? (
+              <>Fill in the details below to create a new event for <span className="font-medium">{clubName}</span>.</>
+            ) : (
+              <>Fill in the details below to create a new event for your club.</>
+            )}
           </DialogDescription>
         </DialogHeader>
         
