@@ -62,7 +62,7 @@ export const useEventFetch = (eventId: string | undefined) => {
         
         if (eventError) throw eventError;
         
-        // Fetch club details
+        // Fetch club details - use the explicit relationship
         const { data: clubData, error: clubError } = await supabase
           .from('clubs')
           .select(`
@@ -78,12 +78,12 @@ export const useEventFetch = (eventId: string | undefined) => {
         
         if (clubError) throw clubError;
 
-        // Fetch collaborating clubs
+        // Fetch collaborating clubs - use the explicit relationship 
         const { data: collaboratorsData, error: collaboratorsError } = await supabase
           .from('event_collaborators')
           .select(`
             club_id,
-            club:club_id(
+            club:clubs!event_collaborators_club_id_fkey(
               id,
               name,
               description,

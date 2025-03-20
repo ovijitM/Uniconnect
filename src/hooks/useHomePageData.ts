@@ -65,10 +65,10 @@ export const useHomePageData = () => {
           })
         );
         
-        // Fetch events from Supabase with club join and approved status filter
+        // Fetch events from Supabase - FIX: Specify the relationship explicitly using !events_club_id_fkey
         const { data: eventsData, error: eventsError } = await supabase
           .from('events')
-          .select('*, clubs!inner(*)')
+          .select('*, clubs!events_club_id_fkey(*)')
           .eq('clubs.status', 'approved')
           .order('date');
         

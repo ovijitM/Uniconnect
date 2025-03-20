@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 export const useStudentData = () => {
   const { user } = useAuth();
@@ -11,6 +10,7 @@ export const useStudentData = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [joinedClubs, setJoinedClubs] = useState<any[]>([]);
   const [registeredEvents, setRegisteredEvents] = useState<any[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!user) return;
@@ -65,12 +65,12 @@ export const useStudentData = () => {
         if (allClubsError) throw allClubsError;
         setClubs(allClubs || []);
         
-        // Fetch upcoming events
+        // Fetch upcoming events - fix the relationship specification
         const { data: upcomingEvents, error: upcomingEventsError } = await supabase
           .from('events')
           .select(`
             *,
-            clubs (
+            clubs:clubs!events_club_id_fkey (
               name
             )
           `)
@@ -81,14 +81,18 @@ export const useStudentData = () => {
         setEvents(upcomingEvents || []);
       } catch (error) {
         console.error('Error fetching student data:', error);
-        toast.error('Failed to load data');
+        toast({
+          title: 'Error',
+          description: 'Failed to load data',
+          variant: 'destructive',
+        });
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchData();
-  }, [user]);
+  }, [user, toast]);
 
   // Function to join a club
   const joinClub = async (clubId: string) => {
