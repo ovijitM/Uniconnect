@@ -4,8 +4,8 @@ import { User, UserRole, AuthState } from '@/types/auth';
 import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
+  signup: (email: string, password: string, name: string, role: UserRole) => Promise<User>;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
 }
@@ -112,7 +112,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     });
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User> => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       const user = await mockAuth.login(email, password);
@@ -128,7 +128,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     }
   };
 
-  const signup = async (email: string, password: string, name: string, role: UserRole) => {
+  const signup = async (email: string, password: string, name: string, role: UserRole): Promise<User> => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       const user = await mockAuth.signup(email, password, name, role);
