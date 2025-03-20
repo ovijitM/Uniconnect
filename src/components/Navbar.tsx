@@ -32,7 +32,7 @@ const Navbar: React.FC = () => {
 
   return (
     <header 
-      className={`sticky top-0 z-40 w-full transition-all duration-300 ease-apple ${
+      className={`sticky top-0 z-40 w-full transition-all duration-300 ${
         isScrolled ? 'glass-panel py-3' : 'bg-transparent py-5'
       }`}
     >
@@ -49,7 +49,7 @@ const Navbar: React.FC = () => {
               <Link key={item.path} to={item.path}>
                 <Button 
                   variant={isActive ? "secondary" : "ghost"} 
-                  className={`relative px-4 py-2 text-sm transition-all duration-300 ease-apple ${
+                  className={`relative px-4 py-2 text-sm transition-all duration-300 ${
                     isActive ? 'font-medium' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
