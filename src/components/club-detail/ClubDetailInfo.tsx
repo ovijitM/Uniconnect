@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Club } from '@/types';
-import { Users, Calendar, Link as LinkIcon, Facebook, Instagram, Twitter, MessageSquare } from 'lucide-react';
+import { Users, Calendar, Link as LinkIcon, Facebook, Instagram, Twitter, MessageSquare, Phone as PhoneIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 interface ClubDetailInfoProps {
@@ -100,7 +100,7 @@ const ClubDetailInfo: React.FC<ClubDetailInfoProps> = ({ club }) => {
                 {Object.entries(club.executiveMembers).map(([role, name], index) => (
                   <div key={index} className="flex">
                     <span className="font-medium min-w-32">{role}:</span>
-                    <span>{name}</span>
+                    <span>{String(name)}</span>
                   </div>
                 ))}
               </div>
@@ -124,7 +124,7 @@ const ClubDetailInfo: React.FC<ClubDetailInfoProps> = ({ club }) => {
           <div className="flex flex-col gap-2">
             {club.phoneNumber && (
               <div className="flex items-center text-sm text-muted-foreground">
-                <Phone className="w-4 h-4 mr-2" />
+                <PhoneIcon className="w-4 h-4 mr-2" />
                 <a href={`tel:${club.phoneNumber}`} className="hover:text-primary">
                   {club.phoneNumber}
                 </a>
