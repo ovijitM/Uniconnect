@@ -61,15 +61,16 @@ export const fetchReviewsWithProfiles = async (
     
     // Format reviews with user details
     const formattedReviews = data.map(review => {
-      // Safely access profile data with proper type handling
+      // Default values
       let userName = 'Anonymous';
       let userImage = null;
       
       // Add explicit null check before trying to access properties
-      if (review.profiles && typeof review.profiles === 'object' && review.profiles !== null) {
-        // Only proceed if profiles is not null and is an object
-        if (!('error' in review.profiles)) {
-          const profileData = review.profiles as Record<string, any>;
+      if (review.profiles && typeof review.profiles === 'object') {
+        // Type guard to make sure profiles is an object
+        const profileData = review.profiles as Record<string, any>;
+        // Check if this is not an error object
+        if (profileData && !('error' in profileData)) {
           userName = profileData.name || 'Anonymous';
           userImage = profileData.profile_image || null;
         }
@@ -122,15 +123,16 @@ export const checkExistingReview = async (
     
     if (!data) return null;
     
-    // Safely access profile data with proper type handling
+    // Default values
     let userName = 'Anonymous';
     let userImage = null;
     
     // Add explicit null check before trying to access properties
-    if (data.profiles && typeof data.profiles === 'object' && data.profiles !== null) {
-      // Only proceed if profiles is not null and is an object
-      if (!('error' in data.profiles)) {
-        const profileData = data.profiles as Record<string, any>;
+    if (data.profiles && typeof data.profiles === 'object') {
+      // Type guard to make sure profiles is an object
+      const profileData = data.profiles as Record<string, any>;
+      // Check if this is not an error object
+      if (profileData && !('error' in profileData)) {
         userName = profileData.name || 'Anonymous';
         userImage = profileData.profile_image || null;
       }
