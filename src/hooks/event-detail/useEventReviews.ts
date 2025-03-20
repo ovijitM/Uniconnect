@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useAuthSession } from '@/hooks/useAuthSession';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface EventReview {
   id: string;
@@ -22,7 +22,7 @@ export const useEventReviews = (eventId: string | undefined) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { session } = useAuthSession();
+  const { user } = useAuth();
   
   // Fetch all reviews for the event
   const fetchReviews = async () => {
@@ -70,8 +70,8 @@ export const useEventReviews = (eventId: string | undefined) => {
       setReviews(formattedReviews);
       
       // Check if current user has a review
-      if (session?.user.id) {
-        const userReview = formattedReviews.find(r => r.userId === session.user.id);
+      if (user?.id) {
+        const userReview = formattedReviews.find(r => r.userId === user.id);
         setUserReview(userReview || null);
       }
     } catch (error) {
@@ -88,7 +88,7 @@ export const useEventReviews = (eventId: string | undefined) => {
   
   // Submit a new review or update existing
   const submitReview = async (rating: number, reviewText: string) => {
-    if (!eventId || !session?.user.id) {
+    if (!eventId || !user?.id) {
       toast({
         title: 'Authentication required',
         description: 'Please sign in to submit a review',
@@ -102,7 +102,7 @@ export const useEventReviews = (eventId: string | undefined) => {
       
       const reviewData = {
         event_id: eventId,
-        user_id: session.user.id,
+        user_id: user.id,
         rating,
         review_text: reviewText || null,
       };
@@ -152,7 +152,7 @@ export const useEventReviews = (eventId: string | undefined) => {
   
   // Delete a review
   const deleteReview = async () => {
-    if (!userReview || !session?.user.id) return;
+    if (!userReview || !user?.id) return;
     
     try {
       setIsSubmitting(true);
@@ -187,7 +187,7 @@ export const useEventReviews = (eventId: string | undefined) => {
   // Fetch reviews on component mount or when eventId changes
   useEffect(() => {
     fetchReviews();
-  }, [eventId, session?.user.id]);
+  }, [eventId, user?.id]);
   
   return {
     reviews,

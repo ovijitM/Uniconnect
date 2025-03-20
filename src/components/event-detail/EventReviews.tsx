@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useEventReviews } from '@/hooks/event-detail/useEventReviews';
-import { useAuthSession } from '@/hooks/useAuthSession';
+import { useAuth } from '@/contexts/AuthContext';
 import EventReviewForm from './EventReviewForm';
 import EventReviewsList from './EventReviewsList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,8 +22,8 @@ const EventReviews: React.FC<EventReviewsProps> = ({ eventId }) => {
     deleteReview 
   } = useEventReviews(eventId);
   
-  const { session } = useAuthSession();
-  const isLoggedIn = !!session?.user;
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
   
   const reviewCount = reviews.length;
   
