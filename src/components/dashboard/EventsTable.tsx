@@ -4,17 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pencil, PlusCircle, Trash2 } from 'lucide-react';
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
+import { useEventDeletion } from '@/hooks/club-admin/useEventDeletion';
 
 interface EventsTableProps {
   events: any[];
@@ -34,8 +25,14 @@ const EventsTable: React.FC<EventsTableProps> = ({
   onDeleteEvent
 }) => {
   const { toast } = useToast();
-  const [eventToDelete, setEventToDelete] = React.useState<string | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const { openDeleteConfirmation, DeleteConfirmationDialog } = useEventDeletion(
+    () => {
+      if (onDeleteEvent) {
+        // This is just to trigger a refresh in the parent component
+        onDeleteEvent('refresh');
+      }
+    }
+  );
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -50,28 +47,9 @@ const EventsTable: React.FC<EventsTableProps> = ({
   };
 
   const handleDeleteClick = (eventId: string) => {
-    setEventToDelete(eventId);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (eventToDelete && onDeleteEvent) {
-      try {
-        await onDeleteEvent(eventToDelete);
-        toast({
-          title: "Event deleted",
-          description: "The event has been successfully deleted.",
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to delete the event. Please try again.",
-          variant: "destructive",
-        });
-      }
+    if (onDeleteEvent) {
+      openDeleteConfirmation(eventId);
     }
-    setIsDeleteDialogOpen(false);
-    setEventToDelete(null);
   };
 
   return (
@@ -162,26 +140,8 @@ const EventsTable: React.FC<EventsTableProps> = ({
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the event and all related data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleConfirmDelete}
-              className="bg-red-500 hover:bg-red-600"
-            >
-              Delete Event
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Render the confirmation dialog */}
+      <DeleteConfirmationDialog />
     </div>
   );
 };

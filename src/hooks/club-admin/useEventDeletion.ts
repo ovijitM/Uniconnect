@@ -2,12 +2,45 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const useEventDeletion = (onSuccess: () => void) => {
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<string | null>(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
-  const deleteEvent = async (eventId: string) => {
+  const openDeleteConfirmation = (eventId: string) => {
+    setEventToDelete(eventId);
+    setIsConfirmDialogOpen(true);
+  };
+
+  const cancelDelete = () => {
+    setEventToDelete(null);
+    setIsConfirmDialogOpen(false);
+  };
+
+  const confirmDelete = async () => {
+    if (!eventToDelete) return;
+    
+    const success = await performDeletion(eventToDelete);
+    
+    if (success) {
+      setIsConfirmDialogOpen(false);
+      setEventToDelete(null);
+    }
+  };
+
+  const performDeletion = async (eventId: string) => {
     try {
       setIsDeleting(true);
       
@@ -30,6 +63,11 @@ export const useEventDeletion = (onSuccess: () => void) => {
       // Call the success callback to refresh the UI
       onSuccess();
       
+      toast({
+        title: 'Event deleted',
+        description: 'The event has been successfully removed.',
+      });
+      
       return true;
     } catch (error) {
       console.error('Error deleting event:', error);
@@ -44,8 +82,32 @@ export const useEventDeletion = (onSuccess: () => void) => {
     }
   };
 
+  const DeleteConfirmationDialog = () => (
+    <AlertDialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the event and remove all participant data.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={cancelDelete}>Cancel</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={confirmDelete}
+            disabled={isDeleting}
+            className="bg-red-500 hover:bg-red-600"
+          >
+            {isDeleting ? 'Deleting...' : 'Delete Event'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   return {
     isDeleting,
-    deleteEvent
+    openDeleteConfirmation,
+    DeleteConfirmationDialog
   };
 };
