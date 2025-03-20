@@ -9,6 +9,28 @@ export interface Club {
   rejectionReason?: string;
   memberCount: number;
   events: Event[];
+  
+  // New fields
+  tagline?: string;
+  establishedYear?: number;
+  affiliation?: string;
+  whyJoin?: string;
+  regularEvents?: string[];
+  signatureEvents?: string[];
+  communityEngagement?: string;
+  whoCanJoin?: string;
+  membershipFee?: string;
+  howToJoin?: string;
+  presidentName?: string;
+  presidentContact?: string;
+  executiveMembers?: any; // Using any for JSONB type
+  advisors?: string[];
+  phoneNumber?: string;
+  website?: string;
+  facebookLink?: string;
+  instagramLink?: string;
+  twitterLink?: string;
+  discordLink?: string;
 }
 
 export interface Event {

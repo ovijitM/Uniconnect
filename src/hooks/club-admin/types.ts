@@ -3,6 +3,28 @@ export interface ClubFormData {
   name: string;
   description: string;
   category: string;
+  
+  // New fields
+  tagline: string;
+  establishedYear: string; // Using string for form inputs
+  affiliation: string;
+  whyJoin: string;
+  regularEvents: string;
+  signatureEvents: string;
+  communityEngagement: string;
+  whoCanJoin: string;
+  membershipFee: string;
+  howToJoin: string;
+  presidentName: string;
+  presidentContact: string;
+  executiveMembers: string;
+  advisors: string;
+  phoneNumber: string;
+  website: string;
+  facebookLink: string;
+  instagramLink: string;
+  twitterLink: string;
+  discordLink: string;
 }
 
 export interface EventFormData {

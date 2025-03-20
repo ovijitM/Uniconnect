@@ -63,37 +63,97 @@ export type Database = {
       }
       clubs: {
         Row: {
+          advisors: string[] | null
+          affiliation: string | null
           category: string
+          community_engagement: string | null
           created_at: string
           description: string
+          discord_link: string | null
+          established_year: number | null
+          executive_members: Json | null
+          facebook_link: string | null
+          how_to_join: string | null
           id: string
+          instagram_link: string | null
           logo_url: string | null
+          membership_fee: string | null
           name: string
+          phone_number: string | null
+          president_contact: string | null
+          president_name: string | null
+          regular_events: string[] | null
           rejection_reason: string | null
+          signature_events: string[] | null
           status: string
+          tagline: string | null
+          twitter_link: string | null
           updated_at: string
+          website: string | null
+          who_can_join: string | null
+          why_join: string | null
         }
         Insert: {
+          advisors?: string[] | null
+          affiliation?: string | null
           category: string
+          community_engagement?: string | null
           created_at?: string
           description: string
+          discord_link?: string | null
+          established_year?: number | null
+          executive_members?: Json | null
+          facebook_link?: string | null
+          how_to_join?: string | null
           id?: string
+          instagram_link?: string | null
           logo_url?: string | null
+          membership_fee?: string | null
           name: string
+          phone_number?: string | null
+          president_contact?: string | null
+          president_name?: string | null
+          regular_events?: string[] | null
           rejection_reason?: string | null
+          signature_events?: string[] | null
           status?: string
+          tagline?: string | null
+          twitter_link?: string | null
           updated_at?: string
+          website?: string | null
+          who_can_join?: string | null
+          why_join?: string | null
         }
         Update: {
+          advisors?: string[] | null
+          affiliation?: string | null
           category?: string
+          community_engagement?: string | null
           created_at?: string
           description?: string
+          discord_link?: string | null
+          established_year?: number | null
+          executive_members?: Json | null
+          facebook_link?: string | null
+          how_to_join?: string | null
           id?: string
+          instagram_link?: string | null
           logo_url?: string | null
+          membership_fee?: string | null
           name?: string
+          phone_number?: string | null
+          president_contact?: string | null
+          president_name?: string | null
+          regular_events?: string[] | null
           rejection_reason?: string | null
+          signature_events?: string[] | null
           status?: string
+          tagline?: string | null
+          twitter_link?: string | null
           updated_at?: string
+          website?: string | null
+          who_can_join?: string | null
+          why_join?: string | null
         }
         Relationships: []
       }

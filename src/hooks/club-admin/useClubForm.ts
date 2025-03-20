@@ -9,7 +9,28 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
   const [clubFormData, setClubFormData] = useState<ClubFormData>({
     name: '',
     description: '',
-    category: ''
+    category: '',
+    // New fields with default values
+    tagline: '',
+    establishedYear: '',
+    affiliation: '',
+    whyJoin: '',
+    regularEvents: '',
+    signatureEvents: '',
+    communityEngagement: '',
+    whoCanJoin: '',
+    membershipFee: 'Free',
+    howToJoin: '',
+    presidentName: '',
+    presidentContact: '',
+    executiveMembers: '',
+    advisors: '',
+    phoneNumber: '',
+    website: '',
+    facebookLink: '',
+    instagramLink: '',
+    twitterLink: '',
+    discordLink: ''
   });
   const [isClubDialogOpen, setIsClubDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,7 +56,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       }
 
       // Check if a club with this name already exists
-      const { data: existingClubs, error: checkError } = await supabase
+      const { data: existingClubs, error: check Error } = await supabase
         .from('clubs')
         .select('id')
         .eq('name', clubFormData.name);
@@ -55,7 +76,13 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
         return;
       }
 
-      // First, create the club with status "pending"
+      // Transform array and JSON fields
+      const regularEvents = clubFormData.regularEvents ? clubFormData.regularEvents.split(',').map(e => e.trim()) : [];
+      const signatureEvents = clubFormData.signatureEvents ? clubFormData.signatureEvents.split(',').map(e => e.trim()) : [];
+      const advisors = clubFormData.advisors ? clubFormData.advisors.split(',').map(e => e.trim()) : [];
+      const executiveMembers = clubFormData.executiveMembers ? JSON.parse(clubFormData.executiveMembers) : {};
+
+      // Create the club with the new fields
       const { data: clubData, error: clubError } = await supabase
         .from('clubs')
         .insert({
@@ -63,7 +90,28 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
           description: clubFormData.description,
           category: clubFormData.category,
           logo_url: null,
-          status: 'pending'
+          status: 'pending',
+          // New fields
+          tagline: clubFormData.tagline || null,
+          established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
+          affiliation: clubFormData.affiliation || null,
+          why_join: clubFormData.whyJoin || null,
+          regular_events: regularEvents,
+          signature_events: signatureEvents,
+          community_engagement: clubFormData.communityEngagement || null,
+          who_can_join: clubFormData.whoCanJoin || null,
+          membership_fee: clubFormData.membershipFee || 'Free',
+          how_to_join: clubFormData.howToJoin || null,
+          president_name: clubFormData.presidentName || null,
+          president_contact: clubFormData.presidentContact || null,
+          executive_members: executiveMembers,
+          advisors: advisors,
+          phone_number: clubFormData.phoneNumber || null,
+          website: clubFormData.website || null,
+          facebook_link: clubFormData.facebookLink || null,
+          instagram_link: clubFormData.instagramLink || null,
+          twitter_link: clubFormData.twitterLink || null,
+          discord_link: clubFormData.discordLink || null
         })
         .select();
       
@@ -76,7 +124,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
         throw new Error('No club data returned after creation');
       }
 
-      // Then, add the current user as an admin of the club
+      // Add the current user as an admin of the club
       const { error: adminError } = await supabase
         .from('club_admins')
         .insert({
@@ -101,7 +149,28 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       setClubFormData({
         name: '',
         description: '',
-        category: ''
+        category: '',
+        // Reset new fields
+        tagline: '',
+        establishedYear: '',
+        affiliation: '',
+        whyJoin: '',
+        regularEvents: '',
+        signatureEvents: '',
+        communityEngagement: '',
+        whoCanJoin: '',
+        membershipFee: 'Free',
+        howToJoin: '',
+        presidentName: '',
+        presidentContact: '',
+        executiveMembers: '',
+        advisors: '',
+        phoneNumber: '',
+        website: '',
+        facebookLink: '',
+        instagramLink: '',
+        twitterLink: '',
+        discordLink: ''
       });
       setIsClubDialogOpen(false);
       
