@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Event, Club } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Index: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -24,57 +25,60 @@ const Index: React.FC = () => {
       try {
         setIsLoading(true);
         
-        // Fetch clubs from Supabase
+        // Fetch clubs from Supabase with corrected count aggregation
         const { data: clubsData, error: clubsError } = await supabase
           .from('clubs')
-          .select(`
-            id,
-            name,
-            description,
-            logo_url,
-            category,
-            club_members(count)
-          `)
-          .order('name')
-          .limit(4);
+          .select('*');
         
         if (clubsError) throw clubsError;
+        
+        // Get club members count for each club
+        const clubsWithCounts = await Promise.all(
+          clubsData.map(async (club) => {
+            const { count, error: countError } = await supabase
+              .from('club_members')
+              .select('*', { count: 'exact', head: true })
+              .eq('club_id', club.id);
+            
+            return {
+              id: club.id,
+              name: club.name,
+              description: club.description,
+              logoUrl: club.logo_url,
+              category: club.category,
+              memberCount: count || 0,
+              events: []
+            };
+          })
+        );
         
         // Fetch events from Supabase
         const { data: eventsData, error: eventsError } = await supabase
           .from('events')
-          .select(`
-            id,
-            title,
-            description,
-            date,
-            location,
-            image_url,
-            category,
-            status,
-            max_participants,
-            club_id,
-            event_participants(count)
-          `)
+          .select('*')
           .order('date');
         
         if (eventsError) throw eventsError;
         
-        // Get club details for each event
-        const eventsWithOrganizers = await Promise.all(
+        // Get participants count and club details for each event
+        const eventsWithDetails = await Promise.all(
           eventsData.map(async (event) => {
+            const { count: participantsCount } = await supabase
+              .from('event_participants')
+              .select('*', { count: 'exact', head: true })
+              .eq('event_id', event.id);
+            
             const { data: clubData } = await supabase
               .from('clubs')
-              .select(`
-                id,
-                name,
-                description,
-                logo_url,
-                category,
-                club_members(count)
-              `)
+              .select('*')
               .eq('id', event.club_id)
               .single();
+            
+            // Get club member count
+            const { count: memberCount } = await supabase
+              .from('club_members')
+              .select('*', { count: 'exact', head: true })
+              .eq('club_id', clubData.id);
             
             return {
               id: event.id,
@@ -85,7 +89,7 @@ const Index: React.FC = () => {
               imageUrl: event.image_url,
               category: event.category,
               status: event.status,
-              participants: event.event_participants[0]?.count || 0,
+              participants: participantsCount || 0,
               maxParticipants: event.max_participants || undefined,
               organizer: {
                 id: clubData.id,
@@ -93,29 +97,18 @@ const Index: React.FC = () => {
                 description: clubData.description,
                 logoUrl: clubData.logo_url,
                 category: clubData.category,
-                memberCount: clubData.club_members[0]?.count || 0,
+                memberCount: memberCount || 0,
                 events: []
               }
             };
           })
         );
         
-        // Transform clubs data
-        const transformedClubs = clubsData.map(club => ({
-          id: club.id,
-          name: club.name,
-          description: club.description,
-          logoUrl: club.logo_url,
-          category: club.category,
-          memberCount: club.club_members[0]?.count || 0,
-          events: []
-        }));
-        
-        setClubs(transformedClubs);
-        setEvents(eventsWithOrganizers);
+        setClubs(clubsWithCounts);
+        setEvents(eventsWithDetails);
         
         // Set the featured event (first upcoming event)
-        const upcomingEvents = eventsWithOrganizers.filter(event => event.status === 'upcoming');
+        const upcomingEvents = eventsWithDetails.filter(event => event.status === 'upcoming');
         if (upcomingEvents.length > 0) {
           setFeaturedEvent(upcomingEvents[0]);
         }
@@ -156,15 +149,18 @@ const Index: React.FC = () => {
 
         {isLoading ? (
           <div className="mb-12">
-            <div className="animate-pulse space-y-4">
-              <div className="h-64 bg-gray-200 rounded-xl"></div>
-            </div>
+            <Skeleton className="h-64 w-full rounded-xl" />
           </div>
         ) : featuredEvent ? (
           <div className="mb-12">
             <FeaturedEvent event={featuredEvent} />
           </div>
-        ) : null}
+        ) : (
+          <div className="text-center py-8 mb-12 bg-secondary/30 rounded-xl">
+            <h3 className="text-lg font-medium mb-2">No featured events</h3>
+            <p className="text-muted-foreground">Check back later for featured events.</p>
+          </div>
+        )}
 
         <div className="mb-12">
           <div className="flex justify-between items-center mb-6">
@@ -179,11 +175,7 @@ const Index: React.FC = () => {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="animate-pulse space-y-4">
-                  <div className="h-48 bg-gray-200 rounded-xl"></div>
-                  <div className="h-5 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-full"></div>
-                </div>
+                <Skeleton key={i} className="h-64 w-full rounded-xl" />
               ))}
             </div>
           ) : events.filter(event => event.status === 'upcoming').length > 0 ? (
@@ -196,7 +188,7 @@ const Index: React.FC = () => {
                 ))}
             </div>
           ) : (
-            <div className="text-center py-8">
+            <div className="text-center py-8 bg-secondary/30 rounded-xl">
               <h3 className="text-lg font-medium mb-2">No upcoming events</h3>
               <p className="text-muted-foreground">Check back later for new events.</p>
             </div>
@@ -216,21 +208,17 @@ const Index: React.FC = () => {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="animate-pulse space-y-4">
-                  <div className="h-48 bg-gray-200 rounded-xl"></div>
-                  <div className="h-5 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-full"></div>
-                </div>
+                <Skeleton key={i} className="h-48 w-full rounded-xl" />
               ))}
             </div>
           ) : clubs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {clubs.map((club, index) => (
+              {clubs.slice(0, 4).map((club, index) => (
                 <ClubCard key={club.id} club={club} index={index} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
+            <div className="text-center py-8 bg-secondary/30 rounded-xl">
               <h3 className="text-lg font-medium mb-2">No clubs available</h3>
               <p className="text-muted-foreground">Check back later for new clubs.</p>
             </div>
