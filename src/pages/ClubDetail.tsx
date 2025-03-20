@@ -10,6 +10,7 @@ import ClubDetailNotFound from '@/components/club-detail/ClubDetailNotFound';
 import ClubHeader from '@/components/club-detail/ClubHeader';
 import ClubEventsTabs from '@/components/club-detail/ClubEventsTabs';
 import ClubSidebar from '@/components/club-detail/ClubSidebar';
+import ClubDescription from '@/components/club-detail/ClubDescription';
 
 const ClubDetailPage: React.FC = () => {
   const {
@@ -56,7 +57,7 @@ const ClubDetailPage: React.FC = () => {
 
           <div className="mb-10">
             <h2 className="text-xl font-medium mb-4">About</h2>
-            <p className="text-muted-foreground whitespace-pre-line">{club.description}</p>
+            <ClubDescription description={club.description} />
           </div>
 
           <div>
