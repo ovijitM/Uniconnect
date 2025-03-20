@@ -6,12 +6,13 @@ import EventReviewForm from './EventReviewForm';
 import EventReviewsList from './EventReviewsList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StarRating } from '@/components/ui/star-rating';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 interface EventReviewsProps {
   eventId: string;
 }
 
-const EventReviews: React.FC<EventReviewsProps> = ({ eventId }) => {
+const EventReviewsContent: React.FC<EventReviewsProps> = ({ eventId }) => {
   const { 
     reviews, 
     averageRating, 
@@ -19,7 +20,8 @@ const EventReviews: React.FC<EventReviewsProps> = ({ eventId }) => {
     isLoading, 
     isSubmitting, 
     submitReview, 
-    deleteReview 
+    deleteReview,
+    fetchReviews
   } = useEventReviews(eventId);
   
   const { user } = useAuth();
@@ -47,7 +49,11 @@ const EventReviews: React.FC<EventReviewsProps> = ({ eventId }) => {
         </TabsList>
         
         <TabsContent value="reviews" className="py-4">
-          <EventReviewsList reviews={reviews} isLoading={isLoading} />
+          <EventReviewsList 
+            reviews={reviews} 
+            isLoading={isLoading} 
+            onRetry={fetchReviews}
+          />
         </TabsContent>
         
         <TabsContent value="write-review" className="py-4">
@@ -57,10 +63,19 @@ const EventReviews: React.FC<EventReviewsProps> = ({ eventId }) => {
             onDelete={deleteReview}
             isSubmitting={isSubmitting}
             isLoggedIn={isLoggedIn}
+            onRetry={fetchReviews}
           />
         </TabsContent>
       </Tabs>
     </div>
+  );
+};
+
+const EventReviews: React.FC<EventReviewsProps> = ({ eventId }) => {
+  return (
+    <ErrorBoundary>
+      <EventReviewsContent eventId={eventId} />
+    </ErrorBoundary>
   );
 };
 

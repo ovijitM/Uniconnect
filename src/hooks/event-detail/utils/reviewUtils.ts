@@ -52,7 +52,7 @@ export const fetchReviewsWithProfiles = async (eventId: string): Promise<EventRe
     });
   } catch (error) {
     console.error('Error fetching reviews with profiles:', error);
-    return []; // Return empty array on error
+    throw error; // Propagate error to be caught by error boundary
   }
 };
 
@@ -79,9 +79,9 @@ export const submitNewReview = async (
     if (error) throw error;
     
     return { success: true, data };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error submitting new review:', error);
-    throw error;
+    throw new Error(error.message || 'Failed to submit review');
   }
 };
 
@@ -105,9 +105,9 @@ export const updateExistingReview = async (
     if (error) throw error;
     
     return { success: true, data };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating existing review:', error);
-    throw error;
+    throw new Error(error.message || 'Failed to update review');
   }
 };
 
@@ -122,8 +122,8 @@ export const deleteUserReview = async (reviewId: string): Promise<{ success: boo
     if (error) throw error;
     
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting user review:', error);
-    throw error;
+    throw new Error(error.message || 'Failed to delete review');
   }
 };

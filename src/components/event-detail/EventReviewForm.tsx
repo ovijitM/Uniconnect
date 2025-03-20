@@ -6,6 +6,7 @@ import { EventReview } from '@/hooks/event-detail/useEventReviews';
 import { StarRating } from '@/components/ui/star-rating';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 interface EventReviewFormProps {
   userReview: EventReview | null;
@@ -13,9 +14,10 @@ interface EventReviewFormProps {
   onDelete: () => Promise<void>;
   isSubmitting: boolean;
   isLoggedIn: boolean;
+  onRetry?: () => void;
 }
 
-const EventReviewForm: React.FC<EventReviewFormProps> = ({
+const ReviewFormContent: React.FC<EventReviewFormProps> = ({
   userReview,
   onSubmit,
   onDelete,
@@ -104,6 +106,14 @@ const EventReviewForm: React.FC<EventReviewFormProps> = ({
         )}
       </div>
     </form>
+  );
+};
+
+const EventReviewForm: React.FC<EventReviewFormProps> = (props) => {
+  return (
+    <ErrorBoundary onReset={props.onRetry}>
+      <ReviewFormContent {...props} />
+    </ErrorBoundary>
   );
 };
 

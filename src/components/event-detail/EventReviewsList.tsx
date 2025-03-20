@@ -6,14 +6,16 @@ import { formatDistanceToNow } from 'date-fns';
 import { StarRating } from '@/components/ui/star-rating';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 interface EventReviewsListProps {
   reviews: EventReview[];
   isLoading: boolean;
   error?: string | null;
+  onRetry?: () => void;
 }
 
-const EventReviewsList: React.FC<EventReviewsListProps> = ({
+const ReviewsListContent: React.FC<EventReviewsListProps> = ({
   reviews,
   isLoading,
   error
@@ -85,6 +87,14 @@ const EventReviewsList: React.FC<EventReviewsListProps> = ({
         </div>
       ))}
     </div>
+  );
+};
+
+const EventReviewsList: React.FC<EventReviewsListProps> = (props) => {
+  return (
+    <ErrorBoundary onReset={props.onRetry}>
+      <ReviewsListContent {...props} />
+    </ErrorBoundary>
   );
 };
 
