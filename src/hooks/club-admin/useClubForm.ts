@@ -58,7 +58,8 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
           facebookLink: '',
           instagramLink: '',
           twitterLink: '',
-          discordLink: ''
+          discordLink: '',
+          logoUrl: '' // Added the missing logoUrl property
         });
         setIsClubDialogOpen(false);
         
