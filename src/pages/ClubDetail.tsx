@@ -11,110 +11,190 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLazyImage } from '@/utils/animations';
 import { useToast } from '@/hooks/use-toast';
-
-// Mock club data
-const mockClubs: Record<string, Club> = {
-  '101': {
-    id: '101',
-    name: 'Computer Science Society',
-    description: 'A community for tech enthusiasts to collaborate, learn, and grow together through workshops, hackathons, and industry connections. The Computer Science Society aims to bridge the gap between academic theory and practical application, providing members with opportunities to develop technical skills, collaborate on projects, and connect with industry professionals.\n\nOur mission is to foster a supportive learning environment where students of all skill levels can explore their interests in computer science, software development, artificial intelligence, and other related fields. We regularly organize coding competitions, tech talks, and social events to build a strong community of future tech leaders.',
-    logoUrl: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-    category: 'Technology',
-    memberCount: 120,
-    events: [
-      {
-        id: '1',
-        title: 'Annual Tech Conference',
-        description: 'Join us for a day of technology talks, workshops, and networking opportunities with industry professionals.',
-        date: '2023-11-15T09:00:00',
-        location: 'University Main Hall',
-        imageUrl: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
-        organizer: {
-          id: '101',
-          name: 'Computer Science Society',
-          description: '',
-          logoUrl: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-          category: 'Technology',
-          memberCount: 120,
-          events: []
-        },
-        category: 'Technology',
-        status: 'upcoming',
-        participants: 78,
-        maxParticipants: 150
-      },
-      {
-        id: '9',
-        title: 'Web Development Workshop',
-        description: 'Learn the fundamentals of web development with hands-on exercises in HTML, CSS, and JavaScript.',
-        date: '2023-10-08T13:00:00',
-        location: 'Computer Science Building, Room 201',
-        imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
-        organizer: {
-          id: '101',
-          name: 'Computer Science Society',
-          description: '',
-          logoUrl: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-          category: 'Technology',
-          memberCount: 120,
-          events: []
-        },
-        category: 'Technology',
-        status: 'past',
-        participants: 30,
-        maxParticipants: 40
-      },
-      {
-        id: '10',
-        title: 'Artificial Intelligence Seminar',
-        description: 'Explore the latest advancements in AI with guest speakers from leading research institutions.',
-        date: '2023-12-10T15:00:00',
-        location: 'Science Center, Lecture Hall A',
-        imageUrl: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80',
-        organizer: {
-          id: '101',
-          name: 'Computer Science Society',
-          description: '',
-          logoUrl: 'https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-          category: 'Technology',
-          memberCount: 120,
-          events: []
-        },
-        category: 'Technology',
-        status: 'upcoming',
-        participants: 50,
-        maxParticipants: 120
-      }
-    ]
-  }
-};
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ClubDetailPage: React.FC = () => {
   const { clubId } = useParams<{ clubId: string }>();
   const [club, setClub] = useState<Club | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMember, setIsMember] = useState(false);
+  const [relatedClubs, setRelatedClubs] = useState<Club[]>([]);
   const { isLoaded, currentSrc } = useLazyImage(club?.logoUrl || '');
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
-    // In a real app, fetch the club data from an API
-    setIsLoading(true);
-    setTimeout(() => {
-      if (clubId && mockClubs[clubId]) {
-        setClub(mockClubs[clubId]);
+    async function fetchClubData() {
+      if (!clubId) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // Fetch club details
+        const { data: clubData, error: clubError } = await supabase
+          .from('clubs')
+          .select(`
+            id,
+            name,
+            description,
+            logo_url,
+            category,
+            club_members(count)
+          `)
+          .eq('id', clubId)
+          .single();
+        
+        if (clubError) throw clubError;
+        
+        // Fetch events for this club
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('events')
+          .select(`
+            id,
+            title,
+            description,
+            date,
+            location,
+            image_url,
+            category,
+            status,
+            max_participants,
+            event_participants(count)
+          `)
+          .eq('club_id', clubId)
+          .order('date');
+        
+        if (eventsError) throw eventsError;
+        
+        // Check if current user is a member
+        if (user) {
+          const { data: membershipData, error: membershipError } = await supabase
+            .from('club_members')
+            .select('*')
+            .eq('club_id', clubId)
+            .eq('user_id', user.id)
+            .maybeSingle();
+          
+          setIsMember(!!membershipData);
+          
+          if (membershipError) {
+            console.error('Error checking membership:', membershipError);
+          }
+        }
+        
+        // Fetch related clubs (same category)
+        const { data: relatedData, error: relatedError } = await supabase
+          .from('clubs')
+          .select(`
+            id,
+            name,
+            description,
+            logo_url,
+            category,
+            club_members(count)
+          `)
+          .eq('category', clubData.category)
+          .neq('id', clubId)
+          .limit(3);
+        
+        if (relatedError) {
+          console.error('Error fetching related clubs:', relatedError);
+        } else {
+          const formattedRelatedClubs = relatedData.map(club => ({
+            id: club.id,
+            name: club.name,
+            description: club.description,
+            logoUrl: club.logo_url,
+            category: club.category,
+            memberCount: club.club_members[0]?.count || 0,
+            events: []
+          }));
+          setRelatedClubs(formattedRelatedClubs);
+        }
+        
+        // Format the club data
+        const formattedClub: Club = {
+          id: clubData.id,
+          name: clubData.name,
+          description: clubData.description,
+          logoUrl: clubData.logo_url,
+          category: clubData.category,
+          memberCount: clubData.club_members[0]?.count || 0,
+          events: []
+        };
+        
+        // Format the events data
+        const formattedEvents: Event[] = eventsData.map(event => ({
+          id: event.id,
+          title: event.title,
+          description: event.description,
+          date: event.date,
+          location: event.location,
+          imageUrl: event.image_url,
+          organizer: formattedClub,
+          category: event.category,
+          status: event.status,
+          participants: event.event_participants[0]?.count || 0,
+          maxParticipants: event.max_participants || undefined
+        }));
+        
+        setClub(formattedClub);
+        setEvents(formattedEvents);
+      } catch (error) {
+        console.error('Error fetching club data:', error);
+        toast({
+          title: 'Error fetching club data',
+          description: 'Failed to load club details. Please try again later.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    }, 500);
-  }, [clubId]);
+    }
+    
+    fetchClubData();
+  }, [clubId, toast, user]);
 
-  const handleJoinClub = () => {
-    setIsMember(true);
-    toast({
-      title: "Successfully joined!",
-      description: `You're now a member of ${club?.name}`,
-      variant: "default",
-    });
+  const handleJoinClub = async () => {
+    try {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to join clubs",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (!clubId) return;
+      
+      const { error } = await supabase
+        .from('club_members')
+        .insert({
+          club_id: clubId,
+          user_id: user.id
+        });
+      
+      if (error) throw error;
+      
+      setIsMember(true);
+      setClub(prev => prev ? { ...prev, memberCount: prev.memberCount + 1 } : null);
+      
+      toast({
+        title: "Successfully joined!",
+        description: `You're now a member of ${club?.name}`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Error joining club:', error);
+      toast({
+        title: "Failed to join club",
+        description: "There was an error joining the club. Please try again later.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) {
@@ -154,8 +234,8 @@ const ClubDetailPage: React.FC = () => {
     );
   }
 
-  const upcomingEvents = club.events.filter(event => event.status === 'upcoming');
-  const pastEvents = club.events.filter(event => event.status === 'past');
+  const upcomingEvents = events.filter(event => event.status === 'upcoming');
+  const pastEvents = events.filter(event => event.status === 'past');
 
   return (
     <Layout>
@@ -273,7 +353,7 @@ const ClubDetailPage: React.FC = () => {
                 <Calendar className="w-5 h-5 mr-3 text-primary" />
                 <div>
                   <p className="font-medium">Events</p>
-                  <p className="text-muted-foreground">{club.events.length} total events</p>
+                  <p className="text-muted-foreground">{events.length} total events</p>
                 </div>
               </div>
               <div className="flex items-center">
@@ -293,39 +373,29 @@ const ClubDetailPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="glass-panel rounded-xl p-6">
-            <h3 className="font-medium mb-4">Related Clubs</h3>
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 mr-3">
-                  <img 
-                    src="https://images.unsplash.com/photo-1493612276216-ee3925520721?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
-                    alt="Entrepreneurship Society" 
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-                <div>
-                  <Link to="/clubs/104" className="font-medium hover:text-primary">
-                    Entrepreneurship Society
-                  </Link>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 mr-3">
-                  <img 
-                    src="https://images.unsplash.com/photo-1506755855567-92ff770e8d00?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
-                    alt="Debate Society" 
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-                <div>
-                  <Link to="/clubs/106" className="font-medium hover:text-primary">
-                    Debate Society
-                  </Link>
-                </div>
+          {relatedClubs.length > 0 && (
+            <div className="glass-panel rounded-xl p-6">
+              <h3 className="font-medium mb-4">Related Clubs</h3>
+              <div className="space-y-4">
+                {relatedClubs.map(relatedClub => (
+                  <div key={relatedClub.id} className="flex items-center">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 mr-3">
+                      <img 
+                        src={relatedClub.logoUrl || "https://images.unsplash.com/photo-1493612276216-ee3925520721"} 
+                        alt={relatedClub.name} 
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                    <div>
+                      <Link to={`/clubs/${relatedClub.id}`} className="font-medium hover:text-primary">
+                        {relatedClub.name}
+                      </Link>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
+          )}
         </motion.div>
       </div>
     </Layout>
