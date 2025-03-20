@@ -13,6 +13,7 @@ import { useLazyImage } from '@/utils/animations';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const ClubDetailPage: React.FC = () => {
   const { clubId } = useParams<{ clubId: string }>();
@@ -41,6 +42,8 @@ const ClubDetailPage: React.FC = () => {
             description,
             logo_url,
             category,
+            status,
+            rejection_reason,
             club_members(count)
           `)
           .eq('id', clubId)
@@ -93,9 +96,11 @@ const ClubDetailPage: React.FC = () => {
             description,
             logo_url,
             category,
+            status,
             club_members(count)
           `)
           .eq('category', clubData.category)
+          .eq('status', 'approved')
           .neq('id', clubId)
           .limit(3);
         
@@ -108,6 +113,7 @@ const ClubDetailPage: React.FC = () => {
             description: club.description,
             logoUrl: club.logo_url,
             category: club.category,
+            status: club.status,
             memberCount: club.club_members[0]?.count || 0,
             events: []
           }));
@@ -121,6 +127,8 @@ const ClubDetailPage: React.FC = () => {
           description: clubData.description,
           logoUrl: clubData.logo_url,
           category: clubData.category,
+          status: clubData.status,
+          rejectionReason: clubData.rejection_reason,
           memberCount: clubData.club_members[0]?.count || 0,
           events: []
         };
@@ -197,6 +205,39 @@ const ClubDetailPage: React.FC = () => {
     }
   };
 
+  // Check if user is admin
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  useEffect(() => {
+    if (user && user.role === 'admin') {
+      setIsAdmin(true);
+    }
+  }, [user]);
+
+  // Check if user is club admin for this club
+  const [isClubAdmin, setIsClubAdmin] = useState(false);
+  
+  useEffect(() => {
+    async function checkClubAdmin() {
+      if (!user || !clubId) return;
+      
+      const { data, error } = await supabase
+        .from('club_admins')
+        .select('*')
+        .eq('club_id', clubId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error checking club admin status:', error);
+      } else {
+        setIsClubAdmin(!!data);
+      }
+    }
+    
+    checkClubAdmin();
+  }, [user, clubId]);
+
   if (isLoading) {
     return (
       <Layout>
@@ -234,6 +275,18 @@ const ClubDetailPage: React.FC = () => {
     );
   }
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return <Badge className="bg-green-500 text-white">Approved</Badge>;
+      case 'rejected':
+        return <Badge variant="destructive">Rejected</Badge>;
+      case 'pending':
+      default:
+        return <Badge variant="outline" className="bg-yellow-100">Pending Approval</Badge>;
+    }
+  };
+
   const upcomingEvents = events.filter(event => event.status === 'upcoming');
   const pastEvents = events.filter(event => event.status === 'past');
 
@@ -269,16 +322,24 @@ const ClubDetailPage: React.FC = () => {
               )}
             </div>
             <div>
-              <div className="mb-2">
+              <div className="mb-2 flex items-center gap-2">
                 <Badge variant="outline" className="capitalize">
                   {club.category}
                 </Badge>
+                {getStatusBadge(club.status || 'pending')}
               </div>
               <h1 className="text-3xl font-semibold mb-2">{club.name}</h1>
               <div className="flex items-center text-muted-foreground">
                 <Users className="w-4 h-4 mr-2" />
                 {club.memberCount} members
               </div>
+              
+              {club.status === 'rejected' && club.rejectionReason && (isClubAdmin || isAdmin) && (
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-sm font-semibold text-red-700">Rejection Reason:</p>
+                  <p className="text-sm text-red-600">{club.rejectionReason}</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -336,16 +397,36 @@ const ClubDetailPage: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
         >
           <div className="glass-panel rounded-xl p-6">
-            {isMember ? (
-              <Button className="w-full mb-4" variant="outline" disabled>
-                <Users className="mr-2 h-4 w-4" />
-                You are a member
-              </Button>
+            {club.status === 'approved' ? (
+              isMember ? (
+                <Button className="w-full mb-4" variant="outline" disabled>
+                  <Users className="mr-2 h-4 w-4" />
+                  You are a member
+                </Button>
+              ) : (
+                <Button className="w-full mb-4" onClick={handleJoinClub}>
+                  <Users className="mr-2 h-4 w-4" />
+                  Join Club
+                </Button>
+              )
             ) : (
-              <Button className="w-full mb-4" onClick={handleJoinClub}>
-                <Users className="mr-2 h-4 w-4" />
-                Join Club
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <Button className="w-full mb-4" disabled>
+                        <Users className="mr-2 h-4 w-4" />
+                        {club.status === 'pending' ? 'Pending Approval' : 'Club Rejected'}
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{club.status === 'pending' 
+                      ? 'This club is waiting for admin approval' 
+                      : 'This club has been rejected by admin'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
 
             <div className="space-y-4 pt-4 border-t">
