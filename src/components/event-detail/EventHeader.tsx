@@ -43,6 +43,9 @@ const EventHeader: React.FC<EventHeaderProps> = ({
           <Badge variant="outline" className="capitalize">
             {category}
           </Badge>
+          <Badge className={`${statusColors[status as keyof typeof statusColors]} capitalize`}>
+            {status}
+          </Badge>
           <div className="text-sm text-muted-foreground">
             Organized by:{' '}
             <Link to={`/clubs/${organizerId}`} className="text-primary hover:underline">
