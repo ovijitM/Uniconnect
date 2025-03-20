@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface MembersTableProps {
   members: any[];
@@ -30,8 +31,8 @@ const MembersTable: React.FC<MembersTableProps> = ({ members, isLoading }) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {members.map(member => (
-                  <TableRow key={`${member.user_id}-${member.clubId}`}>
+                {members.map((member, index) => (
+                  <TableRow key={`${member.user_id}-${member.clubId}-${index}`}>
                     <TableCell className="font-medium">{member.profiles?.name || 'Unknown User'}</TableCell>
                     <TableCell>{member.profiles?.email || 'N/A'}</TableCell>
                     <TableCell>{member.clubName}</TableCell>

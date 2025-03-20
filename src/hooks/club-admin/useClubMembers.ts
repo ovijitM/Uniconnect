@@ -18,23 +18,44 @@ export const useClubMembers = () => {
     try {
       let totalMembers = 0;
       const allMembersPromises = clubIds.map(async (clubId) => {
+        // First, fetch the club members
         const { data: membersData, error: membersError } = await supabase
           .from('club_members')
-          .select(`
-            user_id,
-            created_at,
-            profiles(name, email)
-          `)
+          .select('user_id, created_at, club_id')
           .eq('club_id', clubId);
         
         if (membersError) throw membersError;
         
-        totalMembers += membersData.length;
-        return membersData.map(member => ({
-          ...member,
-          clubId,
-          clubName: clubs.find(club => club.id === clubId)?.name || 'Unknown Club'
-        }));
+        // Now, for each member, fetch their profile information
+        const members = await Promise.all(
+          membersData.map(async (member) => {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('name, email')
+              .eq('id', member.user_id)
+              .single();
+            
+            if (profileError) {
+              console.warn(`Could not fetch profile for user ${member.user_id}:`, profileError);
+              return {
+                ...member,
+                profiles: { name: 'Unknown User', email: 'N/A' },
+                clubId,
+                clubName: clubs.find(club => club.id === clubId)?.name || 'Unknown Club'
+              };
+            }
+            
+            return {
+              ...member,
+              profiles: profileData,
+              clubId,
+              clubName: clubs.find(club => club.id === clubId)?.name || 'Unknown Club'
+            };
+          })
+        );
+        
+        totalMembers += members.length;
+        return members;
       });
       
       const allMembersArrays = await Promise.all(allMembersPromises);
