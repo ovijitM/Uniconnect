@@ -15,6 +15,21 @@ export interface Attendee {
   profile_image: string | null;
 }
 
+// Define an interface for the raw data returned from Supabase
+interface EventParticipantWithProfile {
+  created_at: string;
+  event_id: string;
+  user_id: string;
+  checked_in: boolean | null;
+  checked_in_at: string | null;
+  profiles: {
+    id: string;
+    name: string;
+    email: string;
+    profile_image: string | null;
+  } | null;
+}
+
 export const useEventAttendees = (eventId: string) => {
   const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +61,7 @@ export const useEventAttendees = (eventId: string) => {
       console.log(`Retrieved ${data?.length || 0} attendees`, data);
       
       // Transform the data to the desired format with proper type checking
-      const formattedAttendees = data.map(item => {
+      const formattedAttendees = (data as unknown as EventParticipantWithProfile[]).map(item => {
         // Create a properly typed attendee object
         const attendee: Attendee = {
           id: item.user_id + item.event_id, // Create a composite ID
