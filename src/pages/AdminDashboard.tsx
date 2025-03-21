@@ -1,21 +1,24 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Layout from '@/components/Layout';
 import { useAdminData } from '@/hooks/admin';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 // Import refactored components
 import AdminDashboardHeader from '@/components/admin/AdminDashboardHeader';
 import AdminTabs from '@/components/admin/AdminTabs';
+import DashboardLayout from '@/components/dashboard/shared/DashboardLayout';
+import AdminSidebar from '@/components/dashboard/admin/AdminSidebar';
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabFromUrl || 'overview');
   
   // Redirect if not logged in or not an admin
   if (!user) return <Navigate to="/login" />;
@@ -48,6 +51,20 @@ const AdminDashboard: React.FC = () => {
     }
   }, [user?.id]);
 
+  // Update URL when tab changes
+  useEffect(() => {
+    if (tabFromUrl !== activeTab) {
+      navigate(`/admin-dashboard?tab=${activeTab}`, { replace: true });
+    }
+  }, [activeTab]);
+
+  // Update active tab when URL changes
+  useEffect(() => {
+    if (tabFromUrl && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
+
   console.log("AdminDashboard: Current data state", {
     users: users?.length || 0,
     clubs: clubs?.length || 0,
@@ -72,8 +89,8 @@ const AdminDashboard: React.FC = () => {
   };
 
   return (
-    <Layout>
-      <div className="container mx-auto py-8">
+    <DashboardLayout sidebar={<AdminSidebar />}>
+      <div className="container">
         <AdminDashboardHeader 
           userName={user.name}
           userCount={users.length}
@@ -98,7 +115,7 @@ const AdminDashboard: React.FC = () => {
           onClubStatusChange={handleClubStatusChange}
         />
       </div>
-    </Layout>
+    </DashboardLayout>
   );
 };
 
