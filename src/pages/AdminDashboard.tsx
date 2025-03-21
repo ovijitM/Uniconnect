@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useMatch } from 'react-router-dom';
 import { useAdminData } from '@/hooks/admin';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
-// Import refactored components
+// Import components
 import AdminDashboardHeader from '@/components/admin/AdminDashboardHeader';
 import AdminTabs from '@/components/admin/AdminTabs';
 import DashboardLayout from '@/components/dashboard/shared/DashboardLayout';
@@ -19,6 +19,11 @@ const AdminDashboard: React.FC = () => {
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState(tabFromUrl || 'overview');
+  
+  // Match patterns for different routes
+  const isOverview = useMatch('/admin-dashboard');
+  const isNotificationsPage = useMatch('/admin-dashboard/notifications');
+  const isSettingsPage = useMatch('/admin-dashboard/settings');
   
   // Redirect if not logged in or not an admin
   if (!user) return <Navigate to="/login" />;
@@ -65,6 +70,15 @@ const AdminDashboard: React.FC = () => {
     }
   }, [tabFromUrl]);
 
+  // Set active tab based on route
+  useEffect(() => {
+    if (isNotificationsPage) {
+      setActiveTab('notifications');
+    } else if (isSettingsPage) {
+      setActiveTab('settings');
+    }
+  }, [isNotificationsPage, isSettingsPage]);
+
   console.log("AdminDashboard: Current data state", {
     users: users?.length || 0,
     clubs: clubs?.length || 0,
@@ -88,9 +102,56 @@ const AdminDashboard: React.FC = () => {
     fetchAdminData();
   };
 
-  return (
-    <DashboardLayout sidebar={<AdminSidebar />}>
-      <div className="container">
+  // Render content based on current route
+  const renderContent = () => {
+    if (isNotificationsPage) {
+      return (
+        <div className="space-y-6">
+          <h1 className="text-2xl font-bold">Notifications</h1>
+          <div className="space-y-4">
+            {systemAlerts.map((alert, index) => (
+              <div key={index} className="p-4 border rounded-lg shadow-sm">
+                <h3 className="font-medium">{alert.title}</h3>
+                <p className="text-muted-foreground">{alert.message}</p>
+                <div className="text-xs text-muted-foreground mt-2">
+                  {alert.timestamp}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (isSettingsPage) {
+      return (
+        <div className="space-y-6">
+          <h1 className="text-2xl font-bold">System Settings</h1>
+          <div className="space-y-4 p-6 border rounded-lg">
+            <div className="flex justify-between items-center">
+              <span>System Status</span>
+              <span className="font-medium">{systemStatus}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Admin Users</span>
+              <span className="font-medium">{adminCount}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Total Users</span>
+              <span className="font-medium">{users.length}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Total Clubs</span>
+              <span className="font-medium">{clubs.length}</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Default overview with tabs
+    return (
+      <>
         <AdminDashboardHeader 
           userName={user.name}
           userCount={users.length}
@@ -114,6 +175,14 @@ const AdminDashboard: React.FC = () => {
           onViewClub={handleViewClub}
           onClubStatusChange={handleClubStatusChange}
         />
+      </>
+    );
+  };
+
+  return (
+    <DashboardLayout sidebar={<AdminSidebar />}>
+      <div className="container">
+        {renderContent()}
       </div>
     </DashboardLayout>
   );

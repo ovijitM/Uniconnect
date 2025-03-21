@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useMatch } from 'react-router-dom';
 import { useStudentData } from '@/hooks/useStudentData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Users, Clock, Info } from 'lucide-react';
@@ -25,6 +25,11 @@ const StudentDashboard: React.FC = () => {
     registerForEvent 
   } = useStudentData();
   
+  // Match patterns for different routes
+  const isOverview = useMatch('/student-dashboard');
+  const isEventsPage = useMatch('/student-dashboard/events');
+  const isClubsPage = useMatch('/student-dashboard/clubs');
+  
   // Redirect if not logged in or not a student
   if (!user) return <Navigate to="/login" />;
   if (user.role !== 'student') return <Navigate to={`/${user.role.replace('_', '-')}-dashboard`} />;
@@ -32,9 +37,63 @@ const StudentDashboard: React.FC = () => {
   const joinedClubIds = joinedClubs.map(club => club.id);
   const registeredEventIds = registeredEvents.map(event => event.id);
 
-  return (
-    <DashboardLayout sidebar={<StudentSidebar />}>
-      <div className="container">
+  // Render different content based on the current route
+  const renderContent = () => {
+    if (isEventsPage) {
+      return (
+        <div className="space-y-6">
+          <h1 className="text-2xl font-bold">My Events</h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h2 className="text-lg font-medium mb-4">Upcoming Events</h2>
+              <UpcomingEventsStudent 
+                events={events}
+                registeredEventIds={registeredEventIds}
+                isLoading={isLoading}
+                onRegisterEvent={registerForEvent}
+              />
+            </div>
+            <div>
+              <h2 className="text-lg font-medium mb-4">Registered Events</h2>
+              <RegisteredEvents 
+                events={registeredEvents}
+                isLoading={isLoading}
+              />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (isClubsPage) {
+      return (
+        <div className="space-y-6">
+          <h1 className="text-2xl font-bold">My Clubs</h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h2 className="text-lg font-medium mb-4">Joined Clubs</h2>
+              <StudentClubs 
+                clubs={joinedClubs}
+                isLoading={isLoading}
+              />
+            </div>
+            <div>
+              <h2 className="text-lg font-medium mb-4">Available Clubs</h2>
+              <AvailableClubs 
+                clubs={clubs}
+                joinedClubIds={joinedClubIds}
+                isLoading={isLoading}
+                onJoinClub={joinClub}
+              />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Default overview page
+    return (
+      <>
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground">Welcome back, {user.name}</p>
@@ -139,6 +198,14 @@ const StudentDashboard: React.FC = () => {
             />
           </div>
         </div>
+      </>
+    );
+  };
+
+  return (
+    <DashboardLayout sidebar={<StudentSidebar />}>
+      <div className="container">
+        {renderContent()}
       </div>
     </DashboardLayout>
   );
