@@ -112,9 +112,9 @@ const AdminDashboard: React.FC = () => {
             {systemAlerts.map((alert, index) => (
               <div key={index} className="p-4 border rounded-lg shadow-sm">
                 <h3 className="font-medium">{alert.title}</h3>
-                <p className="text-muted-foreground">{alert.message}</p>
+                <p className="text-muted-foreground">{alert.title}</p>
                 <div className="text-xs text-muted-foreground mt-2">
-                  {alert.timestamp}
+                  {alert.time}
                 </div>
               </div>
             ))}
