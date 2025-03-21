@@ -16,6 +16,7 @@ interface CreateEventDialogProps {
     category: string;
     maxParticipants: string;
     clubId: string;
+    imageUrl?: string; // Added field for event banner/poster
     tagline?: string;
     eventType?: string;
     registrationDeadline?: string;

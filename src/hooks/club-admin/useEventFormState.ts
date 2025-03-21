@@ -11,6 +11,7 @@ export const useEventFormState = () => {
     category: '',
     maxParticipants: '',
     clubId: '',
+    imageUrl: '', // Added field for event banner/poster
     
     // Initialize new fields
     tagline: '',

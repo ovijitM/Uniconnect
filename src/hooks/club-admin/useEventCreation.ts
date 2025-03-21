@@ -63,6 +63,7 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
           max_participants: eventFormData.maxParticipants ? parseInt(eventFormData.maxParticipants) : null,
           club_id: eventFormData.clubId,
           status: 'upcoming',
+          image_url: eventFormData.imageUrl || null, // Added imageUrl field
           
           // New fields
           tagline: eventFormData.tagline || null,
@@ -127,6 +128,7 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         category: '',
         maxParticipants: '',
         clubId: '',
+        imageUrl: '', // Reset imageUrl field
         tagline: '',
         eventType: 'in-person',
         registrationDeadline: '',

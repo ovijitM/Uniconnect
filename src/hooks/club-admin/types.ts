@@ -36,6 +36,7 @@ export interface EventFormData {
   category: string;
   maxParticipants: string;
   clubId: string;
+  imageUrl: string; // Added field for event banner/poster
   
   // New fields
   tagline: string;
