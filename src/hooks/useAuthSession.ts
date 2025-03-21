@@ -36,6 +36,9 @@ export const useAuthSession = () => {
         isLoading: false,
         error: null
       });
+
+      // Store user in localStorage for persistence
+      localStorage.setItem('authUser', JSON.stringify(user));
     } catch (error) {
       console.error('Error fetching profile:', error);
       setAuthState({
@@ -48,6 +51,17 @@ export const useAuthSession = () => {
 
   const checkCurrentSession = async () => {
     try {
+      // First try to get user from localStorage to prevent flashing
+      const storedUser = localStorage.getItem('authUser');
+      if (storedUser) {
+        setAuthState({
+          user: JSON.parse(storedUser),
+          isLoading: true, // Still loading because we need to verify with Supabase
+          error: null
+        });
+      }
+
+      // Then verify with Supabase
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
@@ -57,6 +71,8 @@ export const useAuthSession = () => {
       if (session) {
         await fetchUserProfile(session);
       } else {
+        // Clear stored user if no valid session
+        localStorage.removeItem('authUser');
         setAuthState({
           user: null,
           isLoading: false,
@@ -65,6 +81,8 @@ export const useAuthSession = () => {
       }
     } catch (error) {
       console.error('Error getting session:', error);
+      // Clear stored user on error
+      localStorage.removeItem('authUser');
       setAuthState({
         user: null,
         isLoading: false,
@@ -77,11 +95,13 @@ export const useAuthSession = () => {
     // Check if user is already logged in using Supabase
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setAuthState(prev => ({ ...prev, isLoading: true }));
-
+        console.log('Auth state changed:', event, !!session);
+        
         if (session) {
           await fetchUserProfile(session);
-        } else {
+        } else if (event === 'SIGNED_OUT') {
+          // Only clear user on explicit sign out
+          localStorage.removeItem('authUser');
           setAuthState({
             user: null,
             isLoading: false,

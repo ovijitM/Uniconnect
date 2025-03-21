@@ -148,6 +148,8 @@ export const useAuthActions = (
   const logout = async () => {
     try {
       await supabase.auth.signOut();
+      // Clear stored user on logout
+      localStorage.removeItem('authUser');
       setAuthState({ user: null, isLoading: false, error: null });
     } catch (error) {
       console.error('Error during logout:', error);
@@ -175,10 +177,16 @@ export const useAuthActions = (
       }
       
       // Update local state
+      const updatedUser = authState.user ? { ...authState.user, ...userData } : null;
       setAuthState(prev => ({
         ...prev,
-        user: prev.user ? { ...prev.user, ...userData } : null
+        user: updatedUser
       }));
+      
+      // Update stored user
+      if (updatedUser) {
+        localStorage.setItem('authUser', JSON.stringify(updatedUser));
+      }
     } catch (error) {
       console.error('Error updating user:', error);
     }
