@@ -1,8 +1,7 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader } from 'lucide-react';
 import BasicInfoTab from './club-profile/BasicInfoTab';
 import DetailsTab from './club-profile/DetailsTab';
 import SocialMediaTab from './club-profile/SocialMediaTab';
@@ -12,21 +11,24 @@ import EmptyState from './club-profile/EmptyState';
 import LoadingState from './club-profile/LoadingState';
 import { useClubProfileSettings } from '@/hooks/club-admin/useClubProfileSettings';
 import { useClubContent } from '@/hooks/club-admin/useClubContent';
+import { Club } from '@/types';
 
 interface ClubProfileSettingsProps {
-  clubId: string;
+  club: Club;
+  onRefresh: () => void;
+  isLoading: boolean;
 }
 
-const ClubProfileSettings: React.FC<ClubProfileSettingsProps> = ({ clubId }) => {
+const ClubProfileSettings: React.FC<ClubProfileSettingsProps> = ({ club, onRefresh, isLoading }) => {
   const [activeTab, setActiveTab] = useState('basic-info');
+  
   const { 
     profileData, 
     setProfileData, 
     handleInputChange, 
-    saveClubProfile, 
-    isLoading, 
-    isSaving 
-  } = useClubProfileSettings(clubId);
+    updateClubProfile, 
+    isSubmitting 
+  } = useClubProfileSettings(club, onRefresh);
   
   const { 
     announcements, 
@@ -36,22 +38,13 @@ const ClubProfileSettings: React.FC<ClubProfileSettingsProps> = ({ clubId }) => 
     fetchClubContent, 
     postAnnouncement, 
     postActivityUpdate 
-  } = useClubContent(clubId);
-
-  const handleSave = () => {
-    saveClubProfile(profileData);
-  };
-
-  useEffect(() => {
-    // This effect is just to prevent showing "tab-content" warnings in the console
-    setActiveTab('basic-info');
-  }, []);
+  } = useClubContent(club?.id);
 
   if (isLoading) {
     return <LoadingState />;
   }
 
-  if (!clubId) {
+  if (!club) {
     return <EmptyState />;
   }
 
@@ -71,8 +64,8 @@ const ClubProfileSettings: React.FC<ClubProfileSettingsProps> = ({ clubId }) => 
             profileData={profileData} 
             setProfileData={setProfileData} 
             handleInputChange={handleInputChange} 
-            isSaving={isSaving}
-            handleSave={handleSave}
+            isSaving={isSubmitting}
+            handleSave={updateClubProfile}
           />
         </TabsContent>
 
@@ -81,8 +74,8 @@ const ClubProfileSettings: React.FC<ClubProfileSettingsProps> = ({ clubId }) => 
             profileData={profileData}
             setProfileData={setProfileData}
             handleInputChange={handleInputChange}
-            isSaving={isSaving}
-            handleSave={handleSave}
+            isSaving={isSubmitting}
+            handleSave={updateClubProfile}
           />
         </TabsContent>
 
@@ -91,14 +84,14 @@ const ClubProfileSettings: React.FC<ClubProfileSettingsProps> = ({ clubId }) => 
             profileData={profileData}
             setProfileData={setProfileData}
             handleInputChange={handleInputChange}
-            isSaving={isSaving}
-            handleSave={handleSave}
+            isSaving={isSubmitting}
+            handleSave={updateClubProfile}
           />
         </TabsContent>
 
         <TabsContent value="announcements" className="space-y-6">
           <AnnouncementsTab
-            clubId={clubId}
+            clubId={club.id}
             announcements={announcements}
             isLoading={isContentLoading}
             isSaving={isContentSaving}
@@ -109,7 +102,7 @@ const ClubProfileSettings: React.FC<ClubProfileSettingsProps> = ({ clubId }) => 
 
         <TabsContent value="activity" className="space-y-6">
           <ActivityPostsTab
-            clubId={clubId}
+            clubId={club.id}
             activityPosts={activityPosts}
             isLoading={isContentLoading}
             isSaving={isContentSaving}

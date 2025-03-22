@@ -22,7 +22,7 @@ interface ActivityPost {
   created_at: string;
 }
 
-export const useClubContent = (clubId: string) => {
+export const useClubContent = (clubId: string | undefined) => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [activityPosts, setActivityPosts] = useState<ActivityPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,6 +73,15 @@ export const useClubContent = (clubId: string) => {
   }, [clubId]);
 
   const postAnnouncement = async (title: string, content: string) => {
+    if (!clubId) {
+      toast({
+        title: 'Error',
+        description: 'Club ID is missing',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSaving(true);
     try {
       const { error } = await supabase
@@ -108,6 +117,15 @@ export const useClubContent = (clubId: string) => {
   };
 
   const postActivityUpdate = async (title: string, content: string, imageUrl?: string) => {
+    if (!clubId) {
+      toast({
+        title: 'Error',
+        description: 'Club ID is missing',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setIsSaving(true);
     try {
       const { error } = await supabase
