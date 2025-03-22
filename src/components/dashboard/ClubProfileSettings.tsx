@@ -1,14 +1,18 @@
+
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Club } from '@/types';
 import { useClubProfileSettings } from '@/hooks/club-admin/useClubProfileSettings';
 import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+// Import refactored components
+import BasicInfoTab from './club-profile/BasicInfoTab';
+import DetailsTab from './club-profile/DetailsTab';
+import SocialMediaTab from './club-profile/SocialMediaTab';
+import LoadingState from './club-profile/LoadingState';
+import EmptyState from './club-profile/EmptyState';
 
 interface ClubProfileSettingsProps {
   club: Club | null;
@@ -61,33 +65,11 @@ const ClubProfileSettings: React.FC<ClubProfileSettingsProps> = ({
   }, [club]);
 
   if (isLoading) {
-    return (
-      <Card className="w-full">
-        <CardHeader className="text-center">
-          <CardTitle>Club Profile Settings</CardTitle>
-          <CardDescription>Loading profile data...</CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center p-6">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </CardContent>
-      </Card>
-    );
+    return <LoadingState />;
   }
 
   if (!club) {
-    return (
-      <Card className="w-full">
-        <CardHeader className="text-center">
-          <CardTitle>Club Profile Settings</CardTitle>
-          <CardDescription>No club selected</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-muted-foreground">
-            Please select a club to edit its profile.
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return <EmptyState />;
   }
 
   return (
@@ -104,366 +86,26 @@ const ClubProfileSettings: React.FC<ClubProfileSettingsProps> = ({
             <TabsTrigger value="social">Contact & Social</TabsTrigger>
           </TabsList>
           
-          {/* Basic Info Tab */}
-          <TabsContent value="basic" className="space-y-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Name *
-              </Label>
-              <Input
-                id="name"
-                name="name"
-                value={profileData.name}
-                onChange={handleInputChange}
-                className="col-span-3"
-                required
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="category" className="text-right">
-                Category *
-              </Label>
-              <Input
-                id="category"
-                name="category"
-                value={profileData.category}
-                onChange={handleInputChange}
-                className="col-span-3"
-                required
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="tagline" className="text-right">
-                Tagline
-              </Label>
-              <Input
-                id="tagline"
-                name="tagline"
-                value={profileData.tagline}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="A short catchy phrase for your club"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">
-                Description *
-              </Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={profileData.description}
-                onChange={handleInputChange}
-                className="col-span-3"
-                rows={4}
-                required
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="logoUrl" className="text-right">
-                Logo URL
-              </Label>
-              <Input
-                id="logoUrl"
-                name="logoUrl"
-                value={profileData.logoUrl}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="https://example.com/logo.png"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="establishedYear" className="text-right">
-                Established Year
-              </Label>
-              <Input
-                id="establishedYear"
-                name="establishedYear"
-                value={profileData.establishedYear}
-                onChange={handleInputChange}
-                className="col-span-3"
-                type="number"
-                placeholder="e.g., 2020"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="affiliation" className="text-right">
-                Affiliation
-              </Label>
-              <Input
-                id="affiliation"
-                name="affiliation"
-                value={profileData.affiliation}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="Department or external organization"
-              />
-            </div>
+          <TabsContent value="basic">
+            <BasicInfoTab 
+              profileData={profileData} 
+              handleInputChange={handleInputChange} 
+            />
           </TabsContent>
           
-          {/* Details Tab */}
-          <TabsContent value="details" className="space-y-4">
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="whyJoin" className="text-right mt-3">
-                Why Join
-              </Label>
-              <Textarea
-                id="whyJoin"
-                name="whyJoin"
-                value={profileData.whyJoin}
-                onChange={handleInputChange}
-                className="col-span-3"
-                rows={3}
-                placeholder="Why students should join your club"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="regularEvents" className="text-right mt-3">
-                Regular Events
-              </Label>
-              <Textarea
-                id="regularEvents"
-                name="regularEvents"
-                value={profileData.regularEvents}
-                onChange={handleInputChange}
-                className="col-span-3"
-                rows={2}
-                placeholder="List regular events, separated by commas"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="signatureEvents" className="text-right mt-3">
-                Signature Events
-              </Label>
-              <Textarea
-                id="signatureEvents"
-                name="signatureEvents"
-                value={profileData.signatureEvents}
-                onChange={handleInputChange}
-                className="col-span-3"
-                rows={2}
-                placeholder="List your signature events, separated by commas"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="communityEngagement" className="text-right mt-3">
-                Community Engagement
-              </Label>
-              <Textarea
-                id="communityEngagement"
-                name="communityEngagement"
-                value={profileData.communityEngagement}
-                onChange={handleInputChange}
-                className="col-span-3"
-                rows={2}
-                placeholder="How your club engages with the community"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="whoCanJoin" className="text-right mt-3">
-                Who Can Join
-              </Label>
-              <Textarea
-                id="whoCanJoin"
-                name="whoCanJoin"
-                value={profileData.whoCanJoin}
-                onChange={handleInputChange}
-                className="col-span-3"
-                rows={2}
-                placeholder="Eligibility criteria for joining"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="membershipFee" className="text-right">
-                Membership Fee
-              </Label>
-              <Select 
-                name="membershipFee" 
-                value={profileData.membershipFee}
-                onValueChange={(value) => {
-                  setProfileData(prev => ({ ...prev, membershipFee: value }));
-                }}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select membership fee" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Free">Free</SelectItem>
-                  <SelectItem value="Paid">Paid</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="howToJoin" className="text-right mt-3">
-                How To Join
-              </Label>
-              <Textarea
-                id="howToJoin"
-                name="howToJoin"
-                value={profileData.howToJoin}
-                onChange={handleInputChange}
-                className="col-span-3"
-                rows={2}
-                placeholder="Process for joining your club"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="presidentName" className="text-right">
-                President Name
-              </Label>
-              <Input
-                id="presidentName"
-                name="presidentName"
-                value={profileData.presidentName}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="Club president's name"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="presidentContact" className="text-right">
-                President Contact
-              </Label>
-              <Input
-                id="presidentContact"
-                name="presidentContact"
-                value={profileData.presidentContact}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="Club president's contact info"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="executiveMembers" className="text-right mt-3">
-                Executive Members
-              </Label>
-              <Textarea
-                id="executiveMembers"
-                name="executiveMembers"
-                value={profileData.executiveMembers}
-                onChange={handleInputChange}
-                className="col-span-3"
-                rows={3}
-                placeholder="JSON format: {'role': 'name'}"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="advisors" className="text-right mt-3">
-                Advisors
-              </Label>
-              <Textarea
-                id="advisors"
-                name="advisors"
-                value={profileData.advisors}
-                onChange={handleInputChange}
-                className="col-span-3"
-                rows={2}
-                placeholder="List advisors, separated by commas"
-              />
-            </div>
+          <TabsContent value="details">
+            <DetailsTab 
+              profileData={profileData} 
+              handleInputChange={handleInputChange}
+              setProfileData={setProfileData} 
+            />
           </TabsContent>
           
-          {/* Social Media Tab */}
-          <TabsContent value="social" className="space-y-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="phoneNumber" className="text-right">
-                Phone Number
-              </Label>
-              <Input
-                id="phoneNumber"
-                name="phoneNumber"
-                value={profileData.phoneNumber}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="Contact phone number"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="website" className="text-right">
-                Website
-              </Label>
-              <Input
-                id="website"
-                name="website"
-                value={profileData.website}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="https://your-club-website.com"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="facebookLink" className="text-right">
-                Facebook
-              </Label>
-              <Input
-                id="facebookLink"
-                name="facebookLink"
-                value={profileData.facebookLink}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="https://facebook.com/your-club"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="instagramLink" className="text-right">
-                Instagram
-              </Label>
-              <Input
-                id="instagramLink"
-                name="instagramLink"
-                value={profileData.instagramLink}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="https://instagram.com/your-club"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="twitterLink" className="text-right">
-                Twitter
-              </Label>
-              <Input
-                id="twitterLink"
-                name="twitterLink"
-                value={profileData.twitterLink}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="https://twitter.com/your-club"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="discordLink" className="text-right">
-                Discord
-              </Label>
-              <Input
-                id="discordLink"
-                name="discordLink"
-                value={profileData.discordLink}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="https://discord.gg/your-invite"
-              />
-            </div>
+          <TabsContent value="social">
+            <SocialMediaTab 
+              profileData={profileData} 
+              handleInputChange={handleInputChange} 
+            />
           </TabsContent>
         </Tabs>
       </CardContent>
