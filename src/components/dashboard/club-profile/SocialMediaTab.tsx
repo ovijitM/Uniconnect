@@ -1,105 +1,125 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Save, Globe, Facebook, Instagram, Twitter, MessageCircle } from 'lucide-react';
 
 interface SocialMediaTabProps {
   profileData: {
-    phoneNumber: string;
     website: string;
     facebookLink: string;
     instagramLink: string;
     twitterLink: string;
     discordLink: string;
+    [key: string]: any;
   };
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  setProfileData: React.Dispatch<React.SetStateAction<any>>;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  isSaving: boolean;
+  handleSave: () => void;
 }
 
-const SocialMediaTab: React.FC<SocialMediaTabProps> = ({ profileData, handleInputChange }) => {
+const SocialMediaTab: React.FC<SocialMediaTabProps> = ({ 
+  profileData, 
+  setProfileData,
+  handleInputChange, 
+  isSaving,
+  handleSave 
+}) => {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="phoneNumber" className="text-right">
-          Phone Number
-        </Label>
-        <Input
-          id="phoneNumber"
-          name="phoneNumber"
-          value={profileData.phoneNumber}
-          onChange={handleInputChange}
-          className="col-span-3"
-          placeholder="Contact phone number"
-        />
-      </div>
-      
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="website" className="text-right">
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="website" className="flex items-center">
+          <Globe className="h-4 w-4 mr-2" />
           Website
         </Label>
         <Input
           id="website"
           name="website"
-          value={profileData.website}
+          value={profileData.website || ''}
           onChange={handleInputChange}
-          className="col-span-3"
-          placeholder="https://your-club-website.com"
+          placeholder="https://yourclub.edu"
         />
       </div>
-      
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="facebookLink" className="text-right">
-          Facebook
+
+      <div className="space-y-2">
+        <Label htmlFor="facebookLink" className="flex items-center">
+          <Facebook className="h-4 w-4 mr-2" />
+          Facebook Page
         </Label>
         <Input
           id="facebookLink"
           name="facebookLink"
-          value={profileData.facebookLink}
+          value={profileData.facebookLink || ''}
           onChange={handleInputChange}
-          className="col-span-3"
-          placeholder="https://facebook.com/your-club"
+          placeholder="https://facebook.com/yourclubpage"
         />
       </div>
-      
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="instagramLink" className="text-right">
+
+      <div className="space-y-2">
+        <Label htmlFor="instagramLink" className="flex items-center">
+          <Instagram className="h-4 w-4 mr-2" />
           Instagram
         </Label>
         <Input
           id="instagramLink"
           name="instagramLink"
-          value={profileData.instagramLink}
+          value={profileData.instagramLink || ''}
           onChange={handleInputChange}
-          className="col-span-3"
-          placeholder="https://instagram.com/your-club"
+          placeholder="https://instagram.com/yourclub"
         />
       </div>
-      
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="twitterLink" className="text-right">
+
+      <div className="space-y-2">
+        <Label htmlFor="twitterLink" className="flex items-center">
+          <Twitter className="h-4 w-4 mr-2" />
           Twitter
         </Label>
         <Input
           id="twitterLink"
           name="twitterLink"
-          value={profileData.twitterLink}
+          value={profileData.twitterLink || ''}
           onChange={handleInputChange}
-          className="col-span-3"
-          placeholder="https://twitter.com/your-club"
+          placeholder="https://twitter.com/yourclub"
         />
       </div>
-      
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="discordLink" className="text-right">
-          Discord
+
+      <div className="space-y-2">
+        <Label htmlFor="discordLink" className="flex items-center">
+          <MessageCircle className="h-4 w-4 mr-2" />
+          Discord Invite
         </Label>
         <Input
           id="discordLink"
           name="discordLink"
-          value={profileData.discordLink}
+          value={profileData.discordLink || ''}
           onChange={handleInputChange}
-          className="col-span-3"
-          placeholder="https://discord.gg/your-invite"
+          placeholder="https://discord.gg/yourclub"
         />
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Saving...
+            </>
+          ) : (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              Save Social Media
+            </>
+          )}
+        </Button>
       </div>
     </div>
   );

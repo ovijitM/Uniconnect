@@ -4,10 +4,29 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 
+// Define interfaces for our data types
+interface Announcement {
+  id: string;
+  club_id: string;
+  title: string;
+  content: string;
+  created_at: string;
+}
+
+interface ActivityPost {
+  id: string;
+  club_id: string;
+  title: string;
+  content: string;
+  image_url?: string;
+  created_at: string;
+}
+
 export const useClubContent = (clubId: string) => {
-  const [announcements, setAnnouncements] = useState<any[]>([]);
-  const [activityPosts, setActivityPosts] = useState<any[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [activityPosts, setActivityPosts] = useState<ActivityPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
   const fetchClubContent = async () => {
@@ -54,6 +73,7 @@ export const useClubContent = (clubId: string) => {
   }, [clubId]);
 
   const postAnnouncement = async (title: string, content: string) => {
+    setIsSaving(true);
     try {
       const { error } = await supabase
         .from('club_announcements')
@@ -82,10 +102,13 @@ export const useClubContent = (clubId: string) => {
         variant: 'destructive',
       });
       throw error;
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const postActivityUpdate = async (title: string, content: string, imageUrl?: string) => {
+    setIsSaving(true);
     try {
       const { error } = await supabase
         .from('club_activity_posts')
@@ -115,6 +138,8 @@ export const useClubContent = (clubId: string) => {
         variant: 'destructive',
       });
       throw error;
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -122,6 +147,7 @@ export const useClubContent = (clubId: string) => {
     announcements,
     activityPosts,
     isLoading,
+    isSaving,
     fetchClubContent,
     postAnnouncement,
     postActivityUpdate
