@@ -1,133 +1,73 @@
 
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Calendar, 
-  Settings, 
-  LogOut,
-  PlusCircle,
-  Briefcase,
-  Clipboard
-} from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Sidebar, 
-  SidebarHeader, 
-  SidebarContent, 
-  SidebarFooter,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarSeparator
-} from '@/components/ui/sidebar';
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { Calendar, Home, Users, ClipboardCheck, Settings } from 'lucide-react';
 
 const ClubAdminSidebar: React.FC = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const pathname = location.pathname;
 
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
-
-  const handleSignOut = async () => {
-    await logout();
-    navigate('/login');
-  };
+  const menuItems = [
+    {
+      icon: <Home className="h-4 w-4 mr-2" />,
+      name: 'Overview',
+      href: '/club-admin-dashboard',
+      active: pathname === '/club-admin-dashboard'
+    },
+    {
+      icon: <Calendar className="h-4 w-4 mr-2" />,
+      name: 'Events',
+      href: '/club-admin-dashboard/events',
+      active: pathname.includes('/club-admin-dashboard/events')
+    },
+    {
+      icon: <Users className="h-4 w-4 mr-2" />,
+      name: 'Clubs',
+      href: '/club-admin-dashboard/clubs',
+      active: pathname.includes('/club-admin-dashboard/clubs')
+    },
+    {
+      icon: <Users className="h-4 w-4 mr-2" />,
+      name: 'Members',
+      href: '/club-admin-dashboard/members',
+      active: pathname.includes('/club-admin-dashboard/members')
+    },
+    {
+      icon: <ClipboardCheck className="h-4 w-4 mr-2" />,
+      name: 'Attendance',
+      href: '/club-admin-dashboard/attendance',
+      active: pathname.includes('/club-admin-dashboard/attendance')
+    },
+    {
+      icon: <Settings className="h-4 w-4 mr-2" />,
+      name: 'Club Profile',
+      href: '/club-admin-dashboard/profile',
+      active: pathname.includes('/club-admin-dashboard/profile')
+    }
+  ];
 
   return (
-    <Sidebar>
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
-          <Briefcase className="h-6 w-6 text-primary" />
-          <div className="font-semibold text-lg">Club Management</div>
-        </div>
-        <p className="text-sm text-muted-foreground mt-1">
-          {user?.name || 'Club Administrator'}
-        </p>
-      </SidebarHeader>
-      
-      <SidebarContent>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton 
-              isActive={isActive('/club-admin-dashboard')}
-              onClick={() => navigate('/club-admin-dashboard')}
-              tooltip="Dashboard"
-            >
-              <LayoutDashboard className="h-5 w-5" />
-              <span>Overview</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton 
-              onClick={() => navigate('/club-admin-dashboard', { state: { openEventDialog: true }})}
-              tooltip="Create Event"
-            >
-              <PlusCircle className="h-5 w-5" />
-              <span>Create Event</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton 
-              isActive={isActive('/club-admin-dashboard/events')}
-              onClick={() => navigate('/club-admin-dashboard/events')}
-              tooltip="Events"
-            >
-              <Calendar className="h-5 w-5" />
-              <span>Manage Events</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton 
-              isActive={isActive('/club-admin-dashboard/clubs')}
-              onClick={() => navigate('/club-admin-dashboard/clubs')}
-              tooltip="Clubs"
-            >
-              <Briefcase className="h-5 w-5" />
-              <span>Manage Clubs</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton 
-              isActive={isActive('/club-admin-dashboard/members')}
-              onClick={() => navigate('/club-admin-dashboard/members')}
-              tooltip="Members"
-            >
-              <Users className="h-5 w-5" />
-              <span>Club Members</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          
-          <SidebarMenuItem>
-            <SidebarMenuButton 
-              isActive={isActive('/club-admin-dashboard/attendance')}
-              onClick={() => navigate('/club-admin-dashboard/attendance')}
-              tooltip="Attendance"
-            >
-              <Clipboard className="h-5 w-5" />
-              <span>Attendance</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarContent>
-      
-      <SidebarFooter>
-        <SidebarSeparator />
-        <div className="p-4">
-          <SidebarMenuButton onClick={handleSignOut} tooltip="Sign Out">
-            <LogOut className="h-5 w-5" />
-            <span>Sign Out</span>
-          </SidebarMenuButton>
-        </div>
-      </SidebarFooter>
-    </Sidebar>
+    <aside className="py-6 px-2 md:px-4">
+      <h2 className="text-lg font-semibold tracking-tight mb-4 px-4">Club Admin</h2>
+      <nav className="space-y-1">
+        {menuItems.map((item) => (
+          <Link
+            key={item.href}
+            to={item.href}
+            className={cn(
+              "flex items-center px-4 py-2 text-sm rounded-md w-full",
+              item.active
+                ? "bg-accent text-accent-foreground font-medium"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+            )}
+          >
+            {item.icon}
+            {item.name}
+          </Link>
+        ))}
+      </nav>
+    </aside>
   );
 };
 
