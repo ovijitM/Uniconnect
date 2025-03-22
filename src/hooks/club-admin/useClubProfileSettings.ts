@@ -34,7 +34,8 @@ export const useClubProfileSettings = (club: Club | null, onSuccess: () => void)
     discordLink: club?.discordLink || ''
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // Updated to accept HTMLSelectElement as well
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setProfileData(prev => ({ ...prev, [name]: value }));
   };

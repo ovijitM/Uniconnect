@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -293,10 +292,7 @@ const ClubProfileSettings: React.FC<ClubProfileSettingsProps> = ({
                 name="membershipFee" 
                 value={profileData.membershipFee}
                 onValueChange={(value) => {
-                  const event = {
-                    target: { name: 'membershipFee', value }
-                  } as React.ChangeEvent<HTMLSelectElement>;
-                  handleInputChange(event);
+                  setProfileData(prev => ({ ...prev, membershipFee: value }));
                 }}
               >
                 <SelectTrigger className="col-span-3">
