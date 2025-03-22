@@ -1,68 +1,50 @@
 
-import React, { useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { SaveAll } from 'lucide-react';
 import { Club } from '@/types';
 import { useClubProfileSettings } from '@/hooks/club-admin/useClubProfileSettings';
-import { Loader2 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useClubContent } from '@/hooks/club-admin/useClubContent';
 
-// Import refactored components
-import BasicInfoTab from './club-profile/BasicInfoTab';
-import DetailsTab from './club-profile/DetailsTab';
-import SocialMediaTab from './club-profile/SocialMediaTab';
-import LoadingState from './club-profile/LoadingState';
-import EmptyState from './club-profile/EmptyState';
+// Import the tab components
+import BasicInfoTab from '@/components/dashboard/club-profile/BasicInfoTab';
+import DetailsTab from '@/components/dashboard/club-profile/DetailsTab';
+import SocialMediaTab from '@/components/dashboard/club-profile/SocialMediaTab';
+import AnnouncementsTab from '@/components/dashboard/club-profile/AnnouncementsTab';
+import ActivityPostsTab from '@/components/dashboard/club-profile/ActivityPostsTab';
+import EmptyState from '@/components/dashboard/club-profile/EmptyState';
+import LoadingState from '@/components/dashboard/club-profile/LoadingState';
 
 interface ClubProfileSettingsProps {
   club: Club | null;
-  onRefresh: () => void;
   isLoading: boolean;
+  onRefresh: () => void;
 }
 
 const ClubProfileSettings: React.FC<ClubProfileSettingsProps> = ({
   club,
-  onRefresh,
-  isLoading
+  isLoading,
+  onRefresh
 }) => {
+  const [activeTab, setActiveTab] = useState('basic-info');
+  
   const {
     profileData,
-    setProfileData,
+    isSaving,
     handleInputChange,
-    updateClubProfile,
-    isSubmitting
-  } = useClubProfileSettings(club, onRefresh);
-
-  useEffect(() => {
-    if (club) {
-      setProfileData({
-        name: club.name || '',
-        description: club.description || '',
-        category: club.category || '',
-        tagline: club.tagline || '',
-        logoUrl: club.logoUrl || '',
-        establishedYear: club.establishedYear ? String(club.establishedYear) : '',
-        affiliation: club.affiliation || '',
-        whyJoin: club.whyJoin || '',
-        regularEvents: club.regularEvents ? club.regularEvents.join(', ') : '',
-        signatureEvents: club.signatureEvents ? club.signatureEvents.join(', ') : '',
-        communityEngagement: club.communityEngagement || '',
-        whoCanJoin: club.whoCanJoin || '',
-        membershipFee: club.membershipFee || 'Free',
-        howToJoin: club.howToJoin || '',
-        presidentName: club.presidentName || '',
-        presidentContact: club.presidentContact || '',
-        executiveMembers: club.executiveMembers ? JSON.stringify(club.executiveMembers) : '',
-        advisors: club.advisors ? club.advisors.join(', ') : '',
-        phoneNumber: club.phoneNumber || '',
-        website: club.website || '',
-        facebookLink: club.facebookLink || '',
-        instagramLink: club.instagramLink || '',
-        twitterLink: club.twitterLink || '',
-        discordLink: club.discordLink || ''
-      });
-    }
-  }, [club]);
+    handleSave
+  } = useClubProfileSettings(club?.id || '');
+  
+  const {
+    announcements,
+    activityPosts,
+    isLoading: isContentLoading,
+    fetchClubContent,
+    postAnnouncement,
+    postActivityUpdate
+  } = useClubContent(club?.id || '');
 
   if (isLoading) {
     return <LoadingState />;
@@ -74,54 +56,78 @@ const ClubProfileSettings: React.FC<ClubProfileSettingsProps> = ({
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Club Profile Settings</CardTitle>
-        <CardDescription>Update your club's profile information</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="social">Contact & Social</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="basic">
+      <Tabs 
+        defaultValue="basic-info" 
+        className="w-full"
+        value={activeTab}
+        onValueChange={setActiveTab}
+      >
+        <div className="p-6 border-b">
+          <div className="flex justify-between items-center">
+            <TabsList>
+              <TabsTrigger value="basic-info">Basic Info</TabsTrigger>
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="social-media">Social Media</TabsTrigger>
+              <TabsTrigger value="announcements">Announcements</TabsTrigger>
+              <TabsTrigger value="activity">Recent Activity</TabsTrigger>
+            </TabsList>
+            
+            {(activeTab === 'basic-info' || activeTab === 'details' || activeTab === 'social-media') && (
+              <Button 
+                onClick={handleSave} 
+                disabled={isSaving}
+                className="ml-auto"
+              >
+                <SaveAll className="mr-2 h-4 w-4" />
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        <div className="p-6">
+          <TabsContent value="basic-info" className="mt-0">
             <BasicInfoTab 
               profileData={profileData} 
               handleInputChange={handleInputChange} 
             />
           </TabsContent>
           
-          <TabsContent value="details">
+          <TabsContent value="details" className="mt-0">
             <DetailsTab 
               profileData={profileData} 
-              handleInputChange={handleInputChange}
-              setProfileData={setProfileData} 
+              handleInputChange={handleInputChange} 
             />
           </TabsContent>
           
-          <TabsContent value="social">
+          <TabsContent value="social-media" className="mt-0">
             <SocialMediaTab 
               profileData={profileData} 
               handleInputChange={handleInputChange} 
             />
           </TabsContent>
-        </Tabs>
-      </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button 
-          onClick={updateClubProfile} 
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : 'Save Changes'}
-        </Button>
-      </CardFooter>
+          
+          <TabsContent value="announcements" className="mt-0">
+            <AnnouncementsTab 
+              clubId={club.id}
+              announcements={announcements}
+              isLoading={isContentLoading}
+              onPostAnnouncement={postAnnouncement}
+              onRefresh={fetchClubContent}
+            />
+          </TabsContent>
+          
+          <TabsContent value="activity" className="mt-0">
+            <ActivityPostsTab 
+              clubId={club.id}
+              activityPosts={activityPosts}
+              isLoading={isContentLoading}
+              onPostActivity={postActivityUpdate}
+              onRefresh={fetchClubContent}
+            />
+          </TabsContent>
+        </div>
+      </Tabs>
     </Card>
   );
 };

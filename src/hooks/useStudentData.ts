@@ -153,6 +153,37 @@ export const useStudentData = () => {
     }
   };
 
+  // Function to leave a club
+  const leaveClub = async (clubId: string) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('club_members')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('club_id', clubId);
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Success',
+        description: 'You have left the club',
+        variant: 'default',
+      });
+      
+      // Update the local state
+      setJoinedClubs(prev => prev.filter(club => club.id !== clubId));
+    } catch (error) {
+      console.error('Error leaving club:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to leave club',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Function to register for an event
   const registerForEvent = async (eventId: string) => {
     if (!user) return;
@@ -210,6 +241,37 @@ export const useStudentData = () => {
     }
   };
 
+  // Function to unregister from an event
+  const unregisterFromEvent = async (eventId: string) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('event_participants')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('event_id', eventId);
+      
+      if (error) throw error;
+      
+      toast({
+        title: 'Success',
+        description: 'You have unregistered from the event',
+        variant: 'default',
+      });
+      
+      // Update the local state
+      setRegisteredEvents(prev => prev.filter(event => event.id !== eventId));
+    } catch (error) {
+      console.error('Error unregistering from event:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to unregister from event',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return {
     isLoading,
     clubs,
@@ -217,6 +279,8 @@ export const useStudentData = () => {
     joinedClubs,
     registeredEvents,
     joinClub,
-    registerForEvent
+    leaveClub,
+    registerForEvent,
+    unregisterFromEvent
   };
 };
