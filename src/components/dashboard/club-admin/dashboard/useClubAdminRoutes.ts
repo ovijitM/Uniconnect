@@ -10,7 +10,9 @@ export function useClubAdminRoutes() {
   const isAttendancePage = useMatch('/club-admin-dashboard/attendance');
   const isProfilePage = useMatch('/club-admin-dashboard/profile');
 
-  const currentView = isEventsPage ? 'events' 
+  // Explicitly type the currentView variable as the union type
+  const currentView: 'overview' | 'events' | 'clubs' | 'members' | 'attendance' | 'profile' = 
+    isEventsPage ? 'events' 
     : isClubsPage ? 'clubs'
     : isMembersPage ? 'members'
     : isAttendancePage ? 'attendance'
