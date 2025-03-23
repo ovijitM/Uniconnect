@@ -36,8 +36,10 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/events" element={<Events />} />
               <Route path="/events/:eventId" element={<EventDetail />} />
+              <Route path="/events/:eventId/edit" element={<ClubAdminDashboard />} />
               <Route path="/clubs" element={<Clubs />} />
               <Route path="/clubs/:clubId" element={<ClubDetail />} />
+              <Route path="/clubs/:clubId/edit" element={<ClubAdminDashboard />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/profile" element={<Profile />} />
@@ -53,6 +55,7 @@ const App = () => (
               <Route path="/club-admin-dashboard/clubs" element={<ClubAdminDashboard />} />
               <Route path="/club-admin-dashboard/members" element={<ClubAdminDashboard />} />
               <Route path="/club-admin-dashboard/attendance" element={<ClubAdminDashboard />} />
+              <Route path="/club-admin-dashboard/profile" element={<ClubAdminDashboard />} />
               
               {/* Admin dashboard routes */}
               <Route path="/admin-dashboard" element={<AdminDashboard />} />

@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClubAdminData } from '@/hooks/club-admin/useClubAdminData';
 import { useClubAdminForms } from '@/hooks/club-admin/useClubAdminForms';
@@ -15,7 +15,14 @@ const ClubAdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const params = useParams();
   const state = location.state as { openEventDialog?: boolean } | null;
+  
+  // Check if we're in an edit route
+  const isEventEdit = location.pathname.includes('/events/') && location.pathname.includes('/edit');
+  const isClubEdit = location.pathname.includes('/clubs/') && location.pathname.includes('/edit');
+  const eventId = params.eventId;
+  const clubId = params.clubId;
   
   // Use our custom hook to detect routes
   const { currentView } = useClubAdminRoutes();
@@ -55,7 +62,31 @@ const ClubAdminDashboard: React.FC = () => {
       // Clear the state to prevent reopening when navigating back
       navigate(location.pathname, { replace: true });
     }
-  }, [state]);
+    
+    // Handle event edit route
+    if (isEventEdit && eventId) {
+      const event = clubEvents.find(e => e.id === eventId);
+      if (event) {
+        handleEditEvent(eventId);
+      } else {
+        // If event not found, redirect to 404
+        navigate('/not-found');
+      }
+    }
+    
+    // Handle club edit route
+    if (isClubEdit && clubId) {
+      const club = adminClubs.find(c => c.id === clubId);
+      if (club) {
+        // Handle club edit
+        // This would typically open a dialog or redirect to a form
+        console.log('Editing club:', club);
+      } else {
+        // If club not found, redirect to 404
+        navigate('/not-found');
+      }
+    }
+  }, [state, isEventEdit, isClubEdit, eventId, clubId, clubEvents, adminClubs]);
 
   // Redirect if not logged in or not a club admin
   if (!user) return <Navigate to="/login" />;
@@ -66,7 +97,12 @@ const ClubAdminDashboard: React.FC = () => {
   };
 
   const handleEditEvent = (eventId: string) => {
-    navigate(`/events/${eventId}/edit`);
+    // Instead of navigating away, we'll open the edit dialog
+    // This is a temporary solution until we have a dedicated event edit page
+    setIsEventDialogOpen(true);
+    // Here we would populate the event form data with the event details
+    // This is simplified for now
+    console.log('Edit event:', eventId);
   };
 
   const handleRefreshAfterDelete = () => {
