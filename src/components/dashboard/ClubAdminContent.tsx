@@ -1,12 +1,11 @@
 
 import React from 'react';
-import UpcomingEvents from './UpcomingEvents';
-import ClubsList from './ClubsList';
-import EventsTable from './EventsTable';
-import MembersTable from './MembersTable';
-import ManageClubsTable from './ManageClubsTable';
-import StatCards from './StatCards';
-import AttendeeManagement from './AttendeeManagement';
+import StatCardsSection from './content/StatCardsSection';
+import QuickViewSection from './content/QuickViewSection';
+import AttendeeSection from './content/AttendeeSection';
+import ClubsSection from './content/ClubsSection';
+import EventsSection from './content/EventsSection';
+import MembersSection from './content/MembersSection';
 
 interface ClubAdminContentProps {
   activeEventCount: number;
@@ -47,7 +46,7 @@ const ClubAdminContent: React.FC<ClubAdminContentProps> = ({
 }) => {
   return (
     <>
-      <StatCards
+      <StatCardsSection
         activeEventCount={activeEventCount}
         totalMembersCount={totalMembersCount}
         pastEventCount={pastEventCount}
@@ -55,36 +54,28 @@ const ClubAdminContent: React.FC<ClubAdminContentProps> = ({
         isLoading={isLoading}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <UpcomingEvents 
-          events={clubEvents}
-          isLoading={isLoading}
-          onEditEvent={onEditEvent}
-          onViewEvent={onViewEvent}
-        />
-
-        <ClubsList 
-          clubs={adminClubs}
-          isLoading={isLoading}
-        />
-      </div>
+      <QuickViewSection
+        events={clubEvents}
+        clubs={adminClubs}
+        isLoading={isLoading}
+        onEditEvent={onEditEvent}
+        onViewEvent={onViewEvent}
+      />
 
       {selectedEventId && (
-        <div className="mb-6">
-          <AttendeeManagement 
-            eventId={selectedEventId}
-            eventTitle={selectedEventTitle}
-          />
-        </div>
+        <AttendeeSection
+          eventId={selectedEventId}
+          eventTitle={selectedEventTitle}
+        />
       )}
 
-      <ManageClubsTable
+      <ClubsSection
         clubs={adminClubs}
         isLoading={isLoading}
         onRefresh={onRefreshData}
       />
 
-      <EventsTable
+      <EventsSection
         events={clubEvents}
         isLoading={isLoading}
         onEditEvent={onEditEvent}
@@ -94,7 +85,7 @@ const ClubAdminContent: React.FC<ClubAdminContentProps> = ({
         onManageAttendees={onSelectEvent}
       />
 
-      <MembersTable
+      <MembersSection
         members={clubMembers}
         isLoading={isLoading}
       />
