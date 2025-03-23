@@ -39,31 +39,31 @@ const EventCardDetails: React.FC<EventCardDetailsProps> = ({
 
   return (
     <>
-      <div className="mb-2">
+      <div className="mb-1">
         <p className="text-xs font-medium text-muted-foreground">{organizerName}</p>
       </div>
-      <h3 className="text-xl font-medium mb-1 line-clamp-2">{title}</h3>
+      <h3 className="text-base font-medium mb-1 line-clamp-2">{title}</h3>
       {tagline && (
-        <p className="text-sm text-muted-foreground mb-2 italic line-clamp-1">{tagline}</p>
+        <p className="text-xs text-muted-foreground mb-1 italic line-clamp-1">{tagline}</p>
       )}
-      <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{description}</p>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Calendar className="w-4 h-4 mr-2" />
-          {formattedDate}
+      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{description}</p>
+      <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+        <div className="flex items-center text-xs text-muted-foreground">
+          <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
+          <span className="truncate">{formattedDate}</span>
         </div>
-        <div className="flex items-center text-sm text-muted-foreground">
-          <MapPin className="w-4 h-4 mr-2" />
-          {location}
+        <div className="flex items-center text-xs text-muted-foreground">
+          <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
+          <span className="truncate">{location}</span>
         </div>
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Tag className="w-4 h-4 mr-2" />
-          {formattedEventType}
+        <div className="flex items-center text-xs text-muted-foreground">
+          <Tag className="w-3 h-3 mr-1 flex-shrink-0" />
+          <span className="truncate">{formattedEventType}</span>
         </div>
         {rating !== undefined && rating > 0 && (
-          <div className="flex items-center text-sm text-muted-foreground">
-            <Star className={cn("w-4 h-4 mr-2", rating > 0 && "fill-yellow-400 text-yellow-400")} />
-            {rating.toFixed(1)} / 5
+          <div className="flex items-center text-xs text-muted-foreground">
+            <Star className={cn("w-3 h-3 mr-1 flex-shrink-0", rating > 0 && "fill-yellow-400 text-yellow-400")} />
+            <span>{rating.toFixed(1)} / 5</span>
           </div>
         )}
       </div>

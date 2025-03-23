@@ -28,7 +28,7 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, index = 0 }) => {
       }}
     >
       <Card className="overflow-hidden h-full glass-card hover:shadow-lg transition-all duration-300">
-        <div className="relative h-48 overflow-hidden bg-gray-50 flex items-center justify-center">
+        <div className="relative h-36 overflow-hidden bg-gray-50 flex items-center justify-center">
           <div 
             className={`absolute inset-0 bg-gray-200 transition-opacity duration-500 ${
               isLoaded ? 'opacity-0' : 'opacity-100'
@@ -38,39 +38,39 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, index = 0 }) => {
             <img
               src={currentSrc}
               alt={club.name}
-              className="object-contain w-full h-full p-4 transition-transform duration-700 ease-apple hover:scale-105"
+              className="object-contain w-full h-full p-2 transition-transform duration-700 ease-apple hover:scale-105"
             />
           )}
         </div>
-        <CardContent className="p-4">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-xl font-medium">{club.name}</h3>
-            <Badge variant="outline" className="capitalize">
+        <CardContent className="p-3">
+          <div className="flex justify-between items-start mb-1">
+            <h3 className="text-base font-medium line-clamp-1">{club.name}</h3>
+            <Badge variant="outline" className="capitalize text-xs ml-1">
               {club.category}
             </Badge>
           </div>
           {club.tagline && (
-            <p className="text-sm text-muted-foreground mb-2 italic">{club.tagline}</p>
+            <p className="text-xs text-muted-foreground mb-1 italic line-clamp-1">{club.tagline}</p>
           )}
-          <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{club.description}</p>
+          <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{club.description}</p>
           {club.establishedYear && (
-            <p className="text-xs text-muted-foreground mb-2">
+            <p className="text-xs text-muted-foreground mb-1">
               Est. {club.establishedYear}
             </p>
           )}
         </CardContent>
-        <CardFooter className="px-4 pb-4 pt-0 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Users className="w-4 h-4 mr-1" />
+        <CardFooter className="px-3 pb-2 pt-0 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center text-xs text-muted-foreground">
+              <Users className="w-3 h-3 mr-1" />
               {club.memberCount}
             </div>
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Calendar className="w-4 h-4 mr-1" />
+            <div className="flex items-center text-xs text-muted-foreground">
+              <Calendar className="w-3 h-3 mr-1" />
               {club.events.length}
             </div>
           </div>
-          <Button size="sm" variant="ghost" asChild>
+          <Button size="sm" variant="ghost" asChild className="h-7 text-xs px-2">
             <Link to={`/clubs/${club.id}`} className="flex items-center">
               View <ExternalLink className="ml-1 h-3 w-3" />
             </Link>

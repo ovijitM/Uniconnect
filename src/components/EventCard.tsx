@@ -55,6 +55,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, index = 0 }) => {
             maxParticipants={event.maxParticipants} 
           />
         }
+        className="h-full"
       >
         <EventCardDetails 
           organizerName={event.organizer.name}

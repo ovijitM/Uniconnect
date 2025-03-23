@@ -20,7 +20,7 @@ const EventCardImage: React.FC<EventCardImageProps> = ({ imageUrl, title, status
   };
 
   return (
-    <div className="relative h-48 overflow-hidden">
+    <div className="relative h-36 overflow-hidden">
       <div 
         className={`absolute inset-0 bg-gray-200 transition-opacity duration-500 ${
           isLoaded ? 'opacity-0' : 'opacity-100'
@@ -33,8 +33,8 @@ const EventCardImage: React.FC<EventCardImageProps> = ({ imageUrl, title, status
           className="object-cover w-full h-full transition-transform duration-700 ease-apple hover:scale-105"
         />
       )}
-      <div className="absolute top-3 right-3">
-        <Badge className={`${statusColors[status]} capitalize`}>
+      <div className="absolute top-2 right-2">
+        <Badge className={`${statusColors[status]} capitalize text-xs`}>
           {status}
         </Badge>
       </div>

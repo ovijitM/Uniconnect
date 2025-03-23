@@ -32,11 +32,11 @@ const EventCardBase: React.FC<EventCardBaseProps> = ({
     >
       <Card className="overflow-hidden h-full glass-card hover:translate-y-[-4px]">
         {imageContainer}
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           {children}
         </CardContent>
         {footer && (
-          <CardFooter className="px-4 pb-4 pt-0 flex justify-between items-center">
+          <CardFooter className="px-3 pb-2 pt-0 flex justify-between items-center">
             {footer}
           </CardFooter>
         )}
