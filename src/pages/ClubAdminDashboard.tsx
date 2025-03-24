@@ -52,7 +52,9 @@ const ClubAdminDashboard: React.FC = () => {
     handleCreateClub,
     handleCreateEvent,
     handleEventInputChange,
-    handleClubInputChange
+    handleClubInputChange,
+    handleClubFileUpload,
+    handleEventFileUpload
   } = useClubAdminForms(user?.id, fetchClubAdminData);
 
   // Handle opening event dialog when navigated with state
@@ -129,6 +131,7 @@ const ClubAdminDashboard: React.FC = () => {
           clubFormData={clubFormData}
           handleClubInputChange={handleClubInputChange}
           handleCreateClub={handleCreateClub}
+          handleClubFileUpload={handleClubFileUpload}
           isEventDialogOpen={isEventDialogOpen}
           setIsEventDialogOpen={setIsEventDialogOpen}
           eventFormData={eventFormData}

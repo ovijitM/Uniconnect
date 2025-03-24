@@ -3,7 +3,7 @@ import React from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Check, X } from 'lucide-react';
+import { Check, X, FileText } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 
 interface Club {
@@ -13,6 +13,8 @@ interface Club {
   created_at: string;
   status: 'pending' | 'approved' | 'rejected';
   rejection_reason?: string;
+  document_url?: string;
+  document_name?: string;
 }
 
 interface ClubsTableRowProps {
@@ -38,6 +40,19 @@ const ClubsTableRow: React.FC<ClubsTableRowProps> = ({
       </TableCell>
       <TableCell><StatusBadge status={club.status} /></TableCell>
       <TableCell>{new Date(club.created_at).toLocaleDateString()}</TableCell>
+      <TableCell>
+        {club.document_url && (
+          <a 
+            href={club.document_url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center text-blue-600 hover:text-blue-800"
+          >
+            <FileText className="h-4 w-4 mr-1" />
+            <span className="text-xs">{club.document_name || 'Document'}</span>
+          </a>
+        )}
+      </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-2">
           {club.status === 'pending' && (

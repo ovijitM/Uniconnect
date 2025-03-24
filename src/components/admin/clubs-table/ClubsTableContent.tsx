@@ -10,6 +10,8 @@ interface Club {
   created_at: string;
   status: 'pending' | 'approved' | 'rejected';
   rejection_reason?: string;
+  document_url?: string;
+  document_name?: string;
 }
 
 interface ClubsTableContentProps {
@@ -41,6 +43,7 @@ const ClubsTableContent: React.FC<ClubsTableContentProps> = ({
           <TableHead>Category</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Created</TableHead>
+          <TableHead>Documents</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>

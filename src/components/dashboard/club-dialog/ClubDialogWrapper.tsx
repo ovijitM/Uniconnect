@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BasicInfoTab from './BasicInfoTab';
 import DetailsTab from './DetailsTab';
 import SocialMediaTab from './SocialMediaTab';
+import DocumentUploadTab from './DocumentUploadTab';
 
 interface ClubDialogWrapperProps {
   isOpen: boolean;
@@ -35,9 +36,12 @@ interface ClubDialogWrapperProps {
     instagramLink?: string;
     twitterLink?: string;
     discordLink?: string;
+    documentUrl?: string;
+    documentName?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onSubmit: () => void;
+  onFileUpload?: (url: string, fileName: string) => void;
   buttonText?: string;
   trigger?: React.ReactNode;
 }
@@ -48,6 +52,7 @@ const ClubDialogWrapper: React.FC<ClubDialogWrapperProps> = ({
   formData,
   onInputChange,
   onSubmit,
+  onFileUpload,
   buttonText = "Create Club",
   trigger
 }) => {
@@ -63,10 +68,11 @@ const ClubDialogWrapper: React.FC<ClubDialogWrapperProps> = ({
         </DialogHeader>
         
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid grid-cols-3 w-full">
+          <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="social">Social & Contact</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
           </TabsList>
           
           {/* Basic Information Tab */}
@@ -82,6 +88,11 @@ const ClubDialogWrapper: React.FC<ClubDialogWrapperProps> = ({
           {/* Social Media Tab */}
           <TabsContent value="social">
             <SocialMediaTab formData={formData} onInputChange={onInputChange} />
+          </TabsContent>
+          
+          {/* Document Upload Tab */}
+          <TabsContent value="documents">
+            <DocumentUploadTab formData={formData} onFileUpload={onFileUpload} />
           </TabsContent>
         </Tabs>
         

@@ -33,9 +33,12 @@ interface CreateClubDialogProps {
     instagramLink?: string;
     twitterLink?: string;
     discordLink?: string;
+    documentUrl?: string;
+    documentName?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onSubmit: () => void;
+  onFileUpload?: (url: string, fileName: string) => void;
   buttonText?: string;
   trigger?: React.ReactNode;
 }
@@ -46,6 +49,7 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
   formData,
   onInputChange,
   onSubmit,
+  onFileUpload,
   buttonText = "Create New Club",
   trigger
 }) => {
@@ -63,6 +67,7 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
       formData={formData}
       onInputChange={onInputChange}
       onSubmit={onSubmit}
+      onFileUpload={onFileUpload}
       buttonText="Create Club"
       trigger={trigger || defaultTrigger}
     />

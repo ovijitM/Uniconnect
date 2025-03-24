@@ -1,4 +1,3 @@
-
 import React from 'react';
 import NoClubsViewWrapper from './views/NoClubsView';
 import EventsView from './views/EventsView';
@@ -36,6 +35,7 @@ interface ClubAdminDashboardContentProps {
   handleRefreshAfterDelete: () => void;
   fetchClubAdminData: () => Promise<void>;
   selectEventForAttendeeManagement: (eventId: string, eventTitle: string) => void;
+  handleClubFileUpload?: (url: string, fileName: string) => void;
 }
 
 const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
@@ -64,9 +64,9 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
   handleEditEvent,
   handleRefreshAfterDelete,
   fetchClubAdminData,
-  selectEventForAttendeeManagement
+  selectEventForAttendeeManagement,
+  handleClubFileUpload
 }) => {
-  // Render different content based on the current view
   if (adminClubs.length === 0 && !isLoading) {
     return (
       <NoClubsViewWrapper 
@@ -75,11 +75,11 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
         clubFormData={clubFormData}
         handleClubInputChange={handleClubInputChange}
         handleCreateClub={handleCreateClub}
+        handleClubFileUpload={handleClubFileUpload}
       />
     );
   }
 
-  // Render the appropriate view based on currentView
   switch (currentView) {
     case 'events':
       return (
@@ -137,7 +137,6 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
       );
     
     default:
-      // Default overview page
       return (
         <OverviewView 
           adminClubs={adminClubs}

@@ -63,7 +63,9 @@ export const useClubCreation = () => {
           facebook_link: clubFormData.facebookLink || null,
           instagram_link: clubFormData.instagramLink || null,
           twitter_link: clubFormData.twitterLink || null,
-          discord_link: clubFormData.discordLink || null
+          discord_link: clubFormData.discordLink || null,
+          document_url: clubFormData.documentUrl || null,
+          document_name: clubFormData.documentName || null
         })
         .select();
       
