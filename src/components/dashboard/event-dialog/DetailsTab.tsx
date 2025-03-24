@@ -1,101 +1,68 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { FileUpload } from '@/components/file-upload/FileUpload';
 
 interface DetailsTabProps {
   formData: {
+    title: string;
+    description: string;
     date: string;
     location: string;
+    category: string;
     maxParticipants: string;
-    eligibility?: string;
-    teamSize?: string;
+    clubId: string;
+    tagline?: string;
+    eventType?: string;
     theme?: string;
+    subTracks?: string;
     prizePool?: string;
     prizeCategories?: string;
+    additionalPerks?: string;
+    judgingCriteria?: string;
+    judges?: string;
+    deliverables?: string;
+    submissionPlatform?: string;
+    mentors?: string;
+    sponsors?: string;
+    contactEmail?: string;
+    communityLink?: string;
+    eventWebsite?: string;
+    eventHashtag?: string;
+    documentUrl?: string;
+    documentName?: string;
   };
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onFileUpload?: (url: string, fileName: string) => void;
 }
 
-const DetailsTab: React.FC<DetailsTabProps> = ({ formData, onInputChange }) => {
+const DetailsTab: React.FC<DetailsTabProps> = ({
+  formData,
+  onInputChange,
+  onFileUpload
+}) => {
+  const handleFileUpload = (url: string, fileName: string) => {
+    if (onFileUpload) {
+      onFileUpload(url, fileName);
+    }
+  };
+
   return (
     <div className="space-y-4 py-4">
-      <div className="grid gap-2">
-        <Label htmlFor="date">
-          Date & Time* <span className="text-xs text-muted-foreground">(Required)</span>
-        </Label>
+      <div className="space-y-2">
+        <label htmlFor="tagline" className="text-sm font-medium">Tagline</label>
         <Input
-          id="date"
-          name="date"
-          type="datetime-local"
-          value={formData.date}
+          id="tagline"
+          name="tagline"
+          value={formData.tagline || ''}
           onChange={onInputChange}
-          required
+          placeholder="A short description of your event"
         />
       </div>
       
-      <div className="grid gap-2">
-        <Label htmlFor="location">
-          Location* <span className="text-xs text-muted-foreground">(Required)</span>
-        </Label>
-        <Input
-          id="location"
-          name="location"
-          value={formData.location}
-          onChange={onInputChange}
-          required
-          placeholder="University, Campus, Room No."
-        />
-      </div>
-      
-      <div className="grid gap-2">
-        <Label htmlFor="maxParticipants">
-          Max Participants* <span className="text-xs text-muted-foreground">(Required)</span>
-        </Label>
-        <Input
-          id="maxParticipants"
-          name="maxParticipants"
-          type="number"
-          value={formData.maxParticipants}
-          onChange={onInputChange}
-          required
-          placeholder="e.g., 50, 100, 200"
-        />
-      </div>
-      
-      <div className="grid gap-2">
-        <Label htmlFor="eligibility">
-          Eligibility* <span className="text-xs text-muted-foreground">(Required)</span>
-        </Label>
-        <Input
-          id="eligibility"
-          name="eligibility"
-          value={formData.eligibility || ''}
-          onChange={onInputChange}
-          required
-          placeholder="e.g., All university students, Freshmen only"
-        />
-      </div>
-      
-      <div className="grid gap-2">
-        <Label htmlFor="teamSize">
-          Team Size* <span className="text-xs text-muted-foreground">(Required)</span>
-        </Label>
-        <Input
-          id="teamSize"
-          name="teamSize"
-          value={formData.teamSize || ''}
-          onChange={onInputChange}
-          required
-          placeholder="e.g., Individual, 2-4 members"
-        />
-      </div>
-      
-      <div className="grid gap-2">
-        <Label htmlFor="theme">
-          Theme
-        </Label>
+      <div className="space-y-2">
+        <label htmlFor="theme" className="text-sm font-medium">Event Theme</label>
         <Input
           id="theme"
           name="theme"
@@ -105,30 +72,100 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ formData, onInputChange }) => {
         />
       </div>
       
-      <div className="grid gap-2">
-        <Label htmlFor="prizePool">
-          Prize Pool
-        </Label>
-        <Input
-          id="prizePool"
-          name="prizePool"
-          value={formData.prizePool || ''}
+      <div className="space-y-2">
+        <label htmlFor="subTracks" className="text-sm font-medium">Sub-tracks or Categories</label>
+        <Textarea
+          id="subTracks"
+          name="subTracks"
+          value={formData.subTracks || ''}
           onChange={onInputChange}
-          placeholder="e.g., $500, Certificates & Trophies"
+          placeholder="Separate with commas"
+          rows={2}
         />
       </div>
       
-      <div className="grid gap-2">
-        <Label htmlFor="prizeCategories">
-          Prize Categories
-        </Label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label htmlFor="prizePool" className="text-sm font-medium">Prize Pool</label>
+          <Input
+            id="prizePool"
+            name="prizePool"
+            value={formData.prizePool || ''}
+            onChange={onInputChange}
+            placeholder="Total prize amount"
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <label htmlFor="prizeCategories" className="text-sm font-medium">Prize Categories</label>
+          <Textarea
+            id="prizeCategories"
+            name="prizeCategories"
+            value={formData.prizeCategories || ''}
+            onChange={onInputChange}
+            placeholder="Separate with commas"
+            rows={2}
+          />
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <label htmlFor="additionalPerks" className="text-sm font-medium">Additional Perks</label>
         <Textarea
-          id="prizeCategories"
-          name="prizeCategories"
-          value={formData.prizeCategories || ''}
+          id="additionalPerks"
+          name="additionalPerks"
+          value={formData.additionalPerks || ''}
           onChange={onInputChange}
-          placeholder="First Place, Best Design, etc. (comma separated)"
-          className="min-h-[80px]"
+          placeholder="Separate with commas"
+          rows={2}
+        />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label htmlFor="judgingCriteria" className="text-sm font-medium">Judging Criteria</label>
+          <Textarea
+            id="judgingCriteria"
+            name="judgingCriteria"
+            value={formData.judgingCriteria || ''}
+            onChange={onInputChange}
+            placeholder="Separate with commas"
+            rows={2}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <label htmlFor="judges" className="text-sm font-medium">Judges</label>
+          <Textarea
+            id="judges"
+            name="judges"
+            value={formData.judges || ''}
+            onChange={onInputChange}
+            placeholder="Separate with commas"
+            rows={2}
+          />
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <label htmlFor="deliverables" className="text-sm font-medium">Deliverables</label>
+        <Textarea
+          id="deliverables"
+          name="deliverables"
+          value={formData.deliverables || ''}
+          onChange={onInputChange}
+          placeholder="Separate with commas"
+          rows={2}
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <label htmlFor="eventDocument" className="text-sm font-medium">Event Document</label>
+        <p className="text-xs text-muted-foreground mb-2">Upload any detailed guidelines, rules, or additional information</p>
+        <FileUpload 
+          onFileUpload={handleFileUpload}
+          defaultValue={formData.documentUrl}
+          buttonText="Upload Event Document"
         />
       </div>
     </div>

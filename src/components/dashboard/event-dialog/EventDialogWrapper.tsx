@@ -50,6 +50,8 @@ interface EventDialogWrapperProps {
     communityLink?: string;
     eventWebsite?: string;
     eventHashtag?: string;
+    documentUrl?: string;
+    documentName?: string;
   };
   clubs: any[];
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
@@ -57,6 +59,7 @@ interface EventDialogWrapperProps {
   buttonText?: string;
   trigger?: React.ReactNode;
   isSubmitting?: boolean;
+  onFileUpload?: (url: string, fileName: string) => void;
 }
 
 const EventDialogWrapper: React.FC<EventDialogWrapperProps> = ({
@@ -68,7 +71,8 @@ const EventDialogWrapper: React.FC<EventDialogWrapperProps> = ({
   onSubmit,
   buttonText = "Create",
   trigger,
-  isSubmitting = false
+  isSubmitting = false,
+  onFileUpload
 }) => {
   const [activeTab, setActiveTab] = useState('basic-info');
   const [selectedCollaborators, setSelectedCollaborators] = useState<string[]>([]);
@@ -89,6 +93,12 @@ const EventDialogWrapper: React.FC<EventDialogWrapperProps> = ({
     
     // After successful submission, if we have collaborators, we'll add them
     // This will be handled in the component using this dialog wrapper
+  };
+
+  const handleFileUpload = (url: string, fileName: string) => {
+    if (onFileUpload) {
+      onFileUpload(url, fileName);
+    }
   };
 
   return (
@@ -115,7 +125,11 @@ const EventDialogWrapper: React.FC<EventDialogWrapperProps> = ({
           </TabsContent>
           
           <TabsContent value="details">
-            <DetailsTab formData={formData} onInputChange={onInputChange} />
+            <DetailsTab 
+              formData={formData} 
+              onInputChange={onInputChange} 
+              onFileUpload={handleFileUpload}
+            />
           </TabsContent>
           
           <TabsContent value="logistics">
