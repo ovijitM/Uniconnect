@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +22,7 @@ export const useEventReviews = (eventId: string | undefined) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalReviews, setTotalReviews] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const pageSize = 5; // Show 5 reviews per page
   
   const { toast } = useToast();
@@ -31,6 +33,7 @@ export const useEventReviews = (eventId: string | undefined) => {
     
     try {
       setIsLoading(true);
+      setError(null);
       
       const avgRating = await fetchAverageRating(eventId);
       setAverageRating(avgRating);
@@ -53,8 +56,9 @@ export const useEventReviews = (eventId: string | undefined) => {
           console.error('Error checking for user review:', error);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching reviews:', error);
+      setError('Could not load reviews. Please try again later.');
       toast({
         title: 'Error',
         description: 'Could not load reviews',
@@ -82,6 +86,7 @@ export const useEventReviews = (eventId: string | undefined) => {
     
     try {
       setIsSubmitting(true);
+      setError(null);
       
       await submitNewReview(eventId, user.id, rating, reviewText);
       
@@ -92,9 +97,11 @@ export const useEventReviews = (eventId: string | undefined) => {
           : 'Thank you for your feedback!',
       });
       
-      await fetchReviews();
+      await fetchReviews(1); // Reload first page after submission
+      setCurrentPage(1);
     } catch (error: any) {
       console.error('Error submitting review:', error);
+      setError('Failed to submit review. Please try again.');
       toast({
         title: 'Error',
         description: error.message || 'Failed to submit review. Please try again.',
@@ -110,6 +117,7 @@ export const useEventReviews = (eventId: string | undefined) => {
     
     try {
       setIsSubmitting(true);
+      setError(null);
       
       await deleteUserReview(userReview.id);
       
@@ -119,9 +127,11 @@ export const useEventReviews = (eventId: string | undefined) => {
       });
       
       setUserReview(null);
-      await fetchReviews();
+      await fetchReviews(1); // Reload first page
+      setCurrentPage(1);
     } catch (error: any) {
       console.error('Error deleting review:', error);
+      setError('Failed to delete review. Please try again.');
       toast({
         title: 'Error',
         description: error.message || 'Failed to delete review',
@@ -149,6 +159,7 @@ export const useEventReviews = (eventId: string | undefined) => {
     totalPages,
     totalReviews,
     pageSize,
+    error,
     submitReview,
     deleteReview,
     fetchReviews,

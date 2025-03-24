@@ -39,7 +39,7 @@ export const fetchReviewsWithProfiles = async (
     if (countError) throw countError;
     
     // Then fetch paginated data with profile information
-    // Join with profiles table using the user_id column
+    // Fixed join syntax: Use inner join with profiles table
     const { data, error } = await supabase
       .from('event_reviews')
       .select(`
@@ -49,7 +49,7 @@ export const fetchReviewsWithProfiles = async (
         rating,
         review_text,
         created_at,
-        profiles:user_id(name, profile_image)
+        profiles!user_id(name, profile_image)
       `)
       .eq('event_id', eventId)
       .order('created_at', { ascending: false })
@@ -113,7 +113,7 @@ export const checkExistingReview = async (
         rating,
         review_text,
         created_at,
-        profiles:user_id(name, profile_image)
+        profiles!user_id(name, profile_image)
       `)
       .eq('event_id', eventId)
       .eq('user_id', userId)

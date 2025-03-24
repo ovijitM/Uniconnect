@@ -22,6 +22,7 @@ const EventReviewsContent: React.FC<EventReviewsProps> = ({ eventId }) => {
     currentPage,
     totalPages,
     totalReviews,
+    error,
     submitReview, 
     deleteReview,
     fetchReviews,
@@ -53,7 +54,8 @@ const EventReviewsContent: React.FC<EventReviewsProps> = ({ eventId }) => {
         <TabsContent value="reviews" className="py-4">
           <EventReviewsList 
             reviews={reviews} 
-            isLoading={isLoading} 
+            isLoading={isLoading}
+            error={error}
             onRetry={fetchReviews}
             currentPage={currentPage}
             totalPages={totalPages}
