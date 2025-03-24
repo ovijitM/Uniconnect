@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, Settings } from 'lucide-react';
+import { LogOut, User, Settings, School } from 'lucide-react';
 
 const UserProfile: React.FC = () => {
   const { user, logout } = useAuth();
@@ -68,6 +68,12 @@ const UserProfile: React.FC = () => {
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium">{user.name}</p>
             <p className="text-xs text-muted-foreground">{user.email}</p>
+            {user.university && (
+              <div className="flex items-center mt-1 text-xs text-muted-foreground">
+                <School className="h-3 w-3 mr-1" />
+                {user.university}
+              </div>
+            )}
             <div className="mt-1">{getRoleBadge()}</div>
           </div>
         </DropdownMenuLabel>

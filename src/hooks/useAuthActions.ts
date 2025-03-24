@@ -4,7 +4,7 @@ import { User, UserRole, AuthState } from '@/types/auth';
 
 export interface AuthActions {
   login: (email: string, password: string) => Promise<User>;
-  signup: (email: string, password: string, name: string, role: UserRole) => Promise<User>;
+  signup: (email: string, password: string, name: string, role: UserRole, university: string) => Promise<User>;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
 }
@@ -45,7 +45,8 @@ export const useAuthActions = (
         email: profile.email,
         name: profile.name,
         role: profile.role,
-        profileImage: profile.profile_image
+        profileImage: profile.profile_image,
+        university: profile.university
       };
       
       setAuthState({
@@ -66,7 +67,7 @@ export const useAuthActions = (
     }
   };
 
-  const signup = async (email: string, password: string, name: string, role: UserRole): Promise<User> => {
+  const signup = async (email: string, password: string, name: string, role: UserRole, university: string): Promise<User> => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       
@@ -77,7 +78,8 @@ export const useAuthActions = (
         options: {
           data: {
             name,
-            role
+            role,
+            university
           }
         }
       });
@@ -107,6 +109,7 @@ export const useAuthActions = (
           email: data.user.email || email,
           name,
           role,
+          university,
           profileImage: undefined
         };
         
@@ -124,7 +127,8 @@ export const useAuthActions = (
         email: profile.email,
         name: profile.name,
         role: profile.role,
-        profileImage: profile.profile_image
+        profileImage: profile.profile_image,
+        university: profile.university
       };
       
       setAuthState({
@@ -168,6 +172,7 @@ export const useAuthActions = (
         .update({
           name: userData.name,
           profile_image: userData.profileImage,
+          university: userData.university,
           updated_at: new Date().toISOString()
         })
         .eq('id', authState.user.id);
