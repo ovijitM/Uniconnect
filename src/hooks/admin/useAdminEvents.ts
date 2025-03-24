@@ -8,7 +8,7 @@ export const useAdminEvents = () => {
       
       const { data, error } = await supabase
         .from('events')
-        .select('id, title, club_id, created_at, clubs(name)')
+        .select('id, title, club_id, created_at, clubs:club_id(name)')
         .order('created_at', { ascending: false })
         .limit(3);
       
