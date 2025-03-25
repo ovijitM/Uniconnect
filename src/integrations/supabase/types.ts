@@ -509,6 +509,7 @@ export type Database = {
           profile_image: string | null
           role: Database["public"]["Enums"]["user_role"]
           university: string | null
+          university_id: string | null
           updated_at: string
         }
         Insert: {
@@ -519,6 +520,7 @@ export type Database = {
           profile_image?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           university?: string | null
+          university_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -529,9 +531,18 @@ export type Database = {
           profile_image?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           university?: string | null
+          university_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       universities: {
         Row: {
