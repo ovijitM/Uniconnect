@@ -17,6 +17,9 @@ export const useClubCreation = () => {
         return false;
       }
 
+      console.log('Creating club with data:', clubFormData);
+      console.log('User ID:', userId);
+
       // Transform array and JSON fields
       const regularEvents = clubFormData.regularEvents ? clubFormData.regularEvents.split(',').map(e => e.trim()) : [];
       const signatureEvents = clubFormData.signatureEvents ? clubFormData.signatureEvents.split(',').map(e => e.trim()) : [];
@@ -43,9 +46,7 @@ export const useClubCreation = () => {
           category: clubFormData.category,
           logo_url: clubFormData.logoUrl,
           status: 'pending',
-          // University field
           university: clubFormData.university,
-          // New fields
           tagline: clubFormData.tagline || null,
           established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
           affiliation: clubFormData.affiliation || null,
@@ -73,12 +74,25 @@ export const useClubCreation = () => {
       
       if (clubError) {
         console.error('Error creating club:', clubError);
-        throw clubError;
+        toast({
+          title: 'Error Creating Club',
+          description: `Failed to create club: ${clubError.message || 'Please try again.'}`,
+          variant: 'destructive',
+        });
+        return false;
       }
       
       if (!clubData || clubData.length === 0) {
-        throw new Error('No club data returned after creation');
+        console.error('No club data returned after creation');
+        toast({
+          title: 'Error',
+          description: 'No club data returned after creation. Please try again.',
+          variant: 'destructive',
+        });
+        return false;
       }
+
+      console.log('Club created successfully:', clubData);
 
       // Add the current user as an admin of the club
       const { error: adminError } = await supabase
@@ -92,7 +106,12 @@ export const useClubCreation = () => {
         console.error('Error adding club admin:', adminError);
         // If we fail to add admin, we should delete the club to avoid orphaned clubs
         await supabase.from('clubs').delete().eq('id', clubData[0].id);
-        throw adminError;
+        toast({
+          title: 'Error',
+          description: `Failed to add you as admin: ${adminError.message || 'Please try again.'}`,
+          variant: 'destructive',
+        });
+        return false;
       }
 
       toast({

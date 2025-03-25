@@ -5,49 +5,75 @@ import { EventFormData } from './types';
 export const useEventValidation = () => {
   const { toast } = useToast();
 
-  const validateEventData = (eventFormData: EventFormData, clubId?: string): boolean => {
-    // Validate required basic fields
-    if (!eventFormData.title || !eventFormData.description || !eventFormData.date || 
-        !eventFormData.location || !eventFormData.category) {
+  const validateEventData = (eventFormData: EventFormData, clubId: string): boolean => {
+    // Check for required fields
+    if (!eventFormData.title.trim()) {
       toast({
-        title: 'Missing Basic Information',
-        description: 'Please fill in all required basic fields (title, description, date, location, category).',
+        title: 'Missing Title',
+        description: 'Please provide a title for the event.',
         variant: 'destructive',
       });
       return false;
     }
-    
-    // Validate details fields
-    if (!eventFormData.tagline || !eventFormData.eventType || !eventFormData.registrationDeadline) {
+
+    if (!eventFormData.description.trim()) {
       toast({
-        title: 'Missing Event Details',
-        description: 'Please provide event tagline, type, and registration deadline.',
+        title: 'Missing Description',
+        description: 'Please provide a description for the event.',
         variant: 'destructive',
       });
       return false;
     }
-    
-    // Validate logistics fields
-    if (!eventFormData.eligibility || !eventFormData.teamSize || 
-        !eventFormData.maxParticipants || !eventFormData.contactEmail) {
+
+    if (!eventFormData.date.trim()) {
       toast({
-        title: 'Missing Logistics Information',
-        description: 'Please complete logistics information (eligibility, team size, max participants, contact email).',
+        title: 'Missing Date',
+        description: 'Please select a date for the event.',
         variant: 'destructive',
       });
       return false;
     }
-    
-    // If no club is selected
-    if (!eventFormData.clubId && !clubId) {
+
+    if (!eventFormData.location.trim()) {
       toast({
-        title: 'Club Required',
-        description: 'You must select a club for this event.',
+        title: 'Missing Location',
+        description: 'Please provide a location for the event.',
         variant: 'destructive',
       });
       return false;
     }
-    
+
+    if (!eventFormData.category.trim()) {
+      toast({
+        title: 'Missing Category',
+        description: 'Please provide a category for the event.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    if (!clubId) {
+      toast({
+        title: 'Club Selection Required',
+        description: 'Please select a club for this event.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    // Check if the date is in the future
+    const eventDate = new Date(eventFormData.date);
+    const currentDate = new Date();
+
+    if (eventDate < currentDate) {
+      toast({
+        title: 'Invalid Date',
+        description: 'The event date must be in the future.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
     return true;
   };
 

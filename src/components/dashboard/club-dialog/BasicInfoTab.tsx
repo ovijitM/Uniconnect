@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { School } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,6 +33,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
           .order('name');
         
         if (error) throw error;
+        console.log('Universities fetched:', data);
         setUniversities(data || []);
       } catch (error) {
         console.error('Error fetching universities:', error);
@@ -46,6 +46,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
   }, []);
 
   const handleUniversityChange = (value: string) => {
+    console.log('University selected:', value);
     const event = {
       target: {
         name: 'university',
@@ -71,13 +72,14 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="tagline">Tagline</Label>
+        <Label htmlFor="tagline">Tagline *</Label>
         <Input
           id="tagline"
           name="tagline"
           placeholder="A short catchy phrase for your club"
           value={formData.tagline}
           onChange={onInputChange}
+          required
         />
       </div>
       
@@ -96,7 +98,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
       <div className="space-y-2">
         <Label htmlFor="university">University *</Label>
         <Select 
-          value={formData.university || (user?.university || '')} 
+          value={formData.university || ''} 
           onValueChange={handleUniversityChange}
         >
           <SelectTrigger className="w-full">
