@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -7,13 +7,18 @@ export const useStudentProfile = (userId: string | undefined) => {
   const [userUniversity, setUserUniversity] = useState<string | null>(null);
   const [userUniversityId, setUserUniversityId] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [profileFetched, setProfileFetched] = useState(false);
   const { toast } = useToast();
 
-  const fetchUserProfile = async () => {
-    if (!userId) return;
+  const fetchUserProfile = useCallback(async () => {
+    if (!userId) {
+      setProfileFetched(true);
+      return;
+    }
     
     setIsLoadingProfile(true);
     try {
+      console.log('Fetching user profile for userId:', userId);
       // Get the user's university
       const { data: profileData, error } = await supabase
         .from('profiles')
@@ -21,7 +26,12 @@ export const useStudentProfile = (userId: string | undefined) => {
         .eq('id', userId)
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile data:', error);
+        throw error;
+      }
+      
+      console.log('Profile data fetched:', profileData);
       
       if (profileData?.university) {
         setUserUniversity(profileData.university);
@@ -39,8 +49,17 @@ export const useStudentProfile = (userId: string | undefined) => {
       });
     } finally {
       setIsLoadingProfile(false);
+      setProfileFetched(true);
     }
-  };
+  }, [userId, toast]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchUserProfile();
+    } else {
+      setProfileFetched(true);
+    }
+  }, [userId, fetchUserProfile]);
 
   const updateUserUniversity = async (university: string) => {
     if (!userId) return false;
@@ -109,6 +128,7 @@ export const useStudentProfile = (userId: string | undefined) => {
     userUniversity,
     userUniversityId,
     isLoadingProfile,
+    profileFetched,
     fetchUserProfile,
     updateUserUniversity
   };

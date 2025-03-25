@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useClubMembers } from './useClubMembers';
 import { useClubEvents } from './useClubEvents';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,12 +11,13 @@ export const useClubAdminData = (userId: string | undefined) => {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedEventTitle, setSelectedEventTitle] = useState<string>('');
   const [loadingError, setLoadingError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   
   const { toast } = useToast();
   const { clubEvents, activeEventCount, pastEventCount, averageAttendance, fetchClubEvents } = useClubEvents();
   const { clubMembers, totalMembersCount, fetchClubMembers } = useClubMembers();
   
-  const fetchClubAdminData = async () => {
+  const fetchClubAdminData = useCallback(async () => {
     if (!userId) {
       setIsLoading(false);
       return;
@@ -79,7 +80,7 @@ export const useClubAdminData = (userId: string | undefined) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId, toast, fetchClubEvents, fetchClubMembers]);
 
   const selectEventForAttendeeManagement = (eventId: string, eventTitle: string) => {
     setSelectedEventId(eventId);
@@ -91,7 +92,20 @@ export const useClubAdminData = (userId: string | undefined) => {
     if (userId) {
       fetchClubAdminData();
     }
-  }, [userId]);
+  }, [userId, fetchClubAdminData]);
+
+  // Add retry logic if there's an error
+  useEffect(() => {
+    if (loadingError && retryCount < 3) {
+      const retryTimer = setTimeout(() => {
+        console.log(`Retrying fetch attempt ${retryCount + 1}...`);
+        setRetryCount(prev => prev + 1);
+        fetchClubAdminData();
+      }, 1000 * (retryCount + 1)); // Exponential backoff
+      
+      return () => clearTimeout(retryTimer);
+    }
+  }, [loadingError, retryCount, fetchClubAdminData]);
 
   return {
     adminClubs,

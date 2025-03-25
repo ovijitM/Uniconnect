@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStudentProfile } from '@/hooks/student/useStudentProfile';
 import { useToast } from '@/hooks/use-toast';
@@ -26,14 +26,28 @@ const NoClubsView: React.FC<NoClubsViewProps> = ({
   handleClubFileUpload
 }) => {
   const { user } = useAuth();
-  const { userUniversity, userUniversityId, fetchUserProfile } = useStudentProfile(user?.id);
+  const { userUniversity, userUniversityId, fetchUserProfile, isLoadingProfile, profileFetched } = useStudentProfile(user?.id);
   const { toast } = useToast();
+  const [hasRetried, setHasRetried] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (user?.id) {
       fetchUserProfile();
     }
-  }, [user?.id]);
+  }, [user?.id, fetchUserProfile]);
+
+  // Add retry logic for fetching the profile if needed
+  useEffect(() => {
+    if (profileFetched && !userUniversity && !hasRetried && user?.id) {
+      const retryTimer = setTimeout(() => {
+        console.log("Retrying profile fetch from NoClubsView...");
+        fetchUserProfile();
+        setHasRetried(true);
+      }, 1500);
+      
+      return () => clearTimeout(retryTimer);
+    }
+  }, [profileFetched, userUniversity, fetchUserProfile, hasRetried, user?.id]);
 
   const handleCreateClubClick = () => {
     if (!userUniversity || !userUniversityId) {
@@ -56,7 +70,12 @@ const NoClubsView: React.FC<NoClubsViewProps> = ({
           managing members, and building your campus community.
         </p>
         
-        {userUniversity ? (
+        {isLoadingProfile ? (
+          <div className="mt-6 flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <p className="text-sm text-muted-foreground">Loading your university information...</p>
+          </div>
+        ) : userUniversity ? (
           <div className="mt-6 flex flex-col items-center gap-4">
             <p className="text-sm text-muted-foreground">
               You'll be creating a club for <span className="font-medium">{userUniversity}</span>

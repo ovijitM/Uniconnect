@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClubAdminData } from '@/hooks/club-admin/useClubAdminData';
@@ -13,7 +13,7 @@ import ClubAdminDashboardContent from '@/components/dashboard/club-admin/dashboa
 import { useClubAdminRoutes } from '@/components/dashboard/club-admin/dashboard/useClubAdminRoutes';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, RefreshCw, AlertCircle } from 'lucide-react';
+import { PlusCircle, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 
@@ -22,8 +22,9 @@ const ClubAdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const [hasTriedProfile, setHasTriedProfile] = useState(false);
   const state = location.state as { openEventDialog?: boolean } | null;
-  const { userUniversity, fetchUserProfile } = useStudentProfile(user?.id);
+  const { userUniversity, fetchUserProfile, isLoadingProfile, profileFetched } = useStudentProfile(user?.id);
   
   // Use our custom hook to detect routes
   const { currentView } = useClubAdminRoutes();
@@ -64,7 +65,21 @@ const ClubAdminDashboard: React.FC = () => {
     if (user?.id) {
       fetchUserProfile();
     }
-  }, [user?.id]);
+  }, [user?.id, fetchUserProfile]);
+
+  // Handle retry for university profile
+  useEffect(() => {
+    if (profileFetched && !userUniversity && !hasTriedProfile && user?.id) {
+      // Try fetching again after a slight delay if university wasn't found
+      const retryTimer = setTimeout(() => {
+        console.log("Retrying profile fetch since university is missing...");
+        fetchUserProfile();
+        setHasTriedProfile(true);
+      }, 1500);
+      
+      return () => clearTimeout(retryTimer);
+    }
+  }, [profileFetched, userUniversity, fetchUserProfile, hasTriedProfile, user?.id]);
 
   // Handle opening event dialog when navigated with state
   useEffect(() => {
@@ -139,15 +154,32 @@ const ClubAdminDashboard: React.FC = () => {
           <Button 
             onClick={handleCreateClubClick}
             className="flex items-center gap-2"
+            disabled={isLoadingProfile}
           >
             <PlusCircle className="h-4 w-4" />
             Create Club
+            {isLoadingProfile && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
           </Button>
         );
       default:
         return null;
     }
   };
+
+  // Show loading indicator if profile is still loading
+  if (isLoadingProfile && !profileFetched) {
+    return (
+      <DashboardLayout sidebar={<ClubAdminSidebar />}>
+        <div className="container p-4 flex items-center justify-center h-[80vh]">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <h3 className="text-lg font-medium">Loading your profile...</h3>
+            <p className="text-muted-foreground">Please wait while we fetch your university information.</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout sidebar={<ClubAdminSidebar />}>
