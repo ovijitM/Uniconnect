@@ -18,7 +18,7 @@ import EventReviews from '@/components/event-detail/EventReviews';
 
 const EventDetailPage: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
-  const { event, isLoading, isParticipating, handleParticipate } = useEventDetail(eventId);
+  const { event, isLoading, isParticipating, handleParticipate, handleUnregister } = useEventDetail(eventId);
 
   if (isLoading) {
     return (
@@ -123,6 +123,7 @@ const EventDetailPage: React.FC = () => {
               status={event.status}
               isParticipating={isParticipating}
               onParticipate={handleParticipate}
+              onUnregister={handleUnregister}
             />
           </div>
 

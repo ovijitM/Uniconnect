@@ -1,17 +1,36 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, ExternalLink } from 'lucide-react';
+import { Users, ExternalLink, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 interface StudentClubsProps {
   clubs: any[];
   isLoading: boolean;
+  onLeaveClub?: (clubId: string) => void;
 }
 
-const StudentClubs: React.FC<StudentClubsProps> = ({ clubs, isLoading }) => {
+const StudentClubs: React.FC<StudentClubsProps> = ({ clubs, isLoading, onLeaveClub }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const handleLeaveClub = (clubId: string, clubName: string) => {
+    if (!onLeaveClub) {
+      toast({
+        title: "Action not available",
+        description: "Unable to leave club at this time.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Confirm before leaving
+    if (window.confirm(`Are you sure you want to leave ${clubName}?`)) {
+      onLeaveClub(clubId);
+    }
+  };
   
   return (
     <Card>
@@ -39,13 +58,25 @@ const StudentClubs: React.FC<StudentClubsProps> = ({ clubs, isLoading }) => {
                     {club.description}
                   </p>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => navigate(`/clubs/${club.id}`)}
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
+                <div className="flex space-x-2">
+                  {onLeaveClub && (
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:bg-destructive/10"
+                      onClick={() => handleLeaveClub(club.id, club.name)}
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => navigate(`/clubs/${club.id}`)}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, CheckCircle, X } from 'lucide-react';
+import { User, CheckCircle, X, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface EventActionsProps {
@@ -38,7 +38,7 @@ const EventActions: React.FC<EventActionsProps> = ({
               variant="destructive"
               onClick={onUnregister}
             >
-              <X className="mr-2 h-4 w-4" />
+              <LogOut className="mr-2 h-4 w-4" />
               Cancel Registration
             </Button>
           )}

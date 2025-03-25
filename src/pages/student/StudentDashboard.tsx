@@ -18,7 +18,9 @@ const StudentDashboard: React.FC = () => {
     joinedClubs = [],
     registeredEvents = [],
     joinClub = () => {},
-    registerForEvent = () => {}
+    leaveClub = () => {},
+    registerForEvent = () => {},
+    unregisterFromEvent = () => {}
   } = useStudentData?.() || {};
 
   // Get the necessary derived data
@@ -40,6 +42,7 @@ const StudentDashboard: React.FC = () => {
               <StudentClubs 
                 clubs={joinedClubs}
                 isLoading={isLoading}
+                onLeaveClub={leaveClub}
               />
             </div>
           } />
@@ -47,6 +50,7 @@ const StudentDashboard: React.FC = () => {
             <RegisteredEvents 
               events={registeredEvents}
               isLoading={isLoading}
+              onUnregister={unregisterFromEvent}
             />
           } />
           <Route path="/clubs" element={
