@@ -34,9 +34,17 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       setJoinedClubs(clubsData || []);
       
       // Fetch all available clubs
-      const { data: allClubs, error: allClubsError } = await supabase
+      let clubsQuery = supabase
         .from('clubs')
-        .select('*');
+        .select('*')
+        .eq('status', 'approved');
+      
+      // Filter by university if provided
+      if (userUniversity) {
+        clubsQuery = clubsQuery.or(`university.eq.${userUniversity},university.is.null`);
+      }
+      
+      const { data: allClubs, error: allClubsError } = await clubsQuery;
       
       if (allClubsError) throw allClubsError;
       setClubs(allClubs || []);

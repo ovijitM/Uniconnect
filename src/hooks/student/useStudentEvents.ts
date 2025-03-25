@@ -27,7 +27,14 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
       // Fetch detailed event information
       let { data: eventsData, error: eventsError } = await supabase
         .from('events')
-        .select('*')
+        .select(`
+          *,
+          clubs:clubs!events_club_id_fkey (
+            id,
+            name,
+            university
+          )
+        `)
         .in('id', eventIds.length ? eventIds : ['00000000-0000-0000-0000-000000000000']) // Use a dummy ID if no events
         .order('date', { ascending: true });
       

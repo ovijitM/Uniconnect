@@ -11,7 +11,8 @@ export const useStudentData = () => {
   
   const { 
     userUniversity, 
-    fetchUserProfile 
+    fetchUserProfile,
+    updateUserUniversity 
   } = useStudentProfile(user?.id);
   
   const { 
@@ -49,6 +50,14 @@ export const useStudentData = () => {
     }
   }, [user]);
 
+  // Refetch data when university changes
+  useEffect(() => {
+    if (user && userUniversity) {
+      fetchClubs(userUniversity);
+      fetchEvents(userUniversity);
+    }
+  }, [userUniversity]);
+
   return {
     isLoading: isLoading || isLoadingClubs || isLoadingEvents,
     clubs,
@@ -56,6 +65,7 @@ export const useStudentData = () => {
     joinedClubs,
     registeredEvents,
     userUniversity,
+    updateUserUniversity,
     joinClub,
     leaveClub,
     registerForEvent,

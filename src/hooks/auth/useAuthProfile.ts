@@ -1,11 +1,14 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { User, AuthState } from '@/types/auth';
+import { useToast } from '@/hooks/use-toast';
 
 export const useAuthProfile = (
   authState: AuthState,
   setAuthState: React.Dispatch<React.SetStateAction<AuthState>>
 ) => {
+  const { toast } = useToast();
+
   const updateUser = async (userData: Partial<User>) => {
     try {
       if (!authState.user) {
@@ -35,8 +38,18 @@ export const useAuthProfile = (
       if (updatedUser) {
         localStorage.setItem('authUser', JSON.stringify(updatedUser));
       }
+      
+      toast({
+        title: 'Success',
+        description: 'Profile updated successfully',
+      });
     } catch (error) {
       console.error('Error updating user:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update profile',
+        variant: 'destructive',
+      });
     }
   };
 
