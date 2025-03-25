@@ -91,25 +91,35 @@ export const useAuthSignup = (
         return user;
       }
       
-      // Explicitly update the profile with university if it wasn't set correctly
-      if (university && (!profile.university || profile.university !== university)) {
-        console.log('University missing from profile, updating it now:', university);
+      // Explicitly update the profile with the correct role and university if they weren't set correctly
+      if (profile.role !== role || (university && (!profile.university || profile.university !== university))) {
+        console.log('Updating profile with correct role and university');
+        const updateData: any = {};
+        
+        if (profile.role !== role) {
+          updateData.role = role;
+        }
+        
+        if (university && (!profile.university || profile.university !== university)) {
+          updateData.university = university;
+        }
+        
         const { error: updateError } = await supabase
           .from('profiles')
-          .update({ university })
+          .update(updateData)
           .eq('id', data.user.id);
         
         if (updateError) {
-          console.warn('Failed to update university in profile:', updateError);
+          console.warn('Failed to update profile:', updateError);
         }
       }
       
-      // Create a user object with the profile data, ensuring university is included
+      // Create a user object with the profile data, ensuring correct role and university
       const user: User = {
         id: data.user.id,
         email: profile.email,
         name: profile.name,
-        role: profile.role,
+        role: role, // Explicitly use the role passed to signup
         profileImage: profile.profile_image,
         university: university || profile.university // Prioritize the provided university
       };

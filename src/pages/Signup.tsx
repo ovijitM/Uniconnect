@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Layout from '@/components/Layout';
 import { UserRole } from '@/types/auth';
-import { Mail, KeyRound, User, UserPlus, GraduationCap, Users, Shield, School } from 'lucide-react';
+import { Mail, KeyRound, User, UserPlus, GraduationCap, Users, School } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const Signup: React.FC = () => {
@@ -114,7 +114,6 @@ const Signup: React.FC = () => {
   const roleOptions = [
     { id: 'student', label: 'Student', icon: GraduationCap },
     { id: 'club_admin', label: 'Club Administrator', icon: Users },
-    { id: 'admin', label: 'System Administrator', icon: Shield },
   ];
 
   return (
