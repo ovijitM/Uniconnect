@@ -1,10 +1,12 @@
 
+import { useState } from 'react';
 import { useDocumentUpload } from '@/hooks/useDocumentUpload';
 import { useToast } from '@/hooks/use-toast';
 
 export const useClubFileUpload = (clubId?: string) => {
   const { toast } = useToast();
-  const { uploadDocument, isUploading } = useDocumentUpload({
+  const [isUploading, setIsUploading] = useState(false);
+  const { uploadDocument } = useDocumentUpload({
     entityType: 'club',
     entityId: clubId,
     bucket: 'club_assets',
@@ -13,6 +15,8 @@ export const useClubFileUpload = (clubId?: string) => {
 
   const handleClubFileUpload = async (file: File): Promise<string | null> => {
     try {
+      setIsUploading(true);
+      
       if (!file) {
         toast({
           title: 'No file selected',
@@ -22,10 +26,16 @@ export const useClubFileUpload = (clubId?: string) => {
         return null;
       }
 
+      console.log('Starting file upload with file:', file.name, 'size:', file.size);
+      
       const fileUrl = await uploadDocument(file);
+      
       if (fileUrl) {
+        console.log('File upload successful, URL:', fileUrl);
         return fileUrl;
       }
+      
+      console.log('File upload returned null URL');
       return null;
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -35,6 +45,8 @@ export const useClubFileUpload = (clubId?: string) => {
         variant: 'destructive',
       });
       return null;
+    } finally {
+      setIsUploading(false);
     }
   };
 

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload, CheckCircle, AlertTriangle } from 'lucide-react';
-import { useDocumentUpload } from '@/hooks/useDocumentUpload';
+import { useClubFileUpload } from '@/hooks/club-admin/useClubFileUpload';
 import { useToast } from '@/hooks/use-toast';
 
 interface DocumentUploadTabProps {
@@ -25,11 +25,7 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
   const [logoUploading, setLogoUploading] = useState(false);
   const [documentUploading, setDocumentUploading] = useState(false);
   const { toast } = useToast();
-  const { uploadDocument, isUploading } = useDocumentUpload({
-    entityType: 'club',
-    bucket: 'club_assets',
-    maxSize: 5, // 5MB max size
-  });
+  const { handleClubFileUpload, isUploading } = useClubFileUpload();
   
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'document' | 'logo') => {
     const file = e.target.files?.[0];
@@ -39,8 +35,8 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
       if (type === 'logo') setLogoUploading(true);
       else setDocumentUploading(true);
       
-      // Use the document upload hook for the actual upload
-      const fileUrl = await uploadDocument(file);
+      // Use the club file upload hook for the actual upload
+      const fileUrl = await handleClubFileUpload(file);
       
       if (fileUrl && onFileUpload) {
         onFileUpload(fileUrl, file.name, type);

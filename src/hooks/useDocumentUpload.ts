@@ -39,21 +39,55 @@ export const useDocumentUpload = ({
     setIsUploading(true);
 
     try {
+      console.log('Starting document upload to Supabase storage');
+      
       // Determine the prefix based on entity type and ID
       const prefix = entityId 
         ? `${entityType}_${entityId}` 
-        : `user_${user?.id}`;
+        : `user_${user?.id || 'anonymous'}`;
         
       // Generate a unique filename to prevent overwriting
       const fileExt = file.name.split('.').pop();
       const fileName = `${prefix}/${Date.now()}_${file.name}`;
 
+      console.log('Uploading to path:', fileName, 'in bucket:', bucket);
+
+      // First check if bucket exists, create it if it doesn't
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(b => b.name === bucket);
+      
+      if (!bucketExists) {
+        console.log(`Bucket ${bucket} does not exist, attempting to create it`);
+        try {
+          const { data, error } = await supabase.storage.createBucket(bucket, {
+            public: true
+          });
+          
+          if (error) {
+            console.error('Error creating bucket:', error);
+            throw error;
+          }
+          console.log('Bucket created successfully');
+        } catch (err) {
+          console.error('Failed to create bucket, might not have permission:', err);
+          // Continue anyway as the bucket might exist or be created by someone else
+        }
+      }
+
       // Upload file to Supabase Storage
       const { data, error } = await supabase.storage
         .from(bucket)
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase storage upload error:', error);
+        throw error;
+      }
+
+      console.log('File uploaded successfully, data:', data);
 
       // Get public URL
       const { data: urlData } = supabase.storage
@@ -61,6 +95,7 @@ export const useDocumentUpload = ({
         .getPublicUrl(fileName);
 
       const publicUrl = urlData.publicUrl;
+      console.log('Generated public URL:', publicUrl);
       
       if (onSuccess) {
         onSuccess(publicUrl, file.name);
