@@ -67,25 +67,75 @@ export const useAuthSignup = (
       console.log("User created with metadata:", data.user.user_metadata);
       
       // Delay slightly to ensure the database trigger has time to create the profile
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Check if profile was created and has correct data
-      const { data: profile, error: profileError } = await supabase
+      // Get the profile that was created by the auth trigger
+      let { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', data.user.id)
         .single();
       
       if (profileError) {
-        console.warn('Profile not found after signup:', profileError);
+        console.warn('Profile not found after signup, will create one:', profileError);
         
-        // Create a user object with the expected structure
+        // If profile doesn't exist, create it manually
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            email: data.user.email || email,
+            name,
+            role,
+            university
+          })
+          .select()
+          .single();
+        
+        if (createError) {
+          console.error('Failed to create profile:', createError);
+        } else {
+          profile = newProfile;
+          console.log("Profile created manually:", profile);
+        }
+      } else {
+        console.log("Existing profile found:", profile);
+      }
+      
+      // Always update the profile with the correct role and university from signup
+      console.log("Updating profile with role:", role, "university:", university);
+      
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          role: role,
+          university: university
+        })
+        .eq('id', data.user.id);
+      
+      if (updateError) {
+        console.error('Failed to update profile with role and university:', updateError);
+      } else {
+        console.log("Profile updated successfully with role and university");
+      }
+      
+      // Fetch the final updated profile to confirm all changes
+      const { data: updatedProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+        
+      if (fetchError) {
+        console.error('Failed to fetch updated profile:', fetchError);
+        
+        // Create a user object with the expected structure even if fetching profile fails
         const user: User = {
           id: data.user.id,
           email: data.user.email || email,
           name,
-          role,
-          university,
+          role, // Use the role from signup parameters
+          university, // Use the university from signup parameters
           profileImage: undefined
         };
         
@@ -98,51 +148,19 @@ export const useAuthSignup = (
         return user;
       }
       
-      // Explicitly update the profile with the correct role and university
-      console.log("Profile found:", profile);
-      console.log("Explicitly updating profile with role:", role, "university:", university);
-      
-      const updateData: any = {
-        role: role
-      };
-      
-      if (university) {
-        updateData.university = university;
-      }
-      
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update(updateData)
-        .eq('id', data.user.id);
-      
-      if (updateError) {
-        console.warn('Failed to update profile:', updateError);
-      } else {
-        console.log("Profile updated successfully with role and university");
-      }
-      
-      // Fetch the updated profile to confirm changes
-      const { data: updatedProfile, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.user.id)
-        .single();
-        
-      if (fetchError) {
-        console.warn('Failed to fetch updated profile:', fetchError);
-      } else {
-        console.log("Updated profile:", updatedProfile);
-      }
+      console.log("Final updated profile:", updatedProfile);
       
       // Create a user object with the correct data
       const user: User = {
         id: data.user.id,
-        email: profile.email,
-        name: profile.name,
-        role: role, // Explicitly use the role passed to signup
-        profileImage: profile.profile_image,
-        university: university // Explicitly use the university passed to signup
+        email: updatedProfile.email,
+        name: updatedProfile.name,
+        role: updatedProfile.role, // Use the role from the updated profile
+        profileImage: updatedProfile.profile_image,
+        university: updatedProfile.university // Use the university from the updated profile
       };
+      
+      console.log("Final user object returned:", user);
       
       setAuthState({
         user,
