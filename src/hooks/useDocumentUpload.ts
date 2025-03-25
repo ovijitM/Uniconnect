@@ -23,6 +23,37 @@ export const useDocumentUpload = ({
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // Helper function to create a bucket if it doesn't exist
+  const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
+    try {
+      // Check if the bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(b => b.name === bucketName);
+      
+      if (bucketExists) {
+        return true;
+      }
+      
+      console.log(`Bucket '${bucketName}' doesn't exist, attempting to create it...`);
+      
+      // Try to create the bucket
+      const { data, error } = await supabase.storage.createBucket(bucketName, {
+        public: true
+      });
+      
+      if (error) {
+        console.error(`Failed to create bucket '${bucketName}':`, error);
+        return false;
+      }
+      
+      console.log(`Successfully created bucket '${bucketName}'`);
+      return true;
+    } catch (error) {
+      console.error(`Error ensuring bucket '${bucketName}' exists:`, error);
+      return false;
+    }
+  };
+
   const uploadDocument = async (file: File): Promise<string | null> => {
     if (!file) return null;
     
@@ -51,15 +82,15 @@ export const useDocumentUpload = ({
 
       console.log('Uploading to path:', fileName, 'in bucket:', bucket);
 
-      // Check if the bucket exists
-      const { data: buckets } = await supabase.storage.listBuckets();
-      console.log('Available buckets:', buckets?.map(b => b.name));
+      // Always try to use the 'public' bucket first as it's most likely to exist
+      const effectiveBucket = 'public';
+      console.log(`Using bucket: ${effectiveBucket}`);
       
-      const bucketExists = buckets?.some(b => b.name === bucket);
-      
-      // If bucket doesn't exist, try to use a default bucket instead
-      const effectiveBucket = bucketExists ? bucket : 'public';
-      console.log(`Using bucket: ${effectiveBucket} (bucket '${bucket}' exists: ${bucketExists})`);
+      // Ensure the bucket exists
+      const bucketReady = await ensureBucketExists(effectiveBucket);
+      if (!bucketReady) {
+        throw new Error(`Could not ensure the '${effectiveBucket}' bucket exists. Please check your Supabase storage setup.`);
+      }
 
       // Upload file to Supabase Storage
       const { data, error } = await supabase.storage
@@ -71,44 +102,6 @@ export const useDocumentUpload = ({
 
       if (error) {
         console.error('Supabase storage upload error:', error);
-        
-        // Try uploading to public bucket as a fallback if that's not already what we tried
-        if (effectiveBucket !== 'public') {
-          console.log('Attempting fallback upload to public bucket');
-          const { data: fallbackData, error: fallbackError } = await supabase.storage
-            .from('public')
-            .upload(fileName, file, {
-              cacheControl: '3600',
-              upsert: true
-            });
-            
-          if (fallbackError) {
-            console.error('Fallback upload also failed:', fallbackError);
-            throw new Error(`Upload failed: ${fallbackError.message}`);
-          }
-          
-          console.log('Fallback upload successful');
-          
-          // Get public URL from fallback upload
-          const { data: fallbackUrlData } = supabase.storage
-            .from('public')
-            .getPublicUrl(fileName);
-            
-          const fallbackPublicUrl = fallbackUrlData.publicUrl;
-          
-          if (onSuccess) {
-            onSuccess(fallbackPublicUrl, file.name);
-          }
-          
-          toast({
-            title: 'File uploaded successfully',
-            description: `${file.name} has been uploaded`,
-            variant: 'default',
-          });
-          
-          return fallbackPublicUrl;
-        }
-        
         throw new Error(`Upload failed: ${error.message}`);
       }
 
@@ -149,7 +142,7 @@ export const useDocumentUpload = ({
   const deleteDocument = async (path: string): Promise<boolean> => {
     try {
       const { error } = await supabase.storage
-        .from(bucket)
+        .from('public')  // Always use the public bucket for deletions
         .remove([path]);
 
       if (error) throw error;

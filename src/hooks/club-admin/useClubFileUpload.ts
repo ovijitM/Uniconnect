@@ -9,7 +9,7 @@ export const useClubFileUpload = (clubId?: string) => {
   const { uploadDocument } = useDocumentUpload({
     entityType: 'club',
     entityId: clubId,
-    bucket: 'public', // Use public bucket as default since it likely has the right permissions
+    bucket: 'public', // Always use public bucket
     maxSize: 5, // 5MB max size
   });
 
