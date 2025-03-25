@@ -1,67 +1,6 @@
+
 import { useState } from 'react';
-
-export interface ClubFormData {
-  name: string;
-  description: string;
-  logoUrl: string;
-  category: string;
-  tagline?: string;
-  establishedYear?: string;
-  affiliation?: string;
-  whyJoin?: string;
-  regularEvents?: string;
-  signatureEvents?: string;
-  communityEngagement?: string;
-  whoCanJoin?: string;
-  membershipFee?: string;
-  howToJoin?: string;
-  presidentName?: string;
-  presidentContact?: string;
-  phoneNumber?: string;
-  website?: string;
-  facebookLink?: string;
-  instagramLink?: string;
-  twitterLink?: string;
-  discordLink?: string;
-  documentUrl?: string;
-  documentName?: string;
-}
-
-export interface EventFormData {
-  title: string;
-  description: string;
-  date: string;
-  location: string;
-  category: string;
-  maxParticipants: string;
-  clubId: string;
-  imageUrl?: string;
-  tagline?: string;
-  eventType?: string;
-  registrationDeadline?: string;
-  onlinePlatform?: string;
-  eligibility?: string;
-  teamSize?: string;
-  registrationLink?: string;
-  entryFee?: string;
-  theme?: string;
-  subTracks?: string;
-  prizePool?: string;
-  prizeCategories?: string;
-  additionalPerks?: string;
-  judgingCriteria?: string;
-  judges?: string;
-  deliverables?: string;
-  submissionPlatform?: string;
-  mentors?: string;
-  sponsors?: string;
-  contactEmail?: string;
-  communityLink?: string;
-  eventWebsite?: string;
-  eventHashtag?: string;
-  documentUrl?: string;
-  documentName?: string;
-}
+import { ClubFormData, EventFormData } from './types'; // Updated to import types from types.ts
 
 export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<void>) => {
   const [isClubDialogOpen, setIsClubDialogOpen] = useState(false);
@@ -84,7 +23,7 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
     maxParticipants: '',
     clubId: '',
     imageUrl: '',
-    tagline: '',
+    tagline: '', // Now required
     eventType: 'in-person',
     registrationDeadline: '',
     onlinePlatform: '',
@@ -107,7 +46,7 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
     communityLink: '',
     eventWebsite: '',
     eventHashtag: '',
-    visibility: 'public'
+    visibility: 'public' // Required field with default value
   });
 
   // Handle input changes for club form
@@ -186,7 +125,7 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
       maxParticipants: '',
       clubId: '',
       imageUrl: '',
-      tagline: '',
+      tagline: '', // Required field
       eventType: 'in-person',
       registrationDeadline: '',
       onlinePlatform: '',
@@ -209,7 +148,7 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
       communityLink: '',
       eventWebsite: '',
       eventHashtag: '',
-      visibility: 'public'
+      visibility: 'public' // Required field
     });
     
     // Refresh event data if callback provided

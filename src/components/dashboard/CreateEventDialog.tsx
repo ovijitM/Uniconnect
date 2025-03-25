@@ -16,8 +16,8 @@ interface CreateEventDialogProps {
     category: string;
     maxParticipants: string;
     clubId: string;
-    imageUrl?: string; // Added field for event banner/poster
-    tagline?: string;
+    imageUrl?: string;
+    tagline: string; // Changed from optional to required
     eventType?: string;
     registrationDeadline?: string;
     onlinePlatform?: string;
@@ -40,7 +40,7 @@ interface CreateEventDialogProps {
     communityLink?: string;
     eventWebsite?: string;
     eventHashtag?: string;
-    visibility: 'public' | 'university_only';
+    visibility: 'public' | 'university_only'; // Required field
   };
   clubs: any[];
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
