@@ -2,6 +2,7 @@
 import { useClubFormState } from './useClubFormState';
 import { useClubValidation } from './useClubValidation';
 import { useClubCreation } from './useClubCreation';
+import { ClubFormData } from './types';
 import { useToast } from '@/hooks/use-toast';
 
 export const useClubForm = (userId: string | undefined, onSuccess: () => void) => {
@@ -18,7 +19,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
 
   const { toast } = useToast();
   const { validateClubData } = useClubValidation();
-  const { createClub } = useClubCreation(userId, onSuccess);
+  const { createClub } = useClubCreation();
 
   const handleCreateClub = async () => {
     try {
@@ -26,6 +27,17 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       setIsSubmitting(true);
 
       console.log('Validating club data:', clubFormData);
+      
+      // Check if university is provided
+      if (!clubFormData.university) {
+        toast({
+          title: "Missing University",
+          description: "You must have a university affiliation to create a club. Please update your profile.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
       
       const isValid = await validateClubData(clubFormData);
       if (!isValid) {
@@ -47,11 +59,50 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
 
       console.log('Creating club with data:', clubFormData);
       
-      // Pass all required parameters to createClub
-      await createClub(clubFormData, setClubFormData, setIsClubDialogOpen);
-      
-      // Success is handled inside createClub function
-      setIsSubmitting(false);
+      const success = await createClub(clubFormData, userId);
+      if (success) {
+        toast({
+          title: "Club Created Successfully",
+          description: "Your club has been created and is now pending approval.",
+        });
+        
+        // Reset form with all required fields
+        setClubFormData({
+          name: '',
+          description: '',
+          category: '',
+          university: '', // Required university field
+          universityId: '', // Include universityId field
+          // Reset other fields
+          tagline: '',
+          establishedYear: '',
+          affiliation: '',
+          whyJoin: '',
+          regularEvents: '',
+          signatureEvents: '',
+          communityEngagement: '',
+          whoCanJoin: '',
+          membershipFee: 'Free',
+          howToJoin: '',
+          presidentName: '',
+          presidentContact: '',
+          executiveMembers: '',
+          advisors: '',
+          phoneNumber: '',
+          website: '',
+          facebookLink: '',
+          instagramLink: '',
+          twitterLink: '',
+          discordLink: '',
+          logoUrl: '',
+          documentUrl: '',
+          documentName: ''
+        });
+        setIsClubDialogOpen(false);
+        
+        // Refresh data
+        onSuccess();
+      }
     } catch (error) {
       console.error('Error in handleCreateClub:', error);
       toast({
@@ -59,6 +110,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
         description: "An error occurred while creating your club. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsSubmitting(false);
     }
   };

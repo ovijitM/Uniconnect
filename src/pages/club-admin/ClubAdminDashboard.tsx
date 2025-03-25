@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClubAdminData } from '@/hooks/club-admin/useClubAdminData';
@@ -13,17 +13,15 @@ import ClubAdminDashboardContent from '@/components/dashboard/club-admin/dashboa
 import { useClubAdminRoutes } from '@/components/dashboard/club-admin/dashboard/useClubAdminRoutes';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { PlusCircle } from 'lucide-react';
 
 const ClubAdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const [hasTriedProfile, setHasTriedProfile] = useState(false);
   const state = location.state as { openEventDialog?: boolean } | null;
+  const { userUniversity, fetchUserProfile } = useStudentProfile(user?.id);
   
   // Use our custom hook to detect routes
   const { currentView } = useClubAdminRoutes();
@@ -37,7 +35,6 @@ const ClubAdminDashboard: React.FC = () => {
     totalMembersCount,
     averageAttendance,
     isLoading,
-    loadingError,
     fetchClubAdminData,
     selectedEventId,
     selectedEventTitle,
@@ -58,6 +55,13 @@ const ClubAdminDashboard: React.FC = () => {
     handleClubFileUpload,
     handleEventFileUpload
   } = useClubAdminForms(user?.id, fetchClubAdminData);
+
+  // Fetch the user's university
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserProfile();
+    }
+  }, [user?.id]);
 
   // Handle opening event dialog when navigated with state
   useEffect(() => {
@@ -99,11 +103,15 @@ const ClubAdminDashboard: React.FC = () => {
   };
 
   const handleCreateClubClick = () => {
+    if (!userUniversity) {
+      toast({
+        title: "University Required",
+        description: "You need to have a university associated with your profile to create a club. Please update your profile first.",
+        variant: "warning",
+      });
+      return;
+    }
     setIsClubDialogOpen(true);
-  };
-
-  const handleRetry = () => {
-    fetchClubAdminData();
   };
 
   // Add quick action buttons based on current view
@@ -134,79 +142,44 @@ const ClubAdminDashboard: React.FC = () => {
     }
   };
 
-  // Show loading indicator if still loading
-  if (isLoading && !adminClubs.length) {
-    return (
-      <DashboardLayout sidebar={<ClubAdminSidebar />}>
-        <div className="container p-4 flex items-center justify-center h-[80vh]">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <h3 className="text-lg font-medium">Loading your data...</h3>
-            <p className="text-muted-foreground">Please wait while we fetch your clubs and events.</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   return (
     <DashboardLayout sidebar={<ClubAdminSidebar />}>
       <div className="container p-4">
-        {/* Error state with retry button */}
-        {loadingError && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error loading data</AlertTitle>
-            <AlertDescription>Failed to load content. Please try again later.</AlertDescription>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-2"
-              onClick={handleRetry}
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Retry
-            </Button>
-          </Alert>
-        )}
-        
         {/* Quick action buttons */}
         <div className="flex justify-end mb-4">
           {renderQuickActions()}
         </div>
         
-        <ErrorBoundary>
-          <ClubAdminDashboardContent
-            currentView={currentView}
-            adminClubs={adminClubs}
-            clubEvents={clubEvents}
-            clubMembers={clubMembers}
-            activeEventCount={activeEventCount}
-            pastEventCount={pastEventCount}
-            totalMembersCount={totalMembersCount}
-            averageAttendance={averageAttendance}
-            isLoading={isLoading}
-            selectedEventId={selectedEventId}
-            selectedEventTitle={selectedEventTitle}
-            isClubDialogOpen={isClubDialogOpen}
-            setIsClubDialogOpen={setIsClubDialogOpen}
-            clubFormData={clubFormData}
-            handleClubInputChange={handleClubInputChange}
-            handleCreateClub={handleCreateClub}
-            handleClubFileUpload={handleClubFileUpload}
-            isEventDialogOpen={isEventDialogOpen}
-            setIsEventDialogOpen={setIsEventDialogOpen}
-            eventFormData={eventFormData}
-            handleEventInputChange={handleEventInputChange}
-            handleCreateEvent={handleCreateEvent}
-            handleEventFileUpload={handleEventFileUpload}
-            handleViewEvent={handleViewEvent}
-            handleEditEvent={handleEditEvent}
-            handleRefreshAfterDelete={handleRefreshAfterDelete}
-            fetchClubAdminData={fetchClubAdminData}
-            selectEventForAttendeeManagement={selectEventForAttendeeManagement}
-          />
-        </ErrorBoundary>
+        <ClubAdminDashboardContent
+          currentView={currentView}
+          adminClubs={adminClubs}
+          clubEvents={clubEvents}
+          clubMembers={clubMembers}
+          activeEventCount={activeEventCount}
+          pastEventCount={pastEventCount}
+          totalMembersCount={totalMembersCount}
+          averageAttendance={averageAttendance}
+          isLoading={isLoading}
+          selectedEventId={selectedEventId}
+          selectedEventTitle={selectedEventTitle}
+          isClubDialogOpen={isClubDialogOpen}
+          setIsClubDialogOpen={setIsClubDialogOpen}
+          clubFormData={clubFormData}
+          handleClubInputChange={handleClubInputChange}
+          handleCreateClub={handleCreateClub}
+          handleClubFileUpload={handleClubFileUpload}
+          isEventDialogOpen={isEventDialogOpen}
+          setIsEventDialogOpen={setIsEventDialogOpen}
+          eventFormData={eventFormData}
+          handleEventInputChange={handleEventInputChange}
+          handleCreateEvent={handleCreateEvent}
+          handleEventFileUpload={handleEventFileUpload}
+          handleViewEvent={handleViewEvent}
+          handleEditEvent={handleEditEvent}
+          handleRefreshAfterDelete={handleRefreshAfterDelete}
+          fetchClubAdminData={fetchClubAdminData}
+          selectEventForAttendeeManagement={selectEventForAttendeeManagement}
+        />
       </div>
     </DashboardLayout>
   );

@@ -1,8 +1,11 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface BasicInfoTabProps {
   formData: {
@@ -10,11 +13,50 @@ interface BasicInfoTabProps {
     description: string;
     category: string;
     tagline?: string;
+    university?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
 const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) => {
+  const [universities, setUniversities] = useState<{ id: string, name: string }[]>([]);
+  const [isLoadingUniversities, setIsLoadingUniversities] = useState(false);
+  const { user } = useAuth();
+  
+  useEffect(() => {
+    const fetchUniversities = async () => {
+      setIsLoadingUniversities(true);
+      try {
+        const { data, error } = await supabase
+          .from('universities')
+          .select('id, name')
+          .order('name');
+        
+        if (error) throw error;
+        console.log('Universities fetched:', data);
+        setUniversities(data || []);
+      } catch (error) {
+        console.error('Error fetching universities:', error);
+      } finally {
+        setIsLoadingUniversities(false);
+      }
+    };
+
+    fetchUniversities();
+  }, []);
+
+  const handleUniversityChange = (value: string) => {
+    console.log('University selected:', value);
+    const event = {
+      target: {
+        name: 'university',
+        value
+      }
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    onInputChange(event);
+  };
+
   return (
     <div className="space-y-4 py-4">
       <div className="space-y-2">
@@ -51,6 +93,44 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
           onChange={onInputChange}
           required
         />
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="university">University *</Label>
+        {formData.university ? (
+          <Input
+            id="university"
+            name="university"
+            value={formData.university}
+            readOnly
+            className="bg-gray-50"
+          />
+        ) : (
+          <Select 
+            value={formData.university || ''} 
+            onValueChange={handleUniversityChange}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select university" />
+            </SelectTrigger>
+            <SelectContent>
+              {isLoadingUniversities ? (
+                <SelectItem value="loading" disabled>Loading universities...</SelectItem>
+              ) : (
+                universities.map((uni) => (
+                  <SelectItem key={uni.id} value={uni.name}>
+                    {uni.name}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+        )}
+        <p className="text-xs text-muted-foreground mt-1">
+          {formData.university 
+            ? "Your club will be associated with your university" 
+            : "This associates your club with a specific university"}
+        </p>
       </div>
       
       <div className="space-y-2">
