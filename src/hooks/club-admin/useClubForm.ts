@@ -66,14 +66,14 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
           description: "Your club has been created and is now pending approval.",
         });
         
-        // Reset form and close dialog
+        // Reset form with all required fields
         setClubFormData({
           name: '',
           description: '',
           category: '',
           university: '', // Required university field
           universityId: '', // Include universityId field
-          // Reset fields
+          // Reset other fields
           tagline: '',
           establishedYear: '',
           affiliation: '',

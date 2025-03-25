@@ -6,7 +6,7 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
   const [isClubDialogOpen, setIsClubDialogOpen] = useState(false);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   
-  // Initialize with empty form data
+  // Initialize with empty form data including required university fields
   const [clubFormData, setClubFormData] = useState<ClubFormData>({
     name: '',
     description: '',
@@ -14,6 +14,28 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
     category: 'academic',
     university: '', // Required university field
     universityId: '', // Include universityId field
+    tagline: '',
+    establishedYear: '',
+    affiliation: '',
+    whyJoin: '',
+    regularEvents: '',
+    signatureEvents: '',
+    communityEngagement: '',
+    whoCanJoin: '',
+    membershipFee: 'Free',
+    howToJoin: '',
+    presidentName: '',
+    presidentContact: '',
+    executiveMembers: '',
+    advisors: '',
+    phoneNumber: '',
+    website: '',
+    facebookLink: '',
+    instagramLink: '',
+    twitterLink: '',
+    discordLink: '', 
+    documentUrl: '',
+    documentName: ''
   });
   
   const [eventFormData, setEventFormData] = useState<EventFormData>({
@@ -102,7 +124,7 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
     // Close the dialog
     setIsClubDialogOpen(false);
     
-    // Reset form data
+    // Reset form data with required fields included
     setClubFormData({
       name: '',
       description: '',
@@ -110,6 +132,28 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
       category: 'academic',
       university: '', // Required university field
       universityId: '', // Include universityId field
+      tagline: '',
+      establishedYear: '',
+      affiliation: '',
+      whyJoin: '',
+      regularEvents: '',
+      signatureEvents: '',
+      communityEngagement: '',
+      whoCanJoin: '',
+      membershipFee: 'Free',
+      howToJoin: '',
+      presidentName: '',
+      presidentContact: '',
+      executiveMembers: '',
+      advisors: '',
+      phoneNumber: '',
+      website: '',
+      facebookLink: '',
+      instagramLink: '',
+      twitterLink: '',
+      discordLink: '', 
+      documentUrl: '',
+      documentName: ''
     });
     
     // Refresh club data if callback provided

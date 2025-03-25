@@ -14,9 +14,8 @@ export const useClubFormState = () => {
     name: '',
     description: '',
     category: '',
-    university: '', // Initialize with empty string
-    universityId: '',
-    // New fields with default values
+    university: '', // Will be populated from user profile
+    universityId: '', // Will be populated from user profile
     tagline: '',
     establishedYear: '',
     affiliation: '',
@@ -53,7 +52,7 @@ export const useClubFormState = () => {
 
   // Set the university from user profile when it's available
   useEffect(() => {
-    if (userUniversity && userUniversityId && (!clubFormData.university || !clubFormData.universityId)) {
+    if (userUniversity && userUniversityId) {
       setClubFormData(prev => ({
         ...prev,
         university: userUniversity,
@@ -67,8 +66,9 @@ export const useClubFormState = () => {
         description: "You need to have a university in your profile to create a club. Please update your profile first.",
         variant: "warning",
       });
+      setIsClubDialogOpen(false); // Close the dialog
     }
-  }, [userUniversity, userUniversityId, clubFormData.university, clubFormData.universityId, isClubDialogOpen, toast]);
+  }, [userUniversity, userUniversityId, isClubDialogOpen, toast]);
 
   const handleClubInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
