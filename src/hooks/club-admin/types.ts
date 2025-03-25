@@ -63,4 +63,7 @@ export interface EventFormData {
   communityLink: string;
   eventWebsite: string;
   eventHashtag: string;
+  
+  // New visibility field
+  visibility: 'public' | 'university_only';
 }

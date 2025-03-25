@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -21,14 +22,29 @@ const EventsPage: React.FC = () => {
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchEvents() {
       try {
         setIsLoading(true);
         
+        // If user is logged in, get their university
+        let userUniversity = null;
+        if (user) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('university')
+            .eq('id', user.id)
+            .single();
+            
+          if (profileData) {
+            userUniversity = profileData.university;
+          }
+        }
+        
         // Fetch events from Supabase
-        const { data: eventsData, error: eventsError } = await supabase
+        let eventsQuery = supabase
           .from('events')
           .select(`
             id,
@@ -41,9 +57,23 @@ const EventsPage: React.FC = () => {
             status,
             max_participants,
             club_id,
+            visibility,
             event_participants(count)
-          `)
-          .order('date');
+          `);
+          
+        // Filter events based on visibility and user's university
+        if (user && userUniversity) {
+          // For logged-in users with a university, fetch:
+          // 1. All public events
+          // 2. University-only events from their university
+          eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
+        } else {
+          // For non-logged-in users or users without a university, fetch only public events
+          eventsQuery = eventsQuery.eq('visibility', 'public');
+        }
+        
+        // Execute the query and order by date
+        const { data: eventsData, error: eventsError } = await eventsQuery.order('date');
         
         if (eventsError) throw eventsError;
         
@@ -58,6 +88,7 @@ const EventsPage: React.FC = () => {
                 description,
                 logo_url,
                 category,
+                university,
                 club_members(count)
               `)
               .eq('id', event.club_id)
@@ -72,6 +103,7 @@ const EventsPage: React.FC = () => {
               imageUrl: event.image_url,
               category: event.category,
               status: event.status,
+              visibility: event.visibility,
               participants: event.event_participants[0]?.count || 0,
               maxParticipants: event.max_participants || undefined,
               organizer: {
@@ -80,6 +112,7 @@ const EventsPage: React.FC = () => {
                 description: clubData.description,
                 logoUrl: clubData.logo_url,
                 category: clubData.category,
+                university: clubData.university,
                 memberCount: clubData.club_members[0]?.count || 0,
                 events: []
               }
@@ -107,7 +140,7 @@ const EventsPage: React.FC = () => {
     }
     
     fetchEvents();
-  }, [toast]);
+  }, [toast, user]);
 
   useEffect(() => {
     // Filter events based on search, status, and categories

@@ -7,6 +7,8 @@ import EventCardImage from '@/components/ui/event-card/EventCardImage';
 import EventCardDetails from '@/components/ui/event-card/EventCardDetails';
 import EventParticipants from '@/components/ui/event-card/EventParticipants';
 import { supabase } from '@/integrations/supabase/client';
+import { Lock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface EventCardProps {
   event: Event;
@@ -50,10 +52,18 @@ const EventCard: React.FC<EventCardProps> = ({ event, index = 0 }) => {
           />
         }
         footer={
-          <EventParticipants 
-            participants={event.participants} 
-            maxParticipants={event.maxParticipants} 
-          />
+          <div className="flex justify-between items-center">
+            <EventParticipants 
+              participants={event.participants} 
+              maxParticipants={event.maxParticipants} 
+            />
+            {event.visibility === 'university_only' && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Lock className="h-3 w-3" />
+                <span className="text-xs">University Only</span>
+              </Badge>
+            )}
+          </div>
         }
         className="h-full"
       >

@@ -65,6 +65,9 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
           status: 'upcoming',
           image_url: eventFormData.imageUrl || null, // Added imageUrl field
           
+          // Add the visibility field
+          visibility: eventFormData.visibility,
+          
           // New fields
           tagline: eventFormData.tagline || null,
           event_type: eventFormData.eventType,
@@ -151,7 +154,8 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         contactEmail: '',
         communityLink: '',
         eventWebsite: '',
-        eventHashtag: ''
+        eventHashtag: '',
+        visibility: 'public'
       });
       setSelectedCollaborators([]);
       setIsEventDialogOpen(false);

@@ -11,19 +11,9 @@ export const formatEventData = (eventData: any, clubData: any): Event => {
     imageUrl: eventData.image_url,
     category: eventData.category,
     status: eventData.status,
+    visibility: eventData.visibility,
     participants: eventData.event_participants[0]?.count || 0,
     maxParticipants: eventData.max_participants || undefined,
-    organizer: {
-      id: clubData.id,
-      name: clubData.name,
-      description: clubData.description,
-      logoUrl: clubData.logo_url,
-      category: clubData.category,
-      memberCount: clubData.club_members[0]?.count || 0,
-      events: []
-    },
-    
-    // New fields
     eventType: eventData.event_type,
     tagline: eventData.tagline,
     registrationDeadline: eventData.registration_deadline,
@@ -47,6 +37,16 @@ export const formatEventData = (eventData: any, clubData: any): Event => {
     contactEmail: eventData.contact_email,
     communityLink: eventData.community_link,
     eventWebsite: eventData.event_website,
-    eventHashtag: eventData.event_hashtag
+    eventHashtag: eventData.event_hashtag,
+    organizer: {
+      id: clubData.id,
+      name: clubData.name,
+      description: clubData.description,
+      logoUrl: clubData.logo_url,
+      category: clubData.category,
+      university: clubData.university,
+      memberCount: clubData.club_members?.[0]?.count || 0,
+      events: []
+    }
   };
 };

@@ -410,6 +410,7 @@ export type Database = {
           theme: string | null
           title: string
           updated_at: string
+          visibility: string
         }
         Insert: {
           additional_perks?: string[] | null
@@ -448,6 +449,7 @@ export type Database = {
           theme?: string | null
           title: string
           updated_at?: string
+          visibility?: string
         }
         Update: {
           additional_perks?: string[] | null
@@ -486,6 +488,7 @@ export type Database = {
           theme?: string | null
           title?: string
           updated_at?: string
+          visibility?: string
         }
         Relationships: [
           {

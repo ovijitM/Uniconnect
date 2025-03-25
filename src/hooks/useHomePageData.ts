@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Event, Club } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useHomePageData = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -10,11 +10,26 @@ export const useHomePageData = () => {
   const [featuredEvent, setFeaturedEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchData() {
       try {
         setIsLoading(true);
+        
+        // If user is logged in, get their university
+        let userUniversity = null;
+        if (user) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('university')
+            .eq('id', user.id)
+            .single();
+            
+          if (profileData) {
+            userUniversity = profileData.university;
+          }
+        }
         
         // Fetch clubs from Supabase with status filter
         const { data: clubsData, error: clubsError } = await supabase
@@ -65,12 +80,28 @@ export const useHomePageData = () => {
           })
         );
         
-        // Fetch events from Supabase - FIX: Specify the relationship explicitly using !events_club_id_fkey
-        const { data: eventsData, error: eventsError } = await supabase
+        // Fetch events from Supabase based on visibility
+        let eventsQuery = supabase
           .from('events')
-          .select('*, clubs!events_club_id_fkey(*)')
-          .eq('clubs.status', 'approved')
-          .order('date');
+          .select('*, clubs!events_club_id_fkey(*)');
+        
+        // Apply visibility filtering based on user's university
+        if (user && userUniversity) {
+          // For logged-in users with a university, fetch:
+          // 1. All public events
+          // 2. University-only events from their university
+          eventsQuery = eventsQuery
+            .eq('clubs.status', 'approved')
+            .or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
+        } else {
+          // For non-logged-in users or users without a university, fetch only public events
+          eventsQuery = eventsQuery
+            .eq('clubs.status', 'approved')
+            .eq('visibility', 'public');
+        }
+        
+        // Order the events by date
+        const { data: eventsData, error: eventsError } = await eventsQuery.order('date');
         
         if (eventsError) throw eventsError;
         
@@ -181,7 +212,7 @@ export const useHomePageData = () => {
     }
     
     fetchData();
-  }, [toast]);
+  }, [toast, user]);
 
   return {
     events,

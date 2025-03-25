@@ -36,7 +36,10 @@ export const useEventFormState = () => {
     contactEmail: '',
     communityLink: '',
     eventWebsite: '',
-    eventHashtag: ''
+    eventHashtag: '',
+    
+    // Initialize new visibility field
+    visibility: 'public'
   });
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
 

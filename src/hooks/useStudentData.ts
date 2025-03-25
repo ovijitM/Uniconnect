@@ -11,6 +11,7 @@ export const useStudentData = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [joinedClubs, setJoinedClubs] = useState<any[]>([]);
   const [registeredEvents, setRegisteredEvents] = useState<any[]>([]);
+  const [userUniversity, setUserUniversity] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -19,6 +20,17 @@ export const useStudentData = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
+        // First, get the user's university
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('university')
+          .eq('id', user.id)
+          .single();
+          
+        if (profileData?.university) {
+          setUserUniversity(profileData.university);
+        }
+        
         // Fetch clubs the student has joined
         const { data: membershipData, error: membershipError } = await supabase
           .from('club_members')
@@ -66,16 +78,30 @@ export const useStudentData = () => {
         if (allClubsError) throw allClubsError;
         setClubs(allClubs || []);
         
-        // Fetch upcoming events with explicit foreign key reference
-        const { data: upcomingEvents, error: upcomingEventsError } = await supabase
+        // Fetch upcoming events visible to the student
+        let upcomingEventsQuery = supabase
           .from('events')
           .select(`
             *,
             clubs:clubs!events_club_id_fkey (
-              name
+              id,
+              name,
+              university
             )
           `)
-          .eq('status', 'upcoming')
+          .eq('status', 'upcoming');
+          
+        // Apply visibility filtering based on user's university
+        if (profileData?.university) {
+          upcomingEventsQuery = upcomingEventsQuery.or(
+            `visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${profileData.university})`
+          );
+        } else {
+          upcomingEventsQuery = upcomingEventsQuery.eq('visibility', 'public');
+        }
+        
+        // Complete the query with ordering
+        const { data: upcomingEvents, error: upcomingEventsError } = await upcomingEventsQuery
           .order('date', { ascending: true });
         
         if (upcomingEventsError) throw upcomingEventsError;
@@ -278,6 +304,7 @@ export const useStudentData = () => {
     events,
     joinedClubs,
     registeredEvents,
+    userUniversity,
     joinClub,
     leaveClub,
     registerForEvent,
