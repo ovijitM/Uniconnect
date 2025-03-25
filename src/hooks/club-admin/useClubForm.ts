@@ -14,7 +14,9 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
     isSubmitting,
     setIsSubmitting,
     handleClubInputChange,
-    handleClubFileUpload
+    handleClubFileUpload,
+    isLoadingProfile,
+    profileError
   } = useClubFormState();
 
   const { toast } = useToast();
@@ -127,6 +129,8 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
     isSubmitting,
     handleClubInputChange,
     handleCreateClub,
-    handleClubFileUpload
+    handleClubFileUpload,
+    isLoadingProfile,
+    profileError
   };
 };

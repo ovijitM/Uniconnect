@@ -42,6 +42,11 @@ export const useStudentProfile = (userId: string | undefined) => {
         if (profileData.university_id) {
           setUserUniversityId(profileData.university_id);
         }
+
+        // If we have a university but no university_id, try to find or create it
+        if (profileData.university && !profileData.university_id) {
+          await updateUserUniversity(profileData.university);
+        }
       } else {
         console.warn('No profile data found for user:', userId);
       }

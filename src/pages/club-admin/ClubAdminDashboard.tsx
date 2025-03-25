@@ -13,7 +13,8 @@ import ClubAdminDashboardContent from '@/components/dashboard/club-admin/dashboa
 import { useClubAdminRoutes } from '@/components/dashboard/club-admin/dashboard/useClubAdminRoutes';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, RefreshCw } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const ClubAdminDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -21,7 +22,7 @@ const ClubAdminDashboard: React.FC = () => {
   const location = useLocation();
   const { toast } = useToast();
   const state = location.state as { openEventDialog?: boolean } | null;
-  const { userUniversity, fetchUserProfile } = useStudentProfile(user?.id);
+  const { userUniversity, fetchUserProfile, isLoadingProfile, error: profileError } = useStudentProfile(user?.id);
   
   // Use our custom hook to detect routes
   const { currentView } = useClubAdminRoutes();
@@ -61,7 +62,7 @@ const ClubAdminDashboard: React.FC = () => {
     if (user?.id) {
       fetchUserProfile();
     }
-  }, [user?.id]);
+  }, [user?.id, fetchUserProfile]);
 
   // Handle opening event dialog when navigated with state
   useEffect(() => {
@@ -102,8 +103,27 @@ const ClubAdminDashboard: React.FC = () => {
     fetchClubAdminData();
   };
 
+  const handleRetryProfileFetch = () => {
+    if (user?.id) {
+      fetchUserProfile();
+      toast({
+        title: "Retrying",
+        description: "Attempting to reload your profile data...",
+      });
+    }
+  };
+
   const handleCreateClubClick = () => {
     if (!userUniversity) {
+      if (profileError) {
+        toast({
+          title: "Profile Error",
+          description: "Unable to load your university information. Please try again or update your profile.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       toast({
         title: "University Required",
         description: "You need to have a university associated with your profile to create a club. Please update your profile first.",
@@ -132,6 +152,7 @@ const ClubAdminDashboard: React.FC = () => {
           <Button 
             onClick={handleCreateClubClick}
             className="flex items-center gap-2"
+            disabled={isLoadingProfile}
           >
             <PlusCircle className="h-4 w-4" />
             Create Club
@@ -145,6 +166,26 @@ const ClubAdminDashboard: React.FC = () => {
   return (
     <DashboardLayout sidebar={<ClubAdminSidebar />}>
       <div className="container p-4">
+        {/* Profile error alert */}
+        {profileError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>Profile Error</AlertTitle>
+            <AlertDescription className="flex flex-col gap-2">
+              <p>{profileError}</p>
+              <p>This may prevent you from creating clubs or accessing certain features.</p>
+              <Button 
+                onClick={handleRetryProfileFetch} 
+                variant="outline" 
+                size="sm" 
+                className="w-fit mt-2"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Retry Loading Profile
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+        
         {/* Quick action buttons */}
         <div className="flex justify-end mb-4">
           {renderQuickActions()}
@@ -179,6 +220,8 @@ const ClubAdminDashboard: React.FC = () => {
           handleRefreshAfterDelete={handleRefreshAfterDelete}
           fetchClubAdminData={fetchClubAdminData}
           selectEventForAttendeeManagement={selectEventForAttendeeManagement}
+          isLoadingProfile={isLoadingProfile}
+          profileError={profileError}
         />
       </div>
     </DashboardLayout>

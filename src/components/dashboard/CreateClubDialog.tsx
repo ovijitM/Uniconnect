@@ -8,6 +8,7 @@ import { useStudentProfile } from '@/hooks/student/useStudentProfile';
 import { useToast } from '@/hooks/use-toast';
 import { ClubFormData } from '@/hooks/club-admin/types';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface CreateClubDialogProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ interface CreateClubDialogProps {
   onFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
   buttonText?: string;
   trigger?: React.ReactNode;
+  isLoadingProfile?: boolean;
+  profileError?: string | null;
 }
 
 const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
@@ -28,15 +31,15 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
   onSubmit,
   onFileUpload,
   buttonText = "Create New Club",
-  trigger
+  trigger,
+  isLoadingProfile,
+  profileError
 }) => {
   const { user } = useAuth();
   const { 
     userUniversity, 
     userUniversityId, 
-    fetchUserProfile, 
-    isLoadingProfile,
-    error
+    fetchUserProfile
   } = useStudentProfile(user?.id);
   const { toast } = useToast();
 
@@ -69,14 +72,14 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
   const handleOpenChange = (open: boolean) => {
     if (open && !userUniversity) {
       // Only show this warning if we're not still loading and there was no error
-      if (!isLoadingProfile && !error) {
+      if (!isLoadingProfile && !profileError) {
         toast({
           title: "Missing University Affiliation",
           description: "You need to have a university in your profile to create a club. Please update your profile first.",
           variant: "warning",
         });
         return;
-      } else if (error) {
+      } else if (profileError) {
         toast({
           title: "Profile Error",
           description: "There was an error loading your profile. Please try again or update your profile.",
@@ -99,15 +102,25 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
   };
 
   // Show fallback UI if there's an error loading profile
-  if (error && isOpen) {
+  if (profileError && isOpen) {
     return (
       <div className="p-6 flex flex-col items-center justify-center space-y-4 bg-background border rounded-lg shadow-md">
-        <h3 className="text-xl font-semibold text-destructive">Error</h3>
-        <p className="text-center text-muted-foreground">{error}</p>
-        <Button onClick={handleRetryProfile} variant="outline">
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Retry
-        </Button>
+        <Alert variant="destructive" className="mb-6">
+          <AlertTitle>Error Loading Profile</AlertTitle>
+          <AlertDescription className="flex flex-col gap-2">
+            <p>{profileError}</p>
+            <p>Your university information is required to create a club.</p>
+            <Button 
+              onClick={handleRetryProfile} 
+              variant="outline" 
+              size="sm" 
+              className="w-fit mt-2"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry Loading Profile
+            </Button>
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
