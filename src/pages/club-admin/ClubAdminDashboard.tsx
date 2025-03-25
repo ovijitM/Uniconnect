@@ -60,7 +60,8 @@ const ClubAdminDashboard: React.FC = () => {
       contactEmail: '',
       communityLink: '',
       eventWebsite: '',
-      eventHashtag: ''
+      eventHashtag: '',
+      visibility: 'public' // Added the required visibility property
     },
     isEventDialogOpen = false,
     setIsEventDialogOpen = () => {},
