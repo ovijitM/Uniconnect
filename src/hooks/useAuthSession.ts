@@ -23,6 +23,8 @@ export const useAuthSession = () => {
         throw error;
       }
       
+      console.log('Profile loaded:', profile);
+      
       const user: User = {
         id: session.user.id,
         email: profile.email,
