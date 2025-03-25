@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -32,8 +31,17 @@ const UniversitiesPage: React.FC = () => {
         
         if (error) throw error;
         
-        setUniversities(data || []);
-        setFilteredUniversities(data || []);
+        // Transform data to match the University type
+        const transformedData: University[] = data?.map(uni => ({
+          id: uni.id,
+          name: uni.name,
+          logoUrl: uni.logo_url,
+          description: uni.description,
+          createdAt: uni.created_at
+        })) || [];
+        
+        setUniversities(transformedData);
+        setFilteredUniversities(transformedData);
       } catch (error) {
         console.error('Error fetching universities:', error);
         toast({

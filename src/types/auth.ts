@@ -15,3 +15,10 @@ export interface AuthState {
   isLoading: boolean;
   error: string | null;
 }
+
+export interface AuthContextType extends AuthState {
+  login: (email: string, password: string) => Promise<User>;
+  signup: (email: string, password: string, name: string, role: UserRole, university?: string) => Promise<User>;
+  logout: () => void;
+  updateUser: (user: Partial<User>) => void;
+}

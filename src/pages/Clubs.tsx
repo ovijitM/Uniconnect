@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, X } from 'lucide-react';
@@ -32,7 +31,17 @@ const ClubsPage: React.FC = () => {
           .order('name');
         
         if (error) throw error;
-        setUniversities(data || []);
+        
+        // Transform data to match the University type
+        const transformedData: University[] = data?.map(uni => ({
+          id: uni.id,
+          name: uni.name,
+          logoUrl: uni.logo_url,
+          description: uni.description,
+          createdAt: uni.created_at
+        })) || [];
+        
+        setUniversities(transformedData);
       } catch (error) {
         console.error('Error fetching universities:', error);
         toast({

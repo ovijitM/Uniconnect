@@ -1,10 +1,9 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { User, UserRole, AuthState } from '@/types/auth';
 
 export interface AuthActions {
   login: (email: string, password: string) => Promise<User>;
-  signup: (email: string, password: string, name: string, role: UserRole, university: string) => Promise<User>;
+  signup: (email: string, password: string, name: string, role: UserRole, university?: string) => Promise<User>;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
 }
@@ -67,7 +66,7 @@ export const useAuthActions = (
     }
   };
 
-  const signup = async (email: string, password: string, name: string, role: UserRole, university: string): Promise<User> => {
+  const signup = async (email: string, password: string, name: string, role: UserRole, university?: string): Promise<User> => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       
