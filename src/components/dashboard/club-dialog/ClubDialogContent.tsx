@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import BasicInfoTab from './BasicInfoTab';
 import DetailsTab from './DetailsTab';
 import SocialMediaTab from './SocialMediaTab';
@@ -21,7 +21,7 @@ const ClubDialogContent: React.FC<ClubDialogContentProps> = ({
   onFileUpload
 }) => {
   return (
-    <>
+    <Tabs value={activeTab} className="w-full">
       <TabsContent value="basic">
         <BasicInfoTab formData={formData} onInputChange={onInputChange} />
       </TabsContent>
@@ -37,7 +37,7 @@ const ClubDialogContent: React.FC<ClubDialogContentProps> = ({
       <TabsContent value="documents">
         <DocumentUploadTab formData={formData} onFileUpload={onFileUpload} />
       </TabsContent>
-    </>
+    </Tabs>
   );
 };
 
