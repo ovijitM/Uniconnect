@@ -16,6 +16,8 @@ export const useAuthSignup = (
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       
+      console.log("Starting signup with role:", role, "university:", university);
+      
       // If university is provided, check if it exists in the database
       if (university && university.trim() !== '') {
         const { data: existingUni, error: uniCheckError } = await supabase
@@ -62,7 +64,12 @@ export const useAuthSignup = (
         throw new Error('No user returned after signup');
       }
       
-      // Check if profile was created immediately
+      console.log("User created with metadata:", data.user.user_metadata);
+      
+      // Delay slightly to ensure the database trigger has time to create the profile
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Check if profile was created and has correct data
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -70,7 +77,7 @@ export const useAuthSignup = (
         .single();
       
       if (profileError) {
-        console.warn('Profile not found immediately after signup, this is normal if confirmations are enabled');
+        console.warn('Profile not found after signup:', profileError);
         
         // Create a user object with the expected structure
         const user: User = {
@@ -91,35 +98,50 @@ export const useAuthSignup = (
         return user;
       }
       
-      // Explicitly update the profile with the correct role and university if they weren't set correctly
-      if (profile.role !== role || (university && profile.university !== university)) {
-        console.log('Updating profile with correct role and university');
-        const updateData: any = {
-          role: role
-        };
-        
-        if (university) {
-          updateData.university = university;
-        }
-        
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update(updateData)
-          .eq('id', data.user.id);
-        
-        if (updateError) {
-          console.warn('Failed to update profile:', updateError);
-        }
+      // Explicitly update the profile with the correct role and university
+      console.log("Profile found:", profile);
+      console.log("Explicitly updating profile with role:", role, "university:", university);
+      
+      const updateData: any = {
+        role: role
+      };
+      
+      if (university) {
+        updateData.university = university;
       }
       
-      // Create a user object with the profile data, ensuring correct role and university
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', data.user.id);
+      
+      if (updateError) {
+        console.warn('Failed to update profile:', updateError);
+      } else {
+        console.log("Profile updated successfully with role and university");
+      }
+      
+      // Fetch the updated profile to confirm changes
+      const { data: updatedProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+        
+      if (fetchError) {
+        console.warn('Failed to fetch updated profile:', fetchError);
+      } else {
+        console.log("Updated profile:", updatedProfile);
+      }
+      
+      // Create a user object with the correct data
       const user: User = {
         id: data.user.id,
         email: profile.email,
         name: profile.name,
         role: role, // Explicitly use the role passed to signup
         profileImage: profile.profile_image,
-        university: university || profile.university // Prioritize the provided university
+        university: university // Explicitly use the university passed to signup
       };
       
       setAuthState({

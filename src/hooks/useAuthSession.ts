@@ -13,6 +13,9 @@ export const useAuthSession = () => {
 
   const fetchUserProfile = async (session: Session) => {
     try {
+      console.log("Fetching user profile for session user:", session.user.id);
+      console.log("User metadata:", session.user.user_metadata);
+      
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -23,21 +26,40 @@ export const useAuthSession = () => {
         throw error;
       }
       
-      console.log('Profile loaded:', profile);
+      console.log("Profile loaded:", profile);
       
-      // If university is in user metadata but not in profile, update the profile
       const userMetadata = session.user.user_metadata;
-      if (userMetadata?.university && !profile.university) {
-        console.log('University found in metadata but not in profile, updating profile:', userMetadata.university);
+      let needsUpdate = false;
+      let updateData: any = {};
+      
+      // If role in metadata doesn't match profile, update the profile
+      if (userMetadata?.role && profile.role !== userMetadata.role) {
+        console.log(`Role mismatch - metadata: ${userMetadata.role}, profile: ${profile.role}`);
+        updateData.role = userMetadata.role;
+        needsUpdate = true;
+      }
+      
+      // If university in metadata but not in profile, update the profile
+      if (userMetadata?.university && profile.university !== userMetadata.university) {
+        console.log(`University mismatch - metadata: ${userMetadata.university}, profile: ${profile.university}`);
+        updateData.university = userMetadata.university;
+        needsUpdate = true;
+      }
+      
+      // Update profile if needed
+      if (needsUpdate) {
+        console.log("Updating profile with:", updateData);
         const { error: updateError } = await supabase
           .from('profiles')
-          .update({ university: userMetadata.university })
+          .update(updateData)
           .eq('id', session.user.id);
           
         if (updateError) {
-          console.warn('Failed to update university in profile:', updateError);
+          console.warn('Failed to update profile with metadata values:', updateError);
         } else {
-          profile.university = userMetadata.university;
+          // Update local profile object with the changes
+          Object.assign(profile, updateData);
+          console.log("Profile updated with metadata values");
         }
       }
       
@@ -49,6 +71,8 @@ export const useAuthSession = () => {
         profileImage: profile.profile_image,
         university: profile.university
       };
+      
+      console.log("Final user object:", user);
       
       setAuthState({
         user,

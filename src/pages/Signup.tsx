@@ -79,7 +79,7 @@ const Signup: React.FC = () => {
     try {
       setIsSubmitting(true);
       
-      console.log("Signing up with university:", finalUniversity);
+      console.log("Signing up with role:", role, "university:", finalUniversity);
       
       const user = await signup(email, password, name, role, finalUniversity);
       toast({
@@ -101,6 +101,7 @@ const Signup: React.FC = () => {
     }
   };
 
+  // Only show student and club_admin options
   const roleOptions = [
     { id: 'student', label: 'Student', icon: GraduationCap },
     { id: 'club_admin', label: 'Club Administrator', icon: Users },
