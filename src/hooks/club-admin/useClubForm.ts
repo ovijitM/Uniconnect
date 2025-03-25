@@ -71,6 +71,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
           name: '',
           description: '',
           category: '',
+          university: '', // Added required university field
           // Reset fields
           tagline: '',
           establishedYear: '',

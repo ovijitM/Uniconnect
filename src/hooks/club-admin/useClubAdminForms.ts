@@ -12,6 +12,7 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
     description: '',
     logoUrl: '',
     category: 'academic',
+    university: '', // Adding required university field
   });
   
   const [eventFormData, setEventFormData] = useState<EventFormData>({
@@ -99,6 +100,7 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
       description: '',
       logoUrl: '',
       category: 'academic',
+      university: '', // Adding required university field
     });
     
     // Refresh club data if callback provided
