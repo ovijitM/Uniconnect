@@ -13,7 +13,9 @@ import ClubAdminDashboardContent from '@/components/dashboard/club-admin/dashboa
 import { useClubAdminRoutes } from '@/components/dashboard/club-admin/dashboard/useClubAdminRoutes';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, RefreshCw, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 const ClubAdminDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -35,6 +37,7 @@ const ClubAdminDashboard: React.FC = () => {
     totalMembersCount,
     averageAttendance,
     isLoading,
+    loadingError,
     fetchClubAdminData,
     selectedEventId,
     selectedEventTitle,
@@ -114,6 +117,10 @@ const ClubAdminDashboard: React.FC = () => {
     setIsClubDialogOpen(true);
   };
 
+  const handleRetry = () => {
+    fetchClubAdminData();
+  };
+
   // Add quick action buttons based on current view
   const renderQuickActions = () => {
     switch (currentView) {
@@ -145,41 +152,61 @@ const ClubAdminDashboard: React.FC = () => {
   return (
     <DashboardLayout sidebar={<ClubAdminSidebar />}>
       <div className="container p-4">
+        {/* Error state with retry button */}
+        {loadingError && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error loading data</AlertTitle>
+            <AlertDescription>Failed to load content. Please try again later.</AlertDescription>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2"
+              onClick={handleRetry}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry
+            </Button>
+          </Alert>
+        )}
+        
         {/* Quick action buttons */}
         <div className="flex justify-end mb-4">
           {renderQuickActions()}
         </div>
         
-        <ClubAdminDashboardContent
-          currentView={currentView}
-          adminClubs={adminClubs}
-          clubEvents={clubEvents}
-          clubMembers={clubMembers}
-          activeEventCount={activeEventCount}
-          pastEventCount={pastEventCount}
-          totalMembersCount={totalMembersCount}
-          averageAttendance={averageAttendance}
-          isLoading={isLoading}
-          selectedEventId={selectedEventId}
-          selectedEventTitle={selectedEventTitle}
-          isClubDialogOpen={isClubDialogOpen}
-          setIsClubDialogOpen={setIsClubDialogOpen}
-          clubFormData={clubFormData}
-          handleClubInputChange={handleClubInputChange}
-          handleCreateClub={handleCreateClub}
-          handleClubFileUpload={handleClubFileUpload}
-          isEventDialogOpen={isEventDialogOpen}
-          setIsEventDialogOpen={setIsEventDialogOpen}
-          eventFormData={eventFormData}
-          handleEventInputChange={handleEventInputChange}
-          handleCreateEvent={handleCreateEvent}
-          handleEventFileUpload={handleEventFileUpload}
-          handleViewEvent={handleViewEvent}
-          handleEditEvent={handleEditEvent}
-          handleRefreshAfterDelete={handleRefreshAfterDelete}
-          fetchClubAdminData={fetchClubAdminData}
-          selectEventForAttendeeManagement={selectEventForAttendeeManagement}
-        />
+        <ErrorBoundary>
+          <ClubAdminDashboardContent
+            currentView={currentView}
+            adminClubs={adminClubs}
+            clubEvents={clubEvents}
+            clubMembers={clubMembers}
+            activeEventCount={activeEventCount}
+            pastEventCount={pastEventCount}
+            totalMembersCount={totalMembersCount}
+            averageAttendance={averageAttendance}
+            isLoading={isLoading}
+            selectedEventId={selectedEventId}
+            selectedEventTitle={selectedEventTitle}
+            isClubDialogOpen={isClubDialogOpen}
+            setIsClubDialogOpen={setIsClubDialogOpen}
+            clubFormData={clubFormData}
+            handleClubInputChange={handleClubInputChange}
+            handleCreateClub={handleCreateClub}
+            handleClubFileUpload={handleClubFileUpload}
+            isEventDialogOpen={isEventDialogOpen}
+            setIsEventDialogOpen={setIsEventDialogOpen}
+            eventFormData={eventFormData}
+            handleEventInputChange={handleEventInputChange}
+            handleCreateEvent={handleCreateEvent}
+            handleEventFileUpload={handleEventFileUpload}
+            handleViewEvent={handleViewEvent}
+            handleEditEvent={handleEditEvent}
+            handleRefreshAfterDelete={handleRefreshAfterDelete}
+            fetchClubAdminData={fetchClubAdminData}
+            selectEventForAttendeeManagement={selectEventForAttendeeManagement}
+          />
+        </ErrorBoundary>
       </div>
     </DashboardLayout>
   );

@@ -10,6 +10,7 @@ export const useClubAdminData = (userId: string | undefined) => {
   const [adminClubs, setAdminClubs] = useState<any[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedEventTitle, setSelectedEventTitle] = useState<string>('');
+  const [loadingError, setLoadingError] = useState<string | null>(null);
   
   const { toast } = useToast();
   const { clubEvents, activeEventCount, pastEventCount, averageAttendance, fetchClubEvents } = useClubEvents();
@@ -22,18 +23,27 @@ export const useClubAdminData = (userId: string | undefined) => {
     }
     
     setIsLoading(true);
+    setLoadingError(null);
+    
     try {
+      console.log("Fetching club admin data for user:", userId);
+      
       // First, get the clubs this user is an admin for
       const { data: clubsData, error: clubsError } = await supabase
         .from('club_admins')
         .select('club_id')
         .eq('user_id', userId);
       
-      if (clubsError) throw clubsError;
+      if (clubsError) {
+        console.error("Error fetching club_admins:", clubsError);
+        throw clubsError;
+      }
       
-      const clubIds = clubsData.map(item => item.club_id);
+      console.log("Club admin data fetched:", clubsData);
+      const clubIds = clubsData?.map(item => item.club_id) || [];
       
       if (clubIds.length === 0) {
+        console.log("No clubs found for this admin");
         setAdminClubs([]);
         setIsLoading(false);
         return;
@@ -45,8 +55,12 @@ export const useClubAdminData = (userId: string | undefined) => {
         .select('*')
         .in('id', clubIds);
       
-      if (clubDetailsError) throw clubDetailsError;
+      if (clubDetailsError) {
+        console.error("Error fetching clubs:", clubDetailsError);
+        throw clubDetailsError;
+      }
       
+      console.log("Clubs details fetched:", clubs);
       setAdminClubs(clubs || []);
       
       // Fetch events for these clubs
@@ -56,6 +70,7 @@ export const useClubAdminData = (userId: string | undefined) => {
       await fetchClubMembers(clubIds, clubs || []);
     } catch (error) {
       console.error('Error fetching club admin data:', error);
+      setLoadingError(error instanceof Error ? error.message : 'Failed to load dashboard data');
       toast({
         title: 'Error',
         description: 'Failed to load dashboard data. Please try again.',
@@ -72,7 +87,10 @@ export const useClubAdminData = (userId: string | undefined) => {
   };
 
   useEffect(() => {
-    fetchClubAdminData();
+    console.log("useClubAdminData hook initialized with userId:", userId);
+    if (userId) {
+      fetchClubAdminData();
+    }
   }, [userId]);
 
   return {
@@ -84,6 +102,7 @@ export const useClubAdminData = (userId: string | undefined) => {
     totalMembersCount,
     averageAttendance,
     isLoading,
+    loadingError,
     fetchClubAdminData,
     selectedEventId,
     selectedEventTitle,
