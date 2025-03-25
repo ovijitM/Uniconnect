@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from '@/pages/Home';
 import Clubs from '@/pages/Clubs';
@@ -14,6 +13,12 @@ import Universities from '@/pages/Universities';
 // Auth routes
 import RequireAuth from '@/components/auth/RequireAuth';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
+import UsersPage from '@/pages/admin/UsersPage';
+import ClubsPage from '@/pages/admin/ClubsPage';
+import UniversitiesPage from '@/pages/admin/UniversitiesPage';
+import AlertsPage from '@/pages/admin/AlertsPage';
+import ActivityPage from '@/pages/admin/ActivityPage';
+import SettingsPage from '@/pages/admin/SettingsPage';
 import ClubAdminDashboard from '@/pages/club-admin/ClubAdminDashboard';
 import StudentDashboard from '@/pages/student/StudentDashboard';
 
@@ -39,12 +44,44 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/settings" element={<Settings />} />
 
-            {/* Protected routes */}
-            <Route path="/admin-dashboard/*" element={
+            {/* Protected admin routes */}
+            <Route path="/admin-dashboard" element={
               <RequireAuth allowedRoles={['admin']}>
                 <AdminDashboard />
               </RequireAuth>
             } />
+            <Route path="/admin-dashboard/users" element={
+              <RequireAuth allowedRoles={['admin']}>
+                <UsersPage />
+              </RequireAuth>
+            } />
+            <Route path="/admin-dashboard/clubs" element={
+              <RequireAuth allowedRoles={['admin']}>
+                <ClubsPage />
+              </RequireAuth>
+            } />
+            <Route path="/admin-dashboard/universities" element={
+              <RequireAuth allowedRoles={['admin']}>
+                <UniversitiesPage />
+              </RequireAuth>
+            } />
+            <Route path="/admin-dashboard/alerts" element={
+              <RequireAuth allowedRoles={['admin']}>
+                <AlertsPage />
+              </RequireAuth>
+            } />
+            <Route path="/admin-dashboard/activity" element={
+              <RequireAuth allowedRoles={['admin']}>
+                <ActivityPage />
+              </RequireAuth>
+            } />
+            <Route path="/admin-dashboard/settings" element={
+              <RequireAuth allowedRoles={['admin']}>
+                <SettingsPage />
+              </RequireAuth>
+            } />
+            
+            {/* Other protected routes */}
             <Route path="/club-admin-dashboard/*" element={
               <RequireAuth allowedRoles={['club_admin']}>
                 <ClubAdminDashboard />
