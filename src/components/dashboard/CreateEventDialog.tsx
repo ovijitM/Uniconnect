@@ -47,6 +47,7 @@ interface CreateEventDialogProps {
   onSubmit: () => void;
   buttonText?: string;
   trigger?: React.ReactNode;
+  onFileUpload?: (url: string, fileName: string) => void; // Added this prop
 }
 
 const CreateEventDialog: React.FC<CreateEventDialogProps> = ({
@@ -57,7 +58,8 @@ const CreateEventDialog: React.FC<CreateEventDialogProps> = ({
   onInputChange,
   onSubmit,
   buttonText = "Create New Event",
-  trigger
+  trigger,
+  onFileUpload // Added the prop here
 }) => {
   const defaultTrigger = (
     <Button>
@@ -76,6 +78,7 @@ const CreateEventDialog: React.FC<CreateEventDialogProps> = ({
       onSubmit={onSubmit}
       buttonText="Create Event"
       trigger={trigger || defaultTrigger}
+      onFileUpload={onFileUpload} // Pass the prop to EventDialogWrapper
     />
   );
 };
