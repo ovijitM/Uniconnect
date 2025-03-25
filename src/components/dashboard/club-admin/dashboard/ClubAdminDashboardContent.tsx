@@ -1,6 +1,6 @@
 
 import React from 'react';
-import NoClubsViewWrapper from './views/NoClubsView';
+import NoClubsView from './views/NoClubsView';
 import EventsView from './views/EventsView';
 import ClubsView from './views/ClubsView';
 import MembersView from './views/MembersView';
@@ -38,6 +38,8 @@ interface ClubAdminDashboardContentProps {
   selectEventForAttendeeManagement: (eventId: string, eventTitle: string) => void;
   handleClubFileUpload?: (url: string, fileName: string) => void;
   handleEventFileUpload?: (url: string, fileName: string) => void;
+  isLoadingProfile?: boolean;
+  profileError?: string;
 }
 
 const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
@@ -72,7 +74,7 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
 }) => {
   if (adminClubs.length === 0 && !isLoading) {
     return (
-      <NoClubsViewWrapper 
+      <NoClubsView 
         isClubDialogOpen={isClubDialogOpen}
         setIsClubDialogOpen={setIsClubDialogOpen}
         clubFormData={clubFormData}
