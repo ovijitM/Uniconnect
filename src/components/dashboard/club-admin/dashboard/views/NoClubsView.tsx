@@ -33,7 +33,7 @@ const NoClubsView: React.FC<NoClubsViewProps> = ({
     if (user?.id) {
       fetchUserProfile();
     }
-  }, [user?.id]);
+  }, [user?.id, fetchUserProfile]);
 
   const handleCreateClubClick = () => {
     if (!userUniversity || !userUniversityId) {
@@ -44,6 +44,20 @@ const NoClubsView: React.FC<NoClubsViewProps> = ({
       });
       return;
     }
+    
+    // Pre-fill the university data before opening the dialog
+    const universityEvent = {
+      target: { name: 'university', value: userUniversity }
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    handleClubInputChange(universityEvent);
+    
+    const universityIdEvent = {
+      target: { name: 'universityId', value: userUniversityId }
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    handleClubInputChange(universityIdEvent);
+    
     setIsClubDialogOpen(true);
   };
 

@@ -1,7 +1,6 @@
 
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { DialogTrigger } from '@/components/ui/dialog';
 import { PlusCircle } from 'lucide-react';
 import ClubDialogWrapper from './club-dialog/ClubDialogWrapper';
 import { useAuth } from '@/contexts/AuthContext';
@@ -43,24 +42,22 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
   useEffect(() => {
     // Update form data with university information when available
     if (userUniversity && userUniversityId) {
-      // Only update if not already set or if changed
-      if (formData.university !== userUniversity || formData.universityId !== userUniversityId) {
-        // Create a fake event to use the existing onInputChange handler
-        const universityEvent = {
-          target: { name: 'university', value: userUniversity }
-        } as React.ChangeEvent<HTMLInputElement>;
-        
-        onInputChange(universityEvent);
-        
-        // Also set universityId through a similar fake event
-        const universityIdEvent = {
-          target: { name: 'universityId', value: userUniversityId }
-        } as React.ChangeEvent<HTMLInputElement>;
-        
-        onInputChange(universityIdEvent);
-      }
+      console.log("Setting university in form:", userUniversity, userUniversityId);
+      
+      // Create fake events to update form data
+      const universityEvent = {
+        target: { name: 'university', value: userUniversity }
+      } as React.ChangeEvent<HTMLInputElement>;
+      
+      onInputChange(universityEvent);
+      
+      const universityIdEvent = {
+        target: { name: 'universityId', value: userUniversityId }
+      } as React.ChangeEvent<HTMLInputElement>;
+      
+      onInputChange(universityIdEvent);
     }
-  }, [userUniversity, userUniversityId, formData.university, formData.universityId, onInputChange]);
+  }, [userUniversity, userUniversityId, onInputChange]);
 
   const handleOpenChange = (open: boolean) => {
     if (open && !userUniversity) {

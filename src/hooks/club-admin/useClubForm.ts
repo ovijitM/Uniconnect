@@ -39,9 +39,14 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
         return;
       }
       
-      const isValid = await validateClubData(clubFormData);
-      if (!isValid) {
-        console.log('Validation failed');
+      // Validate the form data
+      const validationResult = validateClubData(clubFormData);
+      if (!validationResult.isValid) {
+        toast({
+          title: "Validation Error",
+          description: validationResult.errorMessage || "Please check the form for errors.",
+          variant: "destructive",
+        });
         setIsSubmitting(false);
         return;
       }
@@ -71,9 +76,8 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
           name: '',
           description: '',
           category: '',
-          university: '', // Required university field
-          universityId: '', // Include universityId field
-          // Reset other fields
+          university: clubFormData.university, // Keep the university 
+          universityId: clubFormData.universityId, // Keep the university ID
           tagline: '',
           establishedYear: '',
           affiliation: '',

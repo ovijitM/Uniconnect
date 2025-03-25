@@ -29,7 +29,11 @@ export const useClubCreation = () => {
 
       // Check for university ID
       let universityId = clubFormData.universityId;
+      
+      console.log("Creating club with university:", clubFormData.university, "and universityId:", universityId);
+      
       if (!universityId) {
+        console.log("No university ID provided, checking if university exists");
         // Try to find the university
         const { data: uniData, error: uniError } = await supabase
           .from('universities')
@@ -39,9 +43,17 @@ export const useClubCreation = () => {
           
         if (uniError) {
           console.error('Error finding university:', uniError);
+          toast({
+            title: 'Database Error',
+            description: 'Failed to verify university. Please try again.',
+            variant: 'destructive',
+          });
+          return false;
         } else if (uniData) {
           universityId = uniData.id;
+          console.log("Found existing university ID:", universityId);
         } else {
+          console.log("University not found, creating new one");
           // Create the university if it doesn't exist
           const { data: newUni, error: createError } = await supabase
             .from('universities')
@@ -51,8 +63,15 @@ export const useClubCreation = () => {
             
           if (createError) {
             console.error('Error creating university:', createError);
+            toast({
+              title: 'Database Error',
+              description: 'Failed to create university record. Please try again.',
+              variant: 'destructive',
+            });
+            return false;
           } else if (newUni) {
             universityId = newUni.id;
+            console.log("Created new university with ID:", universityId);
           }
         }
       }
@@ -88,6 +107,7 @@ export const useClubCreation = () => {
           logo_url: clubFormData.logoUrl,
           status: 'pending',
           university: clubFormData.university,
+          university_id: universityId, // Make sure university_id is stored
           tagline: clubFormData.tagline || null,
           established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
           affiliation: clubFormData.affiliation || null,

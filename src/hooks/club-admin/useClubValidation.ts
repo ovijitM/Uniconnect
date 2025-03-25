@@ -1,70 +1,41 @@
 
-import { useToast } from '@/hooks/use-toast';
 import { ClubFormData } from './types';
 
+interface ValidationResult {
+  isValid: boolean;
+  errorMessage?: string;
+}
+
 export const useClubValidation = () => {
-  const { toast } = useToast();
-
-  const validateClubData = async (clubFormData: ClubFormData): Promise<boolean> => {
-    // Basic information validation
-    const basicFields = [
-      { field: 'name', label: 'Club Name' },
-      { field: 'description', label: 'Description' },
-      { field: 'category', label: 'Category' },
-      { field: 'tagline', label: 'Tagline' },
-      { field: 'establishedYear', label: 'Established Year' },
-    ];
+  const validateClubData = (data: ClubFormData): ValidationResult => {
+    // Check required fields
+    if (!data.name || data.name.trim() === '') {
+      return { isValid: false, errorMessage: "Club name is required" };
+    }
     
-    for (const { field, label } of basicFields) {
-      if (!clubFormData[field as keyof ClubFormData]?.toString().trim()) {
-        toast({
-          title: `Missing ${label}`,
-          description: `Please provide a ${label.toLowerCase()} for your club.`,
-          variant: 'destructive',
-        });
-        return false;
-      }
+    if (!data.description || data.description.trim() === '') {
+      return { isValid: false, errorMessage: "Club description is required" };
     }
-
-    // Profile information validation
-    if (!clubFormData.logoUrl?.trim()) {
-      toast({
-        title: `Missing Logo`,
-        description: `Please upload a logo for your club.`,
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    // Membership information validation
-    if (!clubFormData.whyJoin?.trim()) {
-      toast({
-        title: 'Missing "Why Join" Information',
-        description: 'Please complete the "Why Join" section.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    // Contact information validation
-    const contactFields = [
-      { field: 'presidentName', label: 'President Name' },
-      { field: 'presidentContact', label: 'President Contact' },
-      { field: 'phoneNumber', label: 'Phone Number' },
-    ];
     
-    for (const { field, label } of contactFields) {
-      if (!clubFormData[field as keyof ClubFormData]?.toString().trim()) {
-        toast({
-          title: `Missing ${label}`,
-          description: `Please provide ${label.toLowerCase()} information.`,
-          variant: 'destructive',
-        });
-        return false;
-      }
+    if (!data.category || data.category.trim() === '') {
+      return { isValid: false, errorMessage: "Club category is required" };
     }
-
-    return true;
+    
+    if (!data.university || data.university.trim() === '') {
+      return { isValid: false, errorMessage: "University is required" };
+    }
+    
+    // Validate length constraints
+    if (data.name.length > 100) {
+      return { isValid: false, errorMessage: "Club name must be less than 100 characters" };
+    }
+    
+    if (data.description.length > 2000) {
+      return { isValid: false, errorMessage: "Description must be less than 2000 characters" };
+    }
+    
+    // All validations passed
+    return { isValid: true };
   };
 
   return { validateClubData };
