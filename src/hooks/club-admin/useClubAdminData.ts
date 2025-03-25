@@ -65,10 +65,12 @@ export const useClubAdminData = (userId: string | undefined) => {
       setAdminClubs(clubs || []);
       
       // Fetch events for these clubs
-      await fetchClubEvents(clubIds);
-      
-      // Fetch members for these clubs
-      await fetchClubMembers(clubIds, clubs || []);
+      if (clubs && clubs.length > 0) {
+        await fetchClubEvents(clubIds);
+        
+        // Fetch members for these clubs
+        await fetchClubMembers(clubIds, clubs);
+      }
     } catch (error) {
       console.error('Error fetching club admin data:', error);
       setLoadingError(error instanceof Error ? error.message : 'Failed to load dashboard data');
@@ -101,7 +103,7 @@ export const useClubAdminData = (userId: string | undefined) => {
         console.log(`Retrying fetch attempt ${retryCount + 1}...`);
         setRetryCount(prev => prev + 1);
         fetchClubAdminData();
-      }, 1000 * (retryCount + 1)); // Exponential backoff
+      }, 2000); // Fixed delay to avoid exponential backoff complexity
       
       return () => clearTimeout(retryTimer);
     }

@@ -1,197 +1,108 @@
 
+import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ClubFormData } from './types';
+import { useAuth } from '@/contexts/AuthContext';
 
-export const useClubCreation = () => {
+export const useClubCreation = (userId: string | undefined, onSuccess: () => void) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const createClub = async (clubFormData: ClubFormData, userId: string | undefined): Promise<boolean> => {
+  const createClub = async (formData: ClubFormData, setFormData: React.Dispatch<React.SetStateAction<ClubFormData>>, setIsOpen: React.Dispatch<React.SetStateAction<boolean>>) => {
+    if (!userId) {
+      toast({
+        title: 'Error',
+        description: 'You must be logged in to create a club.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      if (!userId) {
-        toast({
-          title: 'Authentication Error',
-          description: 'You must be logged in to create a club.',
-          variant: 'destructive',
-        });
-        return false;
-      }
-
-      // First, get the user's university directly from the backend
+      // First, get the user's university from their profile
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('university, university_id')
         .eq('id', userId)
         .single();
-        
+      
       if (profileError) {
         console.error('Error fetching user profile:', profileError);
-        toast({
-          title: 'Error',
-          description: 'Failed to get your university information.',
-          variant: 'destructive',
-        });
-        return false;
+        throw new Error('Could not retrieve your university information');
       }
       
-      // Use university from profile or from form data as fallback
-      const universityName = profileData?.university || clubFormData.university;
-      let universityId = profileData?.university_id || clubFormData.universityId;
-      
-      // Check if university is provided
-      if (!universityName) {
-        toast({
-          title: 'Missing University',
-          description: 'A university affiliation is required to create a club.',
-          variant: 'destructive',
-        });
-        return false;
+      if (!profileData.university) {
+        throw new Error('Your profile is missing university information');
       }
 
-      // If we have university name but no ID, look it up or create
-      if (!universityId) {
-        // Try to find the university
-        const { data: uniData, error: uniError } = await supabase
-          .from('universities')
-          .select('id')
-          .eq('name', universityName)
-          .maybeSingle();
-          
-        if (uniError) {
-          console.error('Error finding university:', uniError);
-        } else if (uniData) {
-          universityId = uniData.id;
-        } else {
-          // Create the university if it doesn't exist
-          const { data: newUni, error: createError } = await supabase
-            .from('universities')
-            .insert({ name: universityName })
-            .select()
-            .single();
-            
-          if (createError) {
-            console.error('Error creating university:', createError);
-          } else if (newUni) {
-            universityId = newUni.id;
-          }
-        }
-      }
-
-      console.log('Creating club with data:', clubFormData);
-      console.log('User ID:', userId);
-      console.log('University:', universityName, 'University ID:', universityId);
-
-      // Transform array and JSON fields
-      const regularEvents = clubFormData.regularEvents ? clubFormData.regularEvents.split(',').map(e => e.trim()) : [];
-      const signatureEvents = clubFormData.signatureEvents ? clubFormData.signatureEvents.split(',').map(e => e.trim()) : [];
-      const advisors = clubFormData.advisors ? clubFormData.advisors.split(',').map(e => e.trim()) : [];
-      
-      // Handle executive members - ensure it's valid JSON
-      let executiveMembers = {};
-      if (clubFormData.executiveMembers) {
-        try {
-          executiveMembers = JSON.parse(clubFormData.executiveMembers);
-        } catch (error) {
-          console.error('Error parsing executive members:', error);
-          // If parsing fails, store as is
-          executiveMembers = {};
-        }
-      }
-
-      // Create the club
-      const { data: clubData, error: clubError } = await supabase
+      // Insert the club with the university information from the profile
+      const { data, error } = await supabase
         .from('clubs')
         .insert({
-          name: clubFormData.name,
-          description: clubFormData.description,
-          category: clubFormData.category,
-          logo_url: clubFormData.logoUrl,
-          status: 'pending',
-          university: universityName,
-          tagline: clubFormData.tagline || null,
-          established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
-          affiliation: clubFormData.affiliation || null,
-          why_join: clubFormData.whyJoin || null,
-          regular_events: regularEvents,
-          signature_events: signatureEvents,
-          community_engagement: clubFormData.communityEngagement || null,
-          who_can_join: clubFormData.whoCanJoin || null,
-          membership_fee: clubFormData.membershipFee || 'Free',
-          how_to_join: clubFormData.howToJoin || null,
-          president_name: clubFormData.presidentName || null,
-          president_contact: clubFormData.presidentContact || null,
-          executive_members: executiveMembers,
-          advisors: advisors,
-          phone_number: clubFormData.phoneNumber || null,
-          website: clubFormData.website || null,
-          facebook_link: clubFormData.facebookLink || null,
-          instagram_link: clubFormData.instagramLink || null,
-          twitter_link: clubFormData.twitterLink || null,
-          discord_link: clubFormData.discordLink || null,
-          document_url: clubFormData.documentUrl || null,
-          document_name: clubFormData.documentName || null
+          name: formData.name,
+          description: formData.description,
+          logo_url: formData.logoUrl,
+          category: formData.category,
+          tagline: formData.tagline,
+          university: profileData.university,
         })
-        .select();
-      
-      if (clubError) {
-        console.error('Error creating club:', clubError);
-        toast({
-          title: 'Error Creating Club',
-          description: `Failed to create club: ${clubError.message || 'Please try again.'}`,
-          variant: 'destructive',
-        });
-        return false;
-      }
-      
-      if (!clubData || clubData.length === 0) {
-        console.error('No club data returned after creation');
-        toast({
-          title: 'Error',
-          description: 'No club data returned after creation. Please try again.',
-          variant: 'destructive',
-        });
-        return false;
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating club:', error);
+        throw error;
       }
 
-      console.log('Club created successfully:', clubData);
-
-      // Add the current user as an admin of the club
+      // Add the creator as club admin
       const { error: adminError } = await supabase
         .from('club_admins')
         .insert({
-          club_id: clubData[0].id,
           user_id: userId,
+          club_id: data.id,
         });
-      
+
       if (adminError) {
-        console.error('Error adding club admin:', adminError);
-        // If we fail to add admin, we should delete the club to avoid orphaned clubs
-        await supabase.from('clubs').delete().eq('id', clubData[0].id);
-        toast({
-          title: 'Error',
-          description: `Failed to add you as admin: ${adminError.message || 'Please try again.'}`,
-          variant: 'destructive',
-        });
-        return false;
+        console.error('Error setting user as club admin:', adminError);
+        // Continue even if this fails, it's better to have the club without admin than no club at all
       }
 
       toast({
         title: 'Success',
-        description: 'Club created successfully! It will be visible after admin approval.',
-        variant: 'default',
+        description: 'Club created successfully! It is now pending approval.',
+      });
+
+      // Reset form and close dialog
+      setFormData({
+        name: '',
+        description: '',
+        logoUrl: '',
+        category: '',
+        tagline: '',
       });
       
-      return true;
-    } catch (error: any) {
-      console.error('Error creating club:', error);
+      setIsOpen(false);
+      
+      // Call the success callback to refresh the clubs list
+      onSuccess();
+    } catch (error) {
+      console.error('Error in club creation:', error);
       toast({
         title: 'Error',
-        description: `Failed to create club: ${error.message || 'Please try again.'}`,
+        description: error instanceof Error ? error.message : 'Failed to create club. Please try again.',
         variant: 'destructive',
       });
-      return false;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  return { createClub };
+  return {
+    createClub,
+    isSubmitting,
+  };
 };

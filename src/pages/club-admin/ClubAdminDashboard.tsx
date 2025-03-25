@@ -24,7 +24,6 @@ const ClubAdminDashboard: React.FC = () => {
   const { toast } = useToast();
   const [hasTriedProfile, setHasTriedProfile] = useState(false);
   const state = location.state as { openEventDialog?: boolean } | null;
-  const { userUniversity, fetchUserProfile, isLoadingProfile, profileFetched } = useStudentProfile(user?.id);
   
   // Use our custom hook to detect routes
   const { currentView } = useClubAdminRoutes();
@@ -59,27 +58,6 @@ const ClubAdminDashboard: React.FC = () => {
     handleClubFileUpload,
     handleEventFileUpload
   } = useClubAdminForms(user?.id, fetchClubAdminData);
-
-  // Fetch the user's university
-  useEffect(() => {
-    if (user?.id) {
-      fetchUserProfile();
-    }
-  }, [user?.id, fetchUserProfile]);
-
-  // Handle retry for university profile
-  useEffect(() => {
-    if (profileFetched && !userUniversity && !hasTriedProfile && user?.id) {
-      // Try fetching again after a slight delay if university wasn't found
-      const retryTimer = setTimeout(() => {
-        console.log("Retrying profile fetch since university is missing...");
-        fetchUserProfile();
-        setHasTriedProfile(true);
-      }, 1500);
-      
-      return () => clearTimeout(retryTimer);
-    }
-  }, [profileFetched, userUniversity, fetchUserProfile, hasTriedProfile, user?.id]);
 
   // Handle opening event dialog when navigated with state
   useEffect(() => {
@@ -121,14 +99,6 @@ const ClubAdminDashboard: React.FC = () => {
   };
 
   const handleCreateClubClick = () => {
-    if (!userUniversity) {
-      toast({
-        title: "University Required",
-        description: "You need to have a university associated with your profile to create a club. Please update your profile first.",
-        variant: "warning",
-      });
-      return;
-    }
     setIsClubDialogOpen(true);
   };
 
@@ -154,11 +124,9 @@ const ClubAdminDashboard: React.FC = () => {
           <Button 
             onClick={handleCreateClubClick}
             className="flex items-center gap-2"
-            disabled={isLoadingProfile}
           >
             <PlusCircle className="h-4 w-4" />
             Create Club
-            {isLoadingProfile && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
           </Button>
         );
       default:
@@ -166,15 +134,15 @@ const ClubAdminDashboard: React.FC = () => {
     }
   };
 
-  // Show loading indicator if profile is still loading
-  if (isLoadingProfile && !profileFetched) {
+  // Show loading indicator if still loading
+  if (isLoading && !adminClubs.length) {
     return (
       <DashboardLayout sidebar={<ClubAdminSidebar />}>
         <div className="container p-4 flex items-center justify-center h-[80vh]">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <h3 className="text-lg font-medium">Loading your profile...</h3>
-            <p className="text-muted-foreground">Please wait while we fetch your university information.</p>
+            <h3 className="text-lg font-medium">Loading your data...</h3>
+            <p className="text-muted-foreground">Please wait while we fetch your clubs and events.</p>
           </div>
         </div>
       </DashboardLayout>

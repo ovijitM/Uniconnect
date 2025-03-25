@@ -10,7 +10,6 @@ interface BasicInfoTabProps {
     description: string;
     category: string;
     tagline?: string;
-    university?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
