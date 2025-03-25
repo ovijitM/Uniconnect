@@ -1,18 +1,26 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
-const Logo: React.FC = () => {
+interface LogoProps {
+  className?: string;
+}
+
+export const Logo: React.FC<LogoProps> = ({ className }) => {
   return (
-    <Link to="/" className="flex items-center space-x-2">
-      <div className="font-bold text-xl bg-primary text-primary-foreground px-2 py-1 rounded">
-        UC
-      </div>
-      <span className="font-bold text-lg hidden sm:inline-block">
-        UniConnect
-      </span>
-    </Link>
+    <div className={cn("flex items-center", className)}>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-6 w-6"
+      >
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+      </svg>
+    </div>
   );
 };
-
-export default Logo;
