@@ -3,7 +3,7 @@ export interface ClubFormData {
   name: string;
   description: string;
   category: string;
-  logoUrl: string;
+  logoUrl?: string; // Changed from required to optional
   university?: string;
   tagline?: string;
   establishedYear?: string;
