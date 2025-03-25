@@ -18,7 +18,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
 
   const { toast } = useToast();
   const { validateClubData } = useClubValidation();
-  const { createClub } = useClubCreation();
+  const { createClub } = useClubCreation(userId, onSuccess);
 
   const handleCreateClub = async () => {
     try {
@@ -47,50 +47,11 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
 
       console.log('Creating club with data:', clubFormData);
       
-      const success = await createClub(clubFormData, userId);
-      if (success) {
-        toast({
-          title: "Club Created Successfully",
-          description: "Your club has been created and is now pending approval.",
-        });
-        
-        // Reset form with all required fields
-        setClubFormData({
-          name: '',
-          description: '',
-          category: '',
-          university: '', // Required university field
-          universityId: '', // Include universityId field
-          // Reset other fields
-          tagline: '',
-          establishedYear: '',
-          affiliation: '',
-          whyJoin: '',
-          regularEvents: '',
-          signatureEvents: '',
-          communityEngagement: '',
-          whoCanJoin: '',
-          membershipFee: 'Free',
-          howToJoin: '',
-          presidentName: '',
-          presidentContact: '',
-          executiveMembers: '',
-          advisors: '',
-          phoneNumber: '',
-          website: '',
-          facebookLink: '',
-          instagramLink: '',
-          twitterLink: '',
-          discordLink: '',
-          logoUrl: '',
-          documentUrl: '',
-          documentName: ''
-        });
-        setIsClubDialogOpen(false);
-        
-        // Refresh data
-        onSuccess();
-      }
+      // Pass all required parameters to createClub
+      await createClub(clubFormData, setClubFormData, setIsClubDialogOpen);
+      
+      // Success is handled inside createClub function
+      setIsSubmitting(false);
     } catch (error) {
       console.error('Error in handleCreateClub:', error);
       toast({
@@ -98,7 +59,6 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
         description: "An error occurred while creating your club. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };

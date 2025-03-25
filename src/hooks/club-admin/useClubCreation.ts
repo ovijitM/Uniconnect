@@ -76,13 +76,15 @@ export const useClubCreation = (userId: string | undefined, onSuccess: () => voi
         description: 'Club created successfully! It is now pending approval.',
       });
 
-      // Reset form and close dialog
+      // Reset form and close dialog - include all required fields
       setFormData({
         name: '',
         description: '',
         logoUrl: '',
         category: '',
         tagline: '',
+        university: profileData.university, // Include university from profile
+        universityId: profileData.university_id || '' // Include universityId from profile
       });
       
       setIsOpen(false);
