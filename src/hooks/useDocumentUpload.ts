@@ -1,13 +1,11 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface UseDocumentUploadProps {
   entityId?: string;
   entityType?: 'club' | 'event' | 'user';
-  bucket?: string;
   maxSize?: number; // in MB
   onSuccess?: (url: string, fileName: string) => void;
 }
@@ -15,44 +13,12 @@ interface UseDocumentUploadProps {
 export const useDocumentUpload = ({
   entityId,
   entityType = 'user',
-  bucket = 'public',
   maxSize = 10,
   onSuccess
 }: UseDocumentUploadProps = {}) => {
   const [isUploading, setIsUploading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
-
-  // Helper function to create a bucket if it doesn't exist
-  const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
-    try {
-      // Check if the bucket exists
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const bucketExists = buckets?.some(b => b.name === bucketName);
-      
-      if (bucketExists) {
-        return true;
-      }
-      
-      console.log(`Bucket '${bucketName}' doesn't exist, attempting to create it...`);
-      
-      // Try to create the bucket
-      const { data, error } = await supabase.storage.createBucket(bucketName, {
-        public: true
-      });
-      
-      if (error) {
-        console.error(`Failed to create bucket '${bucketName}':`, error);
-        return false;
-      }
-      
-      console.log(`Successfully created bucket '${bucketName}'`);
-      return true;
-    } catch (error) {
-      console.error(`Error ensuring bucket '${bucketName}' exists:`, error);
-      return false;
-    }
-  };
 
   const uploadDocument = async (file: File): Promise<string | null> => {
     if (!file) return null;
@@ -69,87 +35,33 @@ export const useDocumentUpload = ({
       }
 
       setIsUploading(true);
-      console.log(`Starting document upload: ${file.name}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+      console.log(`Processing document: ${file.name}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
       
-      // Determine the prefix based on entity type and ID
-      const prefix = entityId 
-        ? `${entityType}_${entityId}` 
-        : `user_${user?.id || 'anonymous'}`;
-        
-      // Generate a unique filename to prevent overwriting
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${prefix}/${Date.now()}_${file.name}`;
-
-      console.log('Uploading to path:', fileName, 'in bucket:', bucket);
-
-      // Always use the 'public' bucket as it's most likely to exist
-      const effectiveBucket = 'public';
-      console.log(`Using bucket: ${effectiveBucket}`);
+      // Instead of uploading to storage, we'll create a fake URL 
+      // In a real application, you would upload to your server or a CDN
       
-      try {
-        // Ensure the bucket exists
-        const bucketReady = await ensureBucketExists(effectiveBucket);
-        if (!bucketReady) {
-          toast({
-            title: 'Storage Setup Error',
-            description: `Could not ensure the 'public' bucket exists. Please contact an administrator.`,
-            variant: 'destructive',
-          });
-          return null;
-        }
-
-        // Upload file to Supabase Storage
-        const { data, error } = await supabase.storage
-          .from(effectiveBucket)
-          .upload(fileName, file, {
-            cacheControl: '3600',
-            upsert: true
-          });
-
-        if (error) {
-          console.error('Supabase storage upload error:', error);
-          toast({
-            title: 'Upload failed',
-            description: error.message,
-            variant: 'destructive',
-          });
-          return null;
-        }
-
-        console.log('File uploaded successfully, data:', data);
-
-        // Get public URL
-        const { data: urlData } = supabase.storage
-          .from(effectiveBucket)
-          .getPublicUrl(fileName);
-
-        const publicUrl = urlData.publicUrl;
-        console.log('Generated public URL:', publicUrl);
-        
-        if (onSuccess) {
-          onSuccess(publicUrl, file.name);
-        }
-
-        toast({
-          title: 'File uploaded successfully',
-          description: `${file.name} has been uploaded`,
-          variant: 'default',
-        });
-
-        return publicUrl;
-      } catch (uploadError) {
-        console.error('Error during upload process:', uploadError);
-        toast({
-          title: 'Upload process failed',
-          description: uploadError instanceof Error ? uploadError.message : 'An unexpected error occurred',
-          variant: 'destructive',
-        });
-        return null;
+      // Create a simple object URL from the file for demo purposes
+      const objectUrl = URL.createObjectURL(file);
+      
+      // In a real implementation, you'd upload to your server and get back a URL
+      // For this simulation, we'll use the object URL
+      console.log('Document URL created:', objectUrl);
+      
+      if (onSuccess) {
+        onSuccess(objectUrl, file.name);
       }
-    } catch (error) {
-      console.error('Error uploading document:', error);
+
       toast({
-        title: 'Upload failed',
+        title: 'Document processed successfully',
+        description: `${file.name} has been processed`,
+        variant: 'default',
+      });
+
+      return objectUrl;
+    } catch (error) {
+      console.error('Error processing document:', error);
+      toast({
+        title: 'Processing failed',
         description: error instanceof Error ? error.message : 'Something went wrong',
         variant: 'destructive',
       });
@@ -161,23 +73,24 @@ export const useDocumentUpload = ({
 
   const deleteDocument = async (path: string): Promise<boolean> => {
     try {
-      const { error } = await supabase.storage
-        .from('public')  // Always use the public bucket for deletions
-        .remove([path]);
-
-      if (error) throw error;
-
+      // For object URLs, we can revoke them
+      if (path.startsWith('blob:')) {
+        URL.revokeObjectURL(path);
+      }
+      
+      // In a real implementation, you would make a call to your server to delete the file
+      
       toast({
-        title: 'Document deleted',
-        description: 'The document was successfully deleted',
+        title: 'Document removed',
+        description: 'The document was successfully removed',
         variant: 'default',
       });
       
       return true;
     } catch (error) {
-      console.error('Error deleting document:', error);
+      console.error('Error removing document:', error);
       toast({
-        title: 'Failed to delete document',
+        title: 'Failed to remove document',
         description: error instanceof Error ? error.message : 'Something went wrong',
         variant: 'destructive',
       });

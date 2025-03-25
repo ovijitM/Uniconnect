@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, X, File, Check } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -27,37 +26,6 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   const [uploadedFile, setUploadedFile] = useState<string | null>(defaultValue || null);
   const [fileName, setFileName] = useState<string | null>(null);
   const { toast } = useToast();
-
-  // Helper function to create a bucket if it doesn't exist
-  const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
-    try {
-      // Check if the bucket exists
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const bucketExists = buckets?.some(b => b.name === bucketName);
-      
-      if (bucketExists) {
-        return true;
-      }
-      
-      console.log(`Bucket '${bucketName}' doesn't exist, attempting to create it...`);
-      
-      // Try to create the bucket
-      const { data, error } = await supabase.storage.createBucket(bucketName, {
-        public: true
-      });
-      
-      if (error) {
-        console.error(`Failed to create bucket '${bucketName}':`, error);
-        return false;
-      }
-      
-      console.log(`Successfully created bucket '${bucketName}'`);
-      return true;
-    } catch (error) {
-      console.error(`Error ensuring bucket '${bucketName}' exists:`, error);
-      return false;
-    }
-  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -87,54 +55,23 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     setFileName(file.name);
 
     try {
-      // Generate a unique filename to prevent overwriting
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      // Ensure the public bucket exists
-      const bucketReady = await ensureBucketExists('public');
-      if (!bucketReady) {
-        toast({
-          title: 'Storage setup error',
-          description: 'Could not create public bucket. Please contact administrator.',
-          variant: 'destructive',
-        });
-        setIsUploading(false);
-        return;
-      }
-
-      // Upload file to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('public')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-
-      if (error) throw error;
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('public')
-        .getPublicUrl(filePath);
-
-      const publicUrl = urlData.publicUrl;
-      setUploadedFile(publicUrl);
+      // Create object URL for the file
+      const objectUrl = URL.createObjectURL(file);
+      setUploadedFile(objectUrl);
       
       if (onFileUpload) {
-        onFileUpload(publicUrl, file.name);
+        onFileUpload(objectUrl, file.name);
       }
 
       toast({
-        title: 'File uploaded successfully',
-        description: `${file.name} has been uploaded`,
+        title: 'File processed successfully',
+        description: `${file.name} has been processed`,
         variant: 'default',
       });
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('Error processing file:', error);
       toast({
-        title: 'Upload failed',
+        title: 'Processing failed',
         description: error instanceof Error ? error.message : 'Something went wrong',
         variant: 'destructive',
       });
@@ -144,8 +81,13 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   const handleRemove = () => {
+    if (uploadedFile && uploadedFile.startsWith('blob:')) {
+      URL.revokeObjectURL(uploadedFile);
+    }
+    
     setUploadedFile(null);
     setFileName(null);
+    
     if (onFileUpload) {
       onFileUpload('', '');
     }
@@ -181,7 +123,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             <div className="flex-1 truncate">
               <p className="font-medium text-sm truncate">{fileName || 'Document'}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {uploadedFile.split('/').pop()}
+                {uploadedFile}
               </p>
             </div>
           </div>
@@ -196,7 +138,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           <div className="animate-spin">
             <Upload className="w-4 h-4" />
           </div>
-          <p className="text-sm">Uploading...</p>
+          <p className="text-sm">Processing...</p>
         </div>
       )}
     </div>

@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -30,124 +29,43 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
   description = 'Upload and manage your documents'
 }) => {
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Helper function to create a bucket if it doesn't exist
-  const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
-    try {
-      // Check if the bucket exists
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const bucketExists = buckets?.some(b => b.name === bucketName);
-      
-      if (bucketExists) {
-        return true;
-      }
-      
-      console.log(`Bucket '${bucketName}' doesn't exist, attempting to create it...`);
-      
-      // Try to create the bucket
-      const { data, error } = await supabase.storage.createBucket(bucketName, {
-        public: true
-      });
-      
-      if (error) {
-        console.error(`Failed to create bucket '${bucketName}':`, error);
-        return false;
-      }
-      
-      console.log(`Successfully created bucket '${bucketName}'`);
-      return true;
-    } catch (error) {
-      console.error(`Error ensuring bucket '${bucketName}' exists:`, error);
-      return false;
-    }
-  };
-
   useEffect(() => {
     if (user) {
-      fetchDocuments();
-    }
-  }, [user, entityId]);
-
-  const fetchDocuments = async () => {
-    setIsLoading(true);
-    try {
-      // Ensure the public bucket exists
-      const bucketReady = await ensureBucketExists('public');
-      if (!bucketReady) {
-        toast({
-          title: 'Storage Setup Error',
-          description: 'Could not ensure the public bucket exists',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Search pattern based on entity type
-      const searchPattern = entityId 
-        ? `${entityType}_${entityId}/%` 
-        : `user_${user?.id}/%`;
-
-      const { data, error } = await supabase
-        .storage
-        .from('public')
-        .list('', {
-          search: searchPattern
-        });
-
-      if (error) throw error;
-
-      const files = data.map(file => ({
-        name: file.name.split('_').slice(2).join('_'), // Remove prefix
-        url: supabase.storage.from('public').getPublicUrl(file.name).data.publicUrl,
-        id: file.id,
-        created_at: file.created_at
-      }));
-
-      setDocuments(files);
-    } catch (error) {
-      console.error('Error fetching documents:', error);
-      toast({
-        title: 'Failed to load documents',
-        description: error instanceof Error ? error.message : 'Something went wrong',
-        variant: 'destructive',
-      });
-    } finally {
+      // In a real app, you would fetch documents from your server here
       setIsLoading(false);
     }
-  };
+  }, [user, entityId]);
 
   const handleFileUpload = async (url: string, fileName: string) => {
     if (!url || !fileName) return;
     
-    // The URL already contains the path, we just need to add it to our state
+    // Create a new document entry
     const newDoc = {
       name: fileName,
       url,
-      id: url.split('/').pop() || '',
+      id: Date.now().toString(), // Simple ID for demo
       created_at: new Date().toISOString()
     };
     
     setDocuments(prev => [...prev, newDoc]);
   };
 
-  const handleDeleteDocument = async (fileId: string) => {
+  const handleDeleteDocument = async (docId: string) => {
     try {
-      // Extract path from URL
-      const path = fileId;
+      // Find the document
+      const docToDelete = documents.find(doc => doc.id === docId);
       
-      const { error } = await supabase
-        .storage
-        .from('public')
-        .remove([path]);
+      if (docToDelete && docToDelete.url.startsWith('blob:')) {
+        // Revoke the object URL to free up memory
+        URL.revokeObjectURL(docToDelete.url);
+      }
 
-      if (error) throw error;
-
-      // Update state
-      setDocuments(prev => prev.filter(doc => doc.id !== fileId));
+      // Update state by filtering out the deleted document
+      setDocuments(prev => prev.filter(doc => doc.id !== docId));
       
       toast({
         title: 'Document deleted',
@@ -222,7 +140,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
       </CardContent>
       <CardFooter className="justify-between">
         <p className="text-xs text-gray-500">Supported formats: PDF, Word, Text</p>
-        <Button variant="outline" onClick={fetchDocuments}>Refresh</Button>
+        <Button variant="outline" onClick={() => setIsLoading(false)}>Refresh</Button>
       </CardFooter>
     </Card>
   );
