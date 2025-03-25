@@ -70,7 +70,30 @@ export const useAuthActions = (
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       
-      // Sign up with Supabase
+      if (university && university.trim() !== '') {
+        const { data: existingUni, error: uniCheckError } = await supabase
+          .from('universities')
+          .select('id')
+          .eq('name', university)
+          .maybeSingle();
+        
+        if (uniCheckError && !uniCheckError.message.includes('No rows found')) {
+          console.warn('Error checking university:', uniCheckError);
+        }
+        
+        if (!existingUni) {
+          const { error: uniInsertError } = await supabase
+            .from('universities')
+            .insert({
+              name: university
+            });
+          
+          if (uniInsertError && !uniInsertError.message.includes('unique constraint')) {
+            console.warn('Error adding university:', uniInsertError);
+          }
+        }
+      }
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -91,7 +114,6 @@ export const useAuthActions = (
         throw new Error('No user returned after signup');
       }
       
-      // Get profile data
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -99,10 +121,8 @@ export const useAuthActions = (
         .single();
       
       if (profileError) {
-        // This can happen if the trigger hasn't run yet
         console.warn('Profile not found immediately after signup, this is normal if confirmations are enabled');
         
-        // Create a user object based on the signup data
         const user: User = {
           id: data.user.id,
           email: data.user.email || email,
@@ -151,7 +171,6 @@ export const useAuthActions = (
   const logout = async () => {
     try {
       await supabase.auth.signOut();
-      // Clear stored user on logout
       localStorage.removeItem('authUser');
       setAuthState({ user: null, isLoading: false, error: null });
     } catch (error) {
@@ -165,7 +184,6 @@ export const useAuthActions = (
         return;
       }
       
-      // Update profile in the database
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -180,14 +198,12 @@ export const useAuthActions = (
         throw error;
       }
       
-      // Update local state
       const updatedUser = authState.user ? { ...authState.user, ...userData } : null;
       setAuthState(prev => ({
         ...prev,
         user: updatedUser
       }));
       
-      // Update stored user
       if (updatedUser) {
         localStorage.setItem('authUser', JSON.stringify(updatedUser));
       }

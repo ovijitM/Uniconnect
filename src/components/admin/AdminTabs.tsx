@@ -1,9 +1,12 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import UsersTable from '@/components/admin/UsersTable';
-import ClubsTable from '@/components/admin/ClubsTable';
-import OverviewTab from '@/components/admin/OverviewTab';
+import UsersTable from './UsersTable';
+import ClubsTable from './clubs-table';
+import SystemAlertsPanel from './SystemAlertsPanel';
+import RecentActivityPanel from './RecentActivityPanel';
+import OverviewTab from './OverviewTab';
+import UniversityManagement from './UniversityManagement';
 
 interface AdminTabsProps {
   activeTab: string;
@@ -17,7 +20,7 @@ interface AdminTabsProps {
   systemStatus: string;
   onReviewItem: (id: string, type: 'club' | 'event') => void;
   onViewClub: (clubId: string) => void;
-  onClubStatusChange?: () => void;
+  onClubStatusChange: () => void;
 }
 
 const AdminTabs: React.FC<AdminTabsProps> = ({
@@ -35,39 +38,55 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
   onClubStatusChange
 }) => {
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-      <TabsList>
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
+      <TabsList className="grid w-full grid-cols-5 mb-6">
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="users">Users</TabsTrigger>
         <TabsTrigger value="clubs">Clubs</TabsTrigger>
+        <TabsTrigger value="universities">Universities</TabsTrigger>
+        <TabsTrigger value="activity">Activity & Alerts</TabsTrigger>
       </TabsList>
-
-      <TabsContent value="overview">
+      
+      <TabsContent value="overview" className="space-y-6">
         <OverviewTab 
-          isLoading={isLoading}
+          users={users}
+          clubs={clubs}
           recentActivity={recentActivity}
           systemAlerts={systemAlerts}
-          usersCount={users.length}
-          clubsCount={clubs.length}
-          adminCount={adminCount}
-          systemStatus={systemStatus}
+          isLoading={isLoading}
           onReviewItem={onReviewItem}
         />
       </TabsContent>
-
+      
       <TabsContent value="users">
-        <UsersTable 
-          users={users}
+        <UsersTable users={users} isLoading={isLoading} />
+      </TabsContent>
+      
+      <TabsContent value="clubs">
+        <ClubsTable 
+          clubs={clubs} 
           isLoading={isLoading}
+          onReviewClub={(id) => onReviewItem(id, 'club')}
+          onViewClub={onViewClub}
+          onStatusChange={onClubStatusChange}
         />
       </TabsContent>
 
-      <TabsContent value="clubs">
-        <ClubsTable 
-          clubs={clubs}
+      <TabsContent value="universities">
+        <UniversityManagement />
+      </TabsContent>
+      
+      <TabsContent value="activity" className="space-y-6">
+        <RecentActivityPanel 
+          activities={recentActivity}
           isLoading={isLoading}
-          onViewClub={onViewClub}
-          onClubStatusChange={onClubStatusChange}
+          onReviewItem={onReviewItem}
+        />
+        <SystemAlertsPanel 
+          alerts={systemAlerts}
+          isLoading={isLoading}
+          systemStatus={systemStatus}
+          adminCount={adminCount}
         />
       </TabsContent>
     </Tabs>
