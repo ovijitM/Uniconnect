@@ -3,10 +3,12 @@ import { useState, useEffect } from 'react';
 import { ClubFormData } from './types';
 import { useStudentProfile } from '@/hooks/student/useStudentProfile';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export const useClubFormState = () => {
   const { user } = useAuth();
   const { userUniversity, fetchUserProfile } = useStudentProfile(user?.id);
+  const { toast } = useToast();
   
   const [clubFormData, setClubFormData] = useState<ClubFormData>({
     name: '',
@@ -56,8 +58,15 @@ export const useClubFormState = () => {
         university: userUniversity
       }));
       console.log('Set university from user profile:', userUniversity);
+    } else if (isClubDialogOpen && !userUniversity) {
+      // Alert the user if they don't have a university associated with their profile
+      toast({
+        title: "Missing University Affiliation",
+        description: "You need to have a university in your profile to create a club. Please update your profile first.",
+        variant: "warning",
+      });
     }
-  }, [userUniversity, clubFormData.university]);
+  }, [userUniversity, clubFormData.university, isClubDialogOpen]);
 
   const handleClubInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

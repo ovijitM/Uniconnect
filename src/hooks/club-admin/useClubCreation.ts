@@ -17,6 +17,16 @@ export const useClubCreation = () => {
         return false;
       }
 
+      // Check if university is provided
+      if (!clubFormData.university) {
+        toast({
+          title: 'Missing University',
+          description: 'A university affiliation is required to create a club.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+
       console.log('Creating club with data:', clubFormData);
       console.log('User ID:', userId);
 
@@ -46,7 +56,7 @@ export const useClubCreation = () => {
           category: clubFormData.category,
           logo_url: clubFormData.logoUrl,
           status: 'pending',
-          university: clubFormData.university || null,
+          university: clubFormData.university,
           tagline: clubFormData.tagline || null,
           established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
           affiliation: clubFormData.affiliation || null,

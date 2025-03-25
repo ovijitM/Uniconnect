@@ -4,6 +4,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClubAdminData } from '@/hooks/club-admin/useClubAdminData';
 import { useClubAdminForms } from '@/hooks/club-admin/useClubAdminForms';
+import { useStudentProfile } from '@/hooks/student/useStudentProfile';
 
 // Components
 import DashboardLayout from '@/components/dashboard/shared/DashboardLayout';
@@ -20,6 +21,7 @@ const ClubAdminDashboard: React.FC = () => {
   const location = useLocation();
   const { toast } = useToast();
   const state = location.state as { openEventDialog?: boolean } | null;
+  const { userUniversity, fetchUserProfile } = useStudentProfile(user?.id);
   
   // Use our custom hook to detect routes
   const { currentView } = useClubAdminRoutes();
@@ -53,6 +55,13 @@ const ClubAdminDashboard: React.FC = () => {
     handleClubFileUpload,
     handleEventFileUpload
   } = useClubAdminForms(user?.id, fetchClubAdminData);
+
+  // Fetch the user's university
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserProfile();
+    }
+  }, [user?.id]);
 
   // Handle opening event dialog when navigated with state
   useEffect(() => {
@@ -93,6 +102,18 @@ const ClubAdminDashboard: React.FC = () => {
     fetchClubAdminData();
   };
 
+  const handleCreateClubClick = () => {
+    if (!userUniversity) {
+      toast({
+        title: "University Required",
+        description: "You need to have a university associated with your profile to create a club. Please update your profile first.",
+        variant: "warning",
+      });
+      return;
+    }
+    setIsClubDialogOpen(true);
+  };
+
   // Add quick action buttons based on current view
   const renderQuickActions = () => {
     switch (currentView) {
@@ -109,7 +130,7 @@ const ClubAdminDashboard: React.FC = () => {
       case 'clubs':
         return (
           <Button 
-            onClick={() => setIsClubDialogOpen(true)}
+            onClick={handleCreateClubClick}
             className="flex items-center gap-2"
           >
             <PlusCircle className="h-4 w-4" />

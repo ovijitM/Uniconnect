@@ -27,6 +27,18 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       setIsSubmitting(true);
 
       console.log('Validating club data:', clubFormData);
+      
+      // Check if university is provided
+      if (!clubFormData.university) {
+        toast({
+          title: "Missing University",
+          description: "You must have a university affiliation to create a club. Please update your profile.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      
       const isValid = await validateClubData(clubFormData);
       if (!isValid) {
         console.log('Validation failed');
