@@ -1,8 +1,7 @@
-
 import React from 'react';
 import ClubAdminHeader from '@/components/dashboard/ClubAdminHeader';
 import ClubAdminContent from '@/components/dashboard/ClubAdminContent';
-import { ClubFormData, EventFormData } from '@/hooks/club-admin/useClubAdminForms';
+import { ClubFormData, EventFormData } from '@/hooks/club-admin/types';
 
 interface OverviewViewProps {
   adminClubs: any[];

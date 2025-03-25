@@ -2,7 +2,7 @@
 // Import related code and create a NoClubsViewWrapper component that includes the document upload functionality
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ClubFormData } from '@/hooks/club-admin/useClubAdminForms';
+import { ClubFormData } from '@/hooks/club-admin/types';
 import CreateClubDialog from '@/components/dashboard/CreateClubDialog';
 
 interface NoClubsViewWrapperProps {

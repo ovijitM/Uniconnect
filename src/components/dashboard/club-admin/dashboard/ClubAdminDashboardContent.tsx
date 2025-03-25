@@ -6,7 +6,7 @@ import MembersView from './views/MembersView';
 import AttendanceView from './views/AttendanceView';
 import ProfileView from './views/ProfileView';
 import OverviewView from './views/OverviewView';
-import { ClubFormData, EventFormData } from '@/hooks/club-admin/useClubAdminForms';
+import { ClubFormData, EventFormData } from '@/hooks/club-admin/types';
 
 interface ClubAdminDashboardContentProps {
   currentView: 'overview' | 'events' | 'clubs' | 'members' | 'attendance' | 'profile';
