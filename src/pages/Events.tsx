@@ -103,7 +103,7 @@ const EventsPage: React.FC = () => {
               imageUrl: event.image_url,
               category: event.category,
               status: event.status,
-              visibility: event.visibility,
+              visibility: event.visibility as 'public' | 'university_only',
               participants: event.event_participants[0]?.count || 0,
               maxParticipants: event.max_participants || undefined,
               organizer: {

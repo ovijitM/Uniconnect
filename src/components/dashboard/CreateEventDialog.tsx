@@ -40,6 +40,7 @@ interface CreateEventDialogProps {
     communityLink?: string;
     eventWebsite?: string;
     eventHashtag?: string;
+    visibility: 'public' | 'university_only';
   };
   clubs: any[];
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;

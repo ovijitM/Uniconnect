@@ -40,12 +40,15 @@ const EventDetailPage: React.FC = () => {
     <Layout>
       <EventHeader 
         title={event.title}
-        description={event.description}
-        category={event.category}
-        status={event.status}
-        organizerId={event.organizer.id}
-        organizerName={event.organizer.name}
         tagline={event.tagline}
+        date={event.date}
+        location={event.location}
+        category={event.category}
+        participants={event.participants}
+        maxParticipants={event.maxParticipants}
+        visibility={event.visibility}
+        organizerName={event.organizer.name}
+        organizerUniversity={event.organizer.university}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

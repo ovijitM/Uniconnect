@@ -11,7 +11,7 @@ export const formatEventData = (eventData: any, clubData: any): Event => {
     imageUrl: eventData.image_url,
     category: eventData.category,
     status: eventData.status,
-    visibility: eventData.visibility,
+    visibility: eventData.visibility as 'public' | 'university_only',
     participants: eventData.event_participants[0]?.count || 0,
     maxParticipants: eventData.max_participants || undefined,
     eventType: eventData.event_type,
