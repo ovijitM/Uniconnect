@@ -37,7 +37,7 @@ export const useClubCreation = () => {
         }
       }
 
-      // Create the club with the new fields
+      // Create the club
       const { data: clubData, error: clubError } = await supabase
         .from('clubs')
         .insert({
@@ -46,7 +46,7 @@ export const useClubCreation = () => {
           category: clubFormData.category,
           logo_url: clubFormData.logoUrl,
           status: 'pending',
-          university: clubFormData.university,
+          university: clubFormData.university || null,
           tagline: clubFormData.tagline || null,
           established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
           affiliation: clubFormData.affiliation || null,

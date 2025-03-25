@@ -11,7 +11,6 @@ export const useClubValidation = () => {
       { field: 'name', label: 'Club Name' },
       { field: 'description', label: 'Description' },
       { field: 'category', label: 'Category' },
-      { field: 'university', label: 'University' },
     ];
     
     for (const { field, label } of basicFields) {

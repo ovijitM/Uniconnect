@@ -12,7 +12,8 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
     setIsClubDialogOpen,
     isSubmitting,
     setIsSubmitting,
-    handleClubInputChange
+    handleClubInputChange,
+    handleClubFileUpload
   } = useClubFormState();
 
   const { validateClubData } = useClubValidation();
@@ -38,7 +39,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
           name: '',
           description: '',
           category: '',
-          // Reset new fields
+          // Reset fields
           tagline: '',
           establishedYear: '',
           affiliation: '',
@@ -59,7 +60,9 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
           instagramLink: '',
           twitterLink: '',
           discordLink: '',
-          logoUrl: '' // Added the missing logoUrl property
+          logoUrl: '',
+          documentUrl: '',
+          documentName: ''
         });
         setIsClubDialogOpen(false);
         
@@ -80,6 +83,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
     setIsClubDialogOpen,
     isSubmitting,
     handleClubInputChange,
-    handleCreateClub
+    handleCreateClub,
+    handleClubFileUpload
   };
 };

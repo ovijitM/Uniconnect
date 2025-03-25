@@ -28,7 +28,9 @@ export const useClubFormState = () => {
     instagramLink: '',
     twitterLink: '',
     discordLink: '',
-    logoUrl: '' // Added profile image link field
+    logoUrl: '', // Profile image link field
+    documentUrl: '',
+    documentName: ''
   });
   const [isClubDialogOpen, setIsClubDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,6 +40,22 @@ export const useClubFormState = () => {
     setClubFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleClubFileUpload = (url: string, fileName: string) => {
+    // Determine if it's a document or logo based on the file extension
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'];
+    const isImage = imageExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
+    
+    if (isImage) {
+      setClubFormData(prev => ({ ...prev, logoUrl: url }));
+    } else {
+      setClubFormData(prev => ({ 
+        ...prev, 
+        documentUrl: url,
+        documentName: fileName
+      }));
+    }
+  };
+
   return {
     clubFormData,
     setClubFormData,
@@ -45,6 +63,7 @@ export const useClubFormState = () => {
     setIsClubDialogOpen,
     isSubmitting,
     setIsSubmitting,
-    handleClubInputChange
+    handleClubInputChange,
+    handleClubFileUpload
   };
 };

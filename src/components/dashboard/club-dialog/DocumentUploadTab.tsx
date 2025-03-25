@@ -1,52 +1,100 @@
 
-import React from 'react';
-import { FileUpload } from '@/components/file-upload/FileUpload';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Upload } from 'lucide-react';
 
 interface DocumentUploadTabProps {
   formData: {
     documentUrl?: string;
     documentName?: string;
+    logoUrl?: string;
   };
   onFileUpload?: (url: string, fileName: string) => void;
 }
 
-const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({ formData, onFileUpload }) => {
+const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
+  formData,
+  onFileUpload
+}) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'document' | 'logo') => {
+    const file = e.target.files?.[0];
+    if (file && onFileUpload) {
+      onFileUpload(URL.createObjectURL(file), file.name);
+      console.log(`${type} uploaded:`, file.name);
+    }
+  };
+
   return (
-    <div className="space-y-4 py-4">
-      <Card>
-        <CardContent className="pt-6">
-          <div className="mb-4">
-            <h3 className="text-lg font-medium">Authorization Documents</h3>
-            <p className="text-sm text-gray-500">
-              Please upload your university authorization letter or other official documents 
-              to verify your club's legitimacy. This will be reviewed by administrators.
-            </p>
-          </div>
-          
-          <FileUpload 
-            onFileUpload={onFileUpload} 
-            defaultValue={formData.documentUrl}
-            buttonText="Upload Authorization Document"
-            maxSize={10}
-            allowedTypes={['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']}
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="logo">Club Logo Image *</Label>
+        <div className="flex items-center gap-3">
+          <Input
+            id="logo"
+            type="file"
+            accept="image/*"
+            ref={logoInputRef}
+            className="hidden"
+            onChange={(e) => handleFileChange(e, 'logo')}
           />
-          
-          {formData.documentUrl && (
-            <div className="mt-4">
-              <p className="text-sm font-medium">Uploaded Document:</p>
-              <a 
-                href={formData.documentUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:underline"
-              >
-                {formData.documentName || 'View Document'}
-              </a>
+          <Button 
+            type="button" 
+            variant="outline"
+            onClick={() => logoInputRef.current?.click()}
+            className="w-full"
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            Upload Logo
+          </Button>
+          {formData.logoUrl && (
+            <div className="flex items-center gap-2">
+              <img 
+                src={formData.logoUrl} 
+                alt="Logo preview" 
+                className="h-10 w-10 object-cover rounded-md" 
+              />
+              <span className="text-sm text-muted-foreground truncate max-w-[150px]">
+                Logo uploaded
+              </span>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+        <p className="text-sm text-muted-foreground">Upload a logo for your club (PNG, JPG, SVG).</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="document">Club Constitution (Optional)</Label>
+        <div className="flex items-center gap-3">
+          <Input
+            id="document"
+            type="file"
+            accept=".pdf,.doc,.docx"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={(e) => handleFileChange(e, 'document')}
+          />
+          <Button 
+            type="button" 
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full"
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            Upload Document
+          </Button>
+          {formData.documentUrl && (
+            <span className="text-sm text-muted-foreground truncate max-w-[200px]">
+              {formData.documentName || 'Document uploaded'}
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-muted-foreground">Upload your club's constitution or bylaws (PDF, DOC).</p>
+      </div>
     </div>
   );
 };
