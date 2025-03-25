@@ -61,16 +61,40 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
 
+      // Ensure the public bucket exists
+      try {
+        const { data: buckets } = await supabase.storage.listBuckets();
+        const bucketExists = buckets?.some(b => b.name === 'public');
+        
+        if (!bucketExists) {
+          const { error: createError } = await supabase.storage.createBucket('public', {
+            public: true
+          });
+          
+          if (createError) {
+            console.error('Error creating public bucket:', createError);
+            toast({
+              title: 'Storage setup error',
+              description: 'Could not create public bucket. Please contact administrator.',
+              variant: 'destructive',
+            });
+            return;
+          }
+        }
+      } catch (bucketError) {
+        console.error('Error checking bucket existence:', bucketError);
+      }
+
       // Upload file to Supabase Storage
       const { data, error } = await supabase.storage
-        .from('documents')
+        .from('public')
         .upload(filePath, file);
 
       if (error) throw error;
 
       // Get public URL
       const { data: urlData } = supabase.storage
-        .from('documents')
+        .from('public')
         .getPublicUrl(filePath);
 
       const publicUrl = urlData.publicUrl;

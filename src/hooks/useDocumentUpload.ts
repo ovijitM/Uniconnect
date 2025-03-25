@@ -86,46 +86,66 @@ export const useDocumentUpload = ({
       const effectiveBucket = 'public';
       console.log(`Using bucket: ${effectiveBucket}`);
       
-      // Ensure the bucket exists
-      const bucketReady = await ensureBucketExists(effectiveBucket);
-      if (!bucketReady) {
-        throw new Error(`Could not ensure the '${effectiveBucket}' bucket exists. Please check your Supabase storage setup.`);
-      }
+      try {
+        // Ensure the bucket exists
+        const bucketReady = await ensureBucketExists(effectiveBucket);
+        if (!bucketReady) {
+          toast({
+            title: 'Storage Setup Error',
+            description: `Could not ensure the 'public' bucket exists. Please contact an administrator.`,
+            variant: 'destructive',
+          });
+          return null;
+        }
 
-      // Upload file to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from(effectiveBucket)
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
+        // Upload file to Supabase Storage
+        const { data, error } = await supabase.storage
+          .from(effectiveBucket)
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: true
+          });
+
+        if (error) {
+          console.error('Supabase storage upload error:', error);
+          toast({
+            title: 'Upload failed',
+            description: error.message,
+            variant: 'destructive',
+          });
+          return null;
+        }
+
+        console.log('File uploaded successfully, data:', data);
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from(effectiveBucket)
+          .getPublicUrl(fileName);
+
+        const publicUrl = urlData.publicUrl;
+        console.log('Generated public URL:', publicUrl);
+        
+        if (onSuccess) {
+          onSuccess(publicUrl, file.name);
+        }
+
+        toast({
+          title: 'File uploaded successfully',
+          description: `${file.name} has been uploaded`,
+          variant: 'default',
         });
 
-      if (error) {
-        console.error('Supabase storage upload error:', error);
-        throw new Error(`Upload failed: ${error.message}`);
+        return publicUrl;
+      } catch (uploadError) {
+        console.error('Error during upload process:', uploadError);
+        toast({
+          title: 'Upload process failed',
+          description: uploadError instanceof Error ? uploadError.message : 'An unexpected error occurred',
+          variant: 'destructive',
+        });
+        return null;
       }
-
-      console.log('File uploaded successfully, data:', data);
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from(effectiveBucket)
-        .getPublicUrl(fileName);
-
-      const publicUrl = urlData.publicUrl;
-      console.log('Generated public URL:', publicUrl);
-      
-      if (onSuccess) {
-        onSuccess(publicUrl, file.name);
-      }
-
-      toast({
-        title: 'File uploaded successfully',
-        description: `${file.name} has been uploaded`,
-        variant: 'default',
-      });
-
-      return publicUrl;
     } catch (error) {
       console.error('Error uploading document:', error);
       toast({
