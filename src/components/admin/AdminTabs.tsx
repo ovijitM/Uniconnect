@@ -2,7 +2,7 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import UsersTable from './UsersTable';
-import ClubsTable from './clubs-table';
+import { ClubsTableContent } from './clubs-table';
 import SystemAlertsPanel from './SystemAlertsPanel';
 import RecentActivityPanel from './RecentActivityPanel';
 import OverviewTab from './OverviewTab';
@@ -49,8 +49,10 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
       
       <TabsContent value="overview" className="space-y-6">
         <OverviewTab 
-          users={users}
-          clubs={clubs}
+          usersCount={users.length}
+          clubsCount={clubs.length}
+          adminCount={adminCount}
+          systemStatus={systemStatus}
           recentActivity={recentActivity}
           systemAlerts={systemAlerts}
           isLoading={isLoading}
@@ -63,12 +65,13 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
       </TabsContent>
       
       <TabsContent value="clubs">
-        <ClubsTable 
+        <ClubsTableContent 
           clubs={clubs} 
           isLoading={isLoading}
-          onReviewClub={(id) => onReviewItem(id, 'club')}
-          onViewClub={onViewClub}
-          onStatusChange={onClubStatusChange}
+          processingId={null}
+          onApprove={(id) => onReviewItem(id, 'club')}
+          onReject={(id) => onReviewItem(id, 'club')}
+          onView={onViewClub}
         />
       </TabsContent>
 
@@ -78,15 +81,13 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
       
       <TabsContent value="activity" className="space-y-6">
         <RecentActivityPanel 
-          activities={recentActivity}
+          recentActivity={recentActivity}
           isLoading={isLoading}
           onReviewItem={onReviewItem}
         />
         <SystemAlertsPanel 
-          alerts={systemAlerts}
+          systemAlerts={systemAlerts}
           isLoading={isLoading}
-          systemStatus={systemStatus}
-          adminCount={adminCount}
         />
       </TabsContent>
     </Tabs>
