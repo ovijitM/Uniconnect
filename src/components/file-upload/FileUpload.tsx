@@ -28,6 +28,37 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   const [fileName, setFileName] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Helper function to create a bucket if it doesn't exist
+  const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
+    try {
+      // Check if the bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(b => b.name === bucketName);
+      
+      if (bucketExists) {
+        return true;
+      }
+      
+      console.log(`Bucket '${bucketName}' doesn't exist, attempting to create it...`);
+      
+      // Try to create the bucket
+      const { data, error } = await supabase.storage.createBucket(bucketName, {
+        public: true
+      });
+      
+      if (error) {
+        console.error(`Failed to create bucket '${bucketName}':`, error);
+        return false;
+      }
+      
+      console.log(`Successfully created bucket '${bucketName}'`);
+      return true;
+    } catch (error) {
+      console.error(`Error ensuring bucket '${bucketName}' exists:`, error);
+      return false;
+    }
+  };
+
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -62,33 +93,24 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       const filePath = `${fileName}`;
 
       // Ensure the public bucket exists
-      try {
-        const { data: buckets } = await supabase.storage.listBuckets();
-        const bucketExists = buckets?.some(b => b.name === 'public');
-        
-        if (!bucketExists) {
-          const { error: createError } = await supabase.storage.createBucket('public', {
-            public: true
-          });
-          
-          if (createError) {
-            console.error('Error creating public bucket:', createError);
-            toast({
-              title: 'Storage setup error',
-              description: 'Could not create public bucket. Please contact administrator.',
-              variant: 'destructive',
-            });
-            return;
-          }
-        }
-      } catch (bucketError) {
-        console.error('Error checking bucket existence:', bucketError);
+      const bucketReady = await ensureBucketExists('public');
+      if (!bucketReady) {
+        toast({
+          title: 'Storage setup error',
+          description: 'Could not create public bucket. Please contact administrator.',
+          variant: 'destructive',
+        });
+        setIsUploading(false);
+        return;
       }
 
       // Upload file to Supabase Storage
       const { data, error } = await supabase.storage
         .from('public')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
 
       if (error) throw error;
 

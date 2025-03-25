@@ -34,6 +34,37 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // Helper function to create a bucket if it doesn't exist
+  const ensureBucketExists = async (bucketName: string): Promise<boolean> => {
+    try {
+      // Check if the bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(b => b.name === bucketName);
+      
+      if (bucketExists) {
+        return true;
+      }
+      
+      console.log(`Bucket '${bucketName}' doesn't exist, attempting to create it...`);
+      
+      // Try to create the bucket
+      const { data, error } = await supabase.storage.createBucket(bucketName, {
+        public: true
+      });
+      
+      if (error) {
+        console.error(`Failed to create bucket '${bucketName}':`, error);
+        return false;
+      }
+      
+      console.log(`Successfully created bucket '${bucketName}'`);
+      return true;
+    } catch (error) {
+      console.error(`Error ensuring bucket '${bucketName}' exists:`, error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (user) {
       fetchDocuments();
@@ -43,6 +74,18 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
   const fetchDocuments = async () => {
     setIsLoading(true);
     try {
+      // Ensure the public bucket exists
+      const bucketReady = await ensureBucketExists('public');
+      if (!bucketReady) {
+        toast({
+          title: 'Storage Setup Error',
+          description: 'Could not ensure the public bucket exists',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // Search pattern based on entity type
       const searchPattern = entityId 
         ? `${entityType}_${entityId}/%` 
@@ -50,7 +93,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
 
       const { data, error } = await supabase
         .storage
-        .from('documents')
+        .from('public')
         .list('', {
           search: searchPattern
         });
@@ -59,7 +102,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
 
       const files = data.map(file => ({
         name: file.name.split('_').slice(2).join('_'), // Remove prefix
-        url: supabase.storage.from('documents').getPublicUrl(file.name).data.publicUrl,
+        url: supabase.storage.from('public').getPublicUrl(file.name).data.publicUrl,
         id: file.id,
         created_at: file.created_at
       }));
@@ -98,7 +141,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
       
       const { error } = await supabase
         .storage
-        .from('documents')
+        .from('public')
         .remove([path]);
 
       if (error) throw error;

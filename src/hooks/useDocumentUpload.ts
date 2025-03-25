@@ -15,7 +15,7 @@ interface UseDocumentUploadProps {
 export const useDocumentUpload = ({
   entityId,
   entityType = 'user',
-  bucket = 'documents',
+  bucket = 'public',
   maxSize = 10,
   onSuccess
 }: UseDocumentUploadProps = {}) => {
@@ -82,7 +82,7 @@ export const useDocumentUpload = ({
 
       console.log('Uploading to path:', fileName, 'in bucket:', bucket);
 
-      // Always try to use the 'public' bucket first as it's most likely to exist
+      // Always use the 'public' bucket as it's most likely to exist
       const effectiveBucket = 'public';
       console.log(`Using bucket: ${effectiveBucket}`);
       
