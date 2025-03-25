@@ -28,7 +28,8 @@ export const useAuthSession = () => {
         email: profile.email,
         name: profile.name,
         role: profile.role,
-        profileImage: profile.profile_image
+        profileImage: profile.profile_image,
+        university: profile.university
       };
       
       setAuthState({

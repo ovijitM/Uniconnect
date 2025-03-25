@@ -16,6 +16,7 @@ export const useAuthSignup = (
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       
+      // If university is provided, check if it exists in the database
       if (university && university.trim() !== '') {
         const { data: existingUni, error: uniCheckError } = await supabase
           .from('universities')
@@ -40,6 +41,7 @@ export const useAuthSignup = (
         }
       }
       
+      // Sign up the user with auth
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -60,6 +62,7 @@ export const useAuthSignup = (
         throw new Error('No user returned after signup');
       }
       
+      // Check if profile was created immediately
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -69,6 +72,7 @@ export const useAuthSignup = (
       if (profileError) {
         console.warn('Profile not found immediately after signup, this is normal if confirmations are enabled');
         
+        // Create a user object with the expected structure
         const user: User = {
           id: data.user.id,
           email: data.user.email || email,
@@ -87,13 +91,27 @@ export const useAuthSignup = (
         return user;
       }
       
+      // Explicitly update the profile with university if it wasn't set correctly
+      if (university && (!profile.university || profile.university !== university)) {
+        console.log('University missing from profile, updating it now:', university);
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ university })
+          .eq('id', data.user.id);
+        
+        if (updateError) {
+          console.warn('Failed to update university in profile:', updateError);
+        }
+      }
+      
+      // Create a user object with the profile data, ensuring university is included
       const user: User = {
         id: data.user.id,
         email: profile.email,
         name: profile.name,
         role: profile.role,
         profileImage: profile.profile_image,
-        university: profile.university
+        university: university || profile.university // Prioritize the provided university
       };
       
       setAuthState({
