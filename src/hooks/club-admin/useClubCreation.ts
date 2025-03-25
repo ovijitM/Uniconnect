@@ -97,7 +97,7 @@ export const useClubCreation = () => {
         }
       }
 
-      // Create the club
+      // Create the club - now properly setting university_id
       const { data: clubData, error: clubError } = await supabase
         .from('clubs')
         .insert({
@@ -107,7 +107,7 @@ export const useClubCreation = () => {
           logo_url: clubFormData.logoUrl,
           status: 'pending',
           university: clubFormData.university,
-          university_id: universityId, // Make sure university_id is stored
+          university_id: universityId, // Now properly set this field
           tagline: clubFormData.tagline || null,
           established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
           affiliation: clubFormData.affiliation || null,

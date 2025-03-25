@@ -198,6 +198,7 @@ export type Database = {
           tagline: string | null
           twitter_link: string | null
           university: string | null
+          university_id: string | null
           updated_at: string
           website: string | null
           who_can_join: string | null
@@ -230,6 +231,7 @@ export type Database = {
           tagline?: string | null
           twitter_link?: string | null
           university?: string | null
+          university_id?: string | null
           updated_at?: string
           website?: string | null
           who_can_join?: string | null
@@ -262,12 +264,21 @@ export type Database = {
           tagline?: string | null
           twitter_link?: string | null
           university?: string | null
+          university_id?: string | null
           updated_at?: string
           website?: string | null
           who_can_join?: string | null
           why_join?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clubs_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       event_collaborators: {
         Row: {

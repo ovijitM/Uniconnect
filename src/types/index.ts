@@ -9,6 +9,7 @@ export interface Club {
   memberCount: number;
   events: Event[];
   university?: string;
+  universityId?: string;
   
   // New fields
   tagline?: string;
