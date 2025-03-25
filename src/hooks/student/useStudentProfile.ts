@@ -61,66 +61,31 @@ export const useStudentProfile = (userId: string | undefined) => {
     }
   }, [userId, fetchUserProfile]);
 
-  const updateUserUniversity = async (university: string) => {
-    if (!userId) return false;
+  // Add a new function to get university from backend directly when needed
+  const getUserUniversityFromBackend = async (): Promise<{university: string | null; universityId: string | null}> => {
+    if (!userId) {
+      return { university: null, universityId: null };
+    }
     
     try {
-      // First, look up the university ID
-      let universityId = null;
-      
-      const { data: universityData, error: universityError } = await supabase
-        .from('universities')
-        .select('id')
-        .eq('name', university)
-        .maybeSingle();
-      
-      if (universityError) throw universityError;
-      
-      if (universityData) {
-        universityId = universityData.id;
-      } else {
-        // If university doesn't exist, create it
-        const { data: newUniversity, error: createError } = await supabase
-          .from('universities')
-          .insert({ name: university })
-          .select()
-          .single();
+      const { data: profileData, error } = await supabase
+        .from('profiles')
+        .select('university, university_id')
+        .eq('id', userId)
+        .single();
         
-        if (createError) throw createError;
-        
-        if (newUniversity) {
-          universityId = newUniversity.id;
-        }
+      if (error) {
+        console.error('Error fetching profile data:', error);
+        return { university: null, universityId: null };
       }
       
-      // Update the profile with both university name and ID
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          university: university,
-          university_id: universityId
-        })
-        .eq('id', userId);
-      
-      if (error) throw error;
-      
-      setUserUniversity(university);
-      setUserUniversityId(universityId);
-      
-      toast({
-        title: 'Success',
-        description: 'University updated successfully',
-      });
-      
-      return true;
+      return { 
+        university: profileData?.university || null, 
+        universityId: profileData?.university_id || null 
+      };
     } catch (error) {
-      console.error('Error updating university:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update university',
-        variant: 'destructive',
-      });
-      return false;
+      console.error('Error fetching university directly:', error);
+      return { university: null, universityId: null };
     }
   };
 
@@ -130,6 +95,6 @@ export const useStudentProfile = (userId: string | undefined) => {
     isLoadingProfile,
     profileFetched,
     fetchUserProfile,
-    updateUserUniversity
+    getUserUniversityFromBackend
   };
 };

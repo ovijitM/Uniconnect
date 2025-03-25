@@ -17,8 +17,29 @@ export const useClubCreation = () => {
         return false;
       }
 
+      // First, get the user's university directly from the backend
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('university, university_id')
+        .eq('id', userId)
+        .single();
+        
+      if (profileError) {
+        console.error('Error fetching user profile:', profileError);
+        toast({
+          title: 'Error',
+          description: 'Failed to get your university information.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+      
+      // Use university from profile or from form data as fallback
+      const universityName = profileData?.university || clubFormData.university;
+      let universityId = profileData?.university_id || clubFormData.universityId;
+      
       // Check if university is provided
-      if (!clubFormData.university) {
+      if (!universityName) {
         toast({
           title: 'Missing University',
           description: 'A university affiliation is required to create a club.',
@@ -27,14 +48,13 @@ export const useClubCreation = () => {
         return false;
       }
 
-      // Check for university ID
-      let universityId = clubFormData.universityId;
+      // If we have university name but no ID, look it up or create
       if (!universityId) {
         // Try to find the university
         const { data: uniData, error: uniError } = await supabase
           .from('universities')
           .select('id')
-          .eq('name', clubFormData.university)
+          .eq('name', universityName)
           .maybeSingle();
           
         if (uniError) {
@@ -45,7 +65,7 @@ export const useClubCreation = () => {
           // Create the university if it doesn't exist
           const { data: newUni, error: createError } = await supabase
             .from('universities')
-            .insert({ name: clubFormData.university })
+            .insert({ name: universityName })
             .select()
             .single();
             
@@ -59,7 +79,7 @@ export const useClubCreation = () => {
 
       console.log('Creating club with data:', clubFormData);
       console.log('User ID:', userId);
-      console.log('University ID:', universityId);
+      console.log('University:', universityName, 'University ID:', universityId);
 
       // Transform array and JSON fields
       const regularEvents = clubFormData.regularEvents ? clubFormData.regularEvents.split(',').map(e => e.trim()) : [];
@@ -87,7 +107,7 @@ export const useClubCreation = () => {
           category: clubFormData.category,
           logo_url: clubFormData.logoUrl,
           status: 'pending',
-          university: clubFormData.university,
+          university: universityName,
           tagline: clubFormData.tagline || null,
           established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
           affiliation: clubFormData.affiliation || null,
