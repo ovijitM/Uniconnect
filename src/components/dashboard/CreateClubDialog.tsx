@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { DialogTrigger } from '@/components/ui/dialog';
@@ -38,6 +39,7 @@ interface CreateClubDialogProps {
     documentUrl?: string;
     documentName?: string;
     university?: string;
+    universityId?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onSubmit: () => void;
@@ -57,7 +59,7 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
   trigger
 }) => {
   const { user } = useAuth();
-  const { userUniversity, fetchUserProfile } = useStudentProfile(user?.id);
+  const { userUniversity, userUniversityId, fetchUserProfile } = useStudentProfile(user?.id);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -65,6 +67,25 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
       fetchUserProfile();
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    // Update form data with university information when available
+    if (userUniversity && userUniversityId) {
+      // Only update if not already set or if changed
+      if (formData.university !== userUniversity || formData.universityId !== userUniversityId) {
+        // Create a fake event to use the existing onInputChange handler
+        const universityEvent = {
+          target: { name: 'university', value: userUniversity }
+        } as React.ChangeEvent<HTMLInputElement>;
+        
+        onInputChange(universityEvent);
+        
+        // Also set universityId through a different method if needed
+        // This depends on how your form state is managed
+        // You might need to modify your form state handling to include universityId directly
+      }
+    }
+  }, [userUniversity, userUniversityId, formData.university, formData.universityId]);
 
   const handleOpenChange = (open: boolean) => {
     if (open && !userUniversity) {

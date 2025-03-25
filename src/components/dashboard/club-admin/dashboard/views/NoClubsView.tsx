@@ -14,7 +14,7 @@ interface NoClubsViewProps {
   clubFormData: ClubFormData;
   handleClubInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleCreateClub: () => void;
-  handleClubFileUpload?: (url: string, fileName: string) => void;
+  handleClubFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
 }
 
 const NoClubsView: React.FC<NoClubsViewProps> = ({
@@ -26,7 +26,7 @@ const NoClubsView: React.FC<NoClubsViewProps> = ({
   handleClubFileUpload
 }) => {
   const { user } = useAuth();
-  const { userUniversity, fetchUserProfile } = useStudentProfile(user?.id);
+  const { userUniversity, userUniversityId, fetchUserProfile } = useStudentProfile(user?.id);
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -36,7 +36,7 @@ const NoClubsView: React.FC<NoClubsViewProps> = ({
   }, [user?.id]);
 
   const handleCreateClubClick = () => {
-    if (!userUniversity) {
+    if (!userUniversity || !userUniversityId) {
       toast({
         title: "University Required",
         description: "You need to have a university associated with your profile to create a club. Please update your profile first.",

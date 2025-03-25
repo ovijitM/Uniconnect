@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useStudentProfile = (userId: string | undefined) => {
   const [userUniversity, setUserUniversity] = useState<string | null>(null);
+  const [userUniversityId, setUserUniversityId] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const { toast } = useToast();
 
@@ -16,7 +17,7 @@ export const useStudentProfile = (userId: string | undefined) => {
       // Get the user's university
       const { data: profileData, error } = await supabase
         .from('profiles')
-        .select('university')
+        .select('university, university_id')
         .eq('id', userId)
         .single();
         
@@ -24,6 +25,10 @@ export const useStudentProfile = (userId: string | undefined) => {
       
       if (profileData?.university) {
         setUserUniversity(profileData.university);
+      }
+      
+      if (profileData?.university_id) {
+        setUserUniversityId(profileData.university_id);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
@@ -38,17 +43,50 @@ export const useStudentProfile = (userId: string | undefined) => {
   };
 
   const updateUserUniversity = async (university: string) => {
-    if (!userId) return;
+    if (!userId) return false;
     
     try {
+      // First, look up the university ID
+      let universityId = null;
+      
+      const { data: universityData, error: universityError } = await supabase
+        .from('universities')
+        .select('id')
+        .eq('name', university)
+        .maybeSingle();
+      
+      if (universityError) throw universityError;
+      
+      if (universityData) {
+        universityId = universityData.id;
+      } else {
+        // If university doesn't exist, create it
+        const { data: newUniversity, error: createError } = await supabase
+          .from('universities')
+          .insert({ name: university })
+          .select()
+          .single();
+        
+        if (createError) throw createError;
+        
+        if (newUniversity) {
+          universityId = newUniversity.id;
+        }
+      }
+      
+      // Update the profile with both university name and ID
       const { error } = await supabase
         .from('profiles')
-        .update({ university })
+        .update({ 
+          university: university,
+          university_id: universityId
+        })
         .eq('id', userId);
       
       if (error) throw error;
       
       setUserUniversity(university);
+      setUserUniversityId(universityId);
       
       toast({
         title: 'Success',
@@ -69,6 +107,7 @@ export const useStudentProfile = (userId: string | undefined) => {
 
   return {
     userUniversity,
+    userUniversityId,
     isLoadingProfile,
     fetchUserProfile,
     updateUserUniversity

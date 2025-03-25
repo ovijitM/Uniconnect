@@ -114,7 +114,7 @@ export const useAuthSignup = (
         console.log("Existing profile found:", profile);
       }
       
-      // Always update the profile with the correct role and university from signup
+      // Always update the profile with the correct role, university and university_id from signup
       console.log("Updating profile with role:", role, "university:", university, "university_id:", universityId);
       
       const { error: updateError } = await supabase

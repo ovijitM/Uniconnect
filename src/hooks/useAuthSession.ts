@@ -70,6 +70,58 @@ export const useAuthSession = () => {
         }
       }
       
+      // If university_id is not present but university is, try to fetch or create university_id
+      if (profile.university && !profile.university_id) {
+        console.log("University present but no university_id, will try to fetch or create it");
+        
+        const { data: uniData, error: uniError } = await supabase
+          .from('universities')
+          .select('id')
+          .eq('name', profile.university)
+          .maybeSingle();
+        
+        if (uniError) {
+          console.warn('Error checking university:', uniError);
+        } else if (uniData) {
+          // University exists, update profile with university_id
+          const { error: updateUniError } = await supabase
+            .from('profiles')
+            .update({ university_id: uniData.id })
+            .eq('id', session.user.id);
+            
+          if (updateUniError) {
+            console.warn('Failed to update profile with university_id:', updateUniError);
+          } else {
+            profile.university_id = uniData.id;
+            console.log("Updated profile with existing university_id:", uniData.id);
+          }
+        } else {
+          // University doesn't exist, create it
+          const { data: newUni, error: createUniError } = await supabase
+            .from('universities')
+            .insert({ name: profile.university })
+            .select()
+            .single();
+          
+          if (createUniError) {
+            console.warn('Error creating university:', createUniError);
+          } else if (newUni) {
+            // Update profile with new university_id
+            const { error: updateNewUniError } = await supabase
+              .from('profiles')
+              .update({ university_id: newUni.id })
+              .eq('id', session.user.id);
+              
+            if (updateNewUniError) {
+              console.warn('Failed to update profile with new university_id:', updateNewUniError);
+            } else {
+              profile.university_id = newUni.id;
+              console.log("Updated profile with new university_id:", newUni.id);
+            }
+          }
+        }
+      }
+      
       const user: User = {
         id: session.user.id,
         email: profile.email,

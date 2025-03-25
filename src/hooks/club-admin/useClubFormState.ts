@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useClubFormState = () => {
   const { user } = useAuth();
-  const { userUniversity, fetchUserProfile } = useStudentProfile(user?.id);
+  const { userUniversity, userUniversityId, fetchUserProfile } = useStudentProfile(user?.id);
   const { toast } = useToast();
   
   const [clubFormData, setClubFormData] = useState<ClubFormData>({
@@ -15,6 +15,7 @@ export const useClubFormState = () => {
     description: '',
     category: '',
     university: '',
+    universityId: '',
     // New fields with default values
     tagline: '',
     establishedYear: '',
@@ -52,13 +53,14 @@ export const useClubFormState = () => {
 
   // Set the university from user profile when it's available
   useEffect(() => {
-    if (userUniversity && !clubFormData.university) {
+    if (userUniversity && userUniversityId && (!clubFormData.university || !clubFormData.universityId)) {
       setClubFormData(prev => ({
         ...prev,
-        university: userUniversity
+        university: userUniversity,
+        universityId: userUniversityId
       }));
-      console.log('Set university from user profile:', userUniversity);
-    } else if (isClubDialogOpen && !userUniversity) {
+      console.log('Set university from user profile:', userUniversity, 'with ID:', userUniversityId);
+    } else if (isClubDialogOpen && (!userUniversity || !userUniversityId)) {
       // Alert the user if they don't have a university associated with their profile
       toast({
         title: "Missing University Affiliation",
@@ -66,7 +68,7 @@ export const useClubFormState = () => {
         variant: "warning",
       });
     }
-  }, [userUniversity, clubFormData.university, isClubDialogOpen]);
+  }, [userUniversity, userUniversityId, clubFormData.university, clubFormData.universityId, isClubDialogOpen]);
 
   const handleClubInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

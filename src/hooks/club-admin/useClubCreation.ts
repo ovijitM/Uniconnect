@@ -27,8 +27,39 @@ export const useClubCreation = () => {
         return false;
       }
 
+      // Check for university ID
+      let universityId = clubFormData.universityId;
+      if (!universityId) {
+        // Try to find the university
+        const { data: uniData, error: uniError } = await supabase
+          .from('universities')
+          .select('id')
+          .eq('name', clubFormData.university)
+          .maybeSingle();
+          
+        if (uniError) {
+          console.error('Error finding university:', uniError);
+        } else if (uniData) {
+          universityId = uniData.id;
+        } else {
+          // Create the university if it doesn't exist
+          const { data: newUni, error: createError } = await supabase
+            .from('universities')
+            .insert({ name: clubFormData.university })
+            .select()
+            .single();
+            
+          if (createError) {
+            console.error('Error creating university:', createError);
+          } else if (newUni) {
+            universityId = newUni.id;
+          }
+        }
+      }
+
       console.log('Creating club with data:', clubFormData);
       console.log('User ID:', userId);
+      console.log('University ID:', universityId);
 
       // Transform array and JSON fields
       const regularEvents = clubFormData.regularEvents ? clubFormData.regularEvents.split(',').map(e => e.trim()) : [];

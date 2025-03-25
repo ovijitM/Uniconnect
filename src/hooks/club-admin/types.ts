@@ -1,11 +1,11 @@
-
 export interface ClubFormData {
   name: string;
   description: string;
   category: string;
-  logoUrl?: string; // Changed from required to optional
-  university?: string;
+  university: string;
+  universityId?: string;
   tagline?: string;
+  logoUrl?: string;
   establishedYear?: string;
   affiliation?: string;
   whyJoin?: string;
@@ -40,7 +40,7 @@ export interface EventFormData {
   imageUrl: string;
   
   // Additional fields
-  tagline: string; // Changed from optional to required
+  tagline: string;
   eventType: string;
   registrationDeadline: string;
   onlinePlatform: string;
