@@ -11,10 +11,10 @@ export const useEventFormState = () => {
     category: '',
     maxParticipants: '',
     clubId: '',
-    imageUrl: '', // Added field for event banner/poster
+    imageUrl: '', 
     
-    // Initialize new fields
-    tagline: '',
+    // Initialize new fields with proper default values
+    tagline: '', // Now required
     eventType: 'in-person',
     registrationDeadline: '',
     onlinePlatform: '',
@@ -38,7 +38,7 @@ export const useEventFormState = () => {
     eventWebsite: '',
     eventHashtag: '',
     
-    // Initialize new visibility field
+    // Initialize visibility field with default value
     visibility: 'public'
   });
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);

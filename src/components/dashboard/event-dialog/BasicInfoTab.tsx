@@ -12,7 +12,7 @@ interface BasicInfoTabProps {
     location: string;
     category: string;
     maxParticipants: string;
-    tagline: string;
+    tagline: string; // Required
     visibility: 'public' | 'university_only';
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
@@ -37,13 +37,14 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
       
       <div className="grid gap-2">
         <Label htmlFor="tagline">
-          Tagline
+          Tagline* <span className="text-xs text-muted-foreground">(Required)</span>
         </Label>
         <Input
           id="tagline"
           name="tagline"
-          value={formData.tagline || ''}
+          value={formData.tagline}
           onChange={onInputChange}
+          required
           placeholder="A short, catchy phrase describing your event"
         />
       </div>

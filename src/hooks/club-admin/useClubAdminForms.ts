@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 
 export interface ClubFormData {
@@ -84,6 +83,31 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
     category: 'workshop',
     maxParticipants: '',
     clubId: '',
+    imageUrl: '',
+    tagline: '',
+    eventType: 'in-person',
+    registrationDeadline: '',
+    onlinePlatform: '',
+    eligibility: '',
+    teamSize: '',
+    registrationLink: '',
+    entryFee: 'Free',
+    theme: '',
+    subTracks: '',
+    prizePool: '',
+    prizeCategories: '',
+    additionalPerks: '',
+    judgingCriteria: '',
+    judges: '',
+    deliverables: '',
+    submissionPlatform: '',
+    mentors: '',
+    sponsors: '',
+    contactEmail: '',
+    communityLink: '',
+    eventWebsite: '',
+    eventHashtag: '',
+    visibility: 'public'
   });
 
   // Handle input changes for club form
@@ -161,6 +185,31 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
       category: 'workshop',
       maxParticipants: '',
       clubId: '',
+      imageUrl: '',
+      tagline: '',
+      eventType: 'in-person',
+      registrationDeadline: '',
+      onlinePlatform: '',
+      eligibility: '',
+      teamSize: '',
+      registrationLink: '',
+      entryFee: 'Free',
+      theme: '',
+      subTracks: '',
+      prizePool: '',
+      prizeCategories: '',
+      additionalPerks: '',
+      judgingCriteria: '',
+      judges: '',
+      deliverables: '',
+      submissionPlatform: '',
+      mentors: '',
+      sponsors: '',
+      contactEmail: '',
+      communityLink: '',
+      eventWebsite: '',
+      eventHashtag: '',
+      visibility: 'public'
     });
     
     // Refresh event data if callback provided

@@ -40,7 +40,7 @@ export interface EventFormData {
   imageUrl: string;
   
   // Additional fields
-  tagline: string;
+  tagline: string; // Changed from optional to required
   eventType: string;
   registrationDeadline: string;
   onlinePlatform: string;
@@ -64,6 +64,6 @@ export interface EventFormData {
   eventWebsite: string;
   eventHashtag: string;
   
-  // New visibility field
+  // Required visibility field
   visibility: 'public' | 'university_only';
 }
