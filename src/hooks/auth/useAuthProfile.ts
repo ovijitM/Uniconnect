@@ -21,6 +21,7 @@ export const useAuthProfile = (
           name: userData.name,
           profile_image: userData.profileImage,
           university: userData.university,
+          university_id: userData.universityId,
           updated_at: new Date().toISOString()
         })
         .eq('id', authState.user.id);

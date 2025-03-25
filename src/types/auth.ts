@@ -8,6 +8,7 @@ export interface User {
   role: UserRole;
   profileImage?: string;
   university?: string;
+  universityId?: string;
 }
 
 export interface AuthState {

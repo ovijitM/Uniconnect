@@ -19,6 +19,7 @@ export const useAuthSignup = (
       console.log("Starting signup with role:", role, "university:", university);
       
       // If university is provided, check if it exists in the database
+      let universityId = null;
       if (university && university.trim() !== '') {
         const { data: existingUni, error: uniCheckError } = await supabase
           .from('universities')
@@ -26,19 +27,28 @@ export const useAuthSignup = (
           .eq('name', university)
           .maybeSingle();
         
-        if (uniCheckError && !uniCheckError.message.includes('No rows found')) {
+        if (uniCheckError) {
           console.warn('Error checking university:', uniCheckError);
         }
         
-        if (!existingUni) {
-          const { error: uniInsertError } = await supabase
+        if (existingUni) {
+          universityId = existingUni.id;
+          console.log('Found existing university with ID:', universityId);
+        } else {
+          // Insert a new university if it doesn't exist
+          const { data: newUni, error: uniInsertError } = await supabase
             .from('universities')
             .insert({
               name: university
-            });
+            })
+            .select()
+            .single();
           
-          if (uniInsertError && !uniInsertError.message.includes('unique constraint')) {
+          if (uniInsertError) {
             console.warn('Error adding university:', uniInsertError);
+          } else if (newUni) {
+            universityId = newUni.id;
+            console.log('Created new university with ID:', universityId);
           }
         }
       }
@@ -51,7 +61,8 @@ export const useAuthSignup = (
           data: {
             name,
             role,
-            university  // Make sure university is included in the metadata
+            university,
+            university_id: universityId
           }
         }
       });
@@ -87,7 +98,8 @@ export const useAuthSignup = (
             email: data.user.email || email,
             name,
             role,
-            university
+            university,
+            university_id: universityId
           })
           .select()
           .single();
@@ -103,13 +115,14 @@ export const useAuthSignup = (
       }
       
       // Always update the profile with the correct role and university from signup
-      console.log("Updating profile with role:", role, "university:", university);
+      console.log("Updating profile with role:", role, "university:", university, "university_id:", universityId);
       
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
           role: role,
-          university: university
+          university: university,
+          university_id: universityId
         })
         .eq('id', data.user.id);
       
@@ -136,6 +149,7 @@ export const useAuthSignup = (
           name,
           role, // Use the role from signup parameters
           university, // Use the university from signup parameters
+          universityId, // Add the university ID
           profileImage: undefined
         };
         
@@ -157,7 +171,8 @@ export const useAuthSignup = (
         name: updatedProfile.name,
         role: updatedProfile.role, // Use the role from the updated profile
         profileImage: updatedProfile.profile_image,
-        university: updatedProfile.university // Use the university from the updated profile
+        university: updatedProfile.university, // Use the university from the updated profile
+        universityId: updatedProfile.university_id // Include the university ID
       };
       
       console.log("Final user object returned:", user);

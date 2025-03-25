@@ -18,7 +18,7 @@ export const useAuthSession = () => {
       
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, universities(*)')
         .eq('id', session.user.id)
         .single();
       
@@ -46,6 +46,13 @@ export const useAuthSession = () => {
         needsUpdate = true;
       }
       
+      // If university_id in metadata but not in profile, update the profile
+      if (userMetadata?.university_id && profile.university_id !== userMetadata.university_id) {
+        console.log(`University ID mismatch - metadata: ${userMetadata.university_id}, profile: ${profile.university_id}`);
+        updateData.university_id = userMetadata.university_id;
+        needsUpdate = true;
+      }
+      
       // Update profile if needed
       if (needsUpdate) {
         console.log("Updating profile with:", updateData);
@@ -69,7 +76,8 @@ export const useAuthSession = () => {
         name: profile.name,
         role: profile.role,
         profileImage: profile.profile_image,
-        university: profile.university
+        university: profile.university,
+        universityId: profile.university_id
       };
       
       console.log("Final user object:", user);
