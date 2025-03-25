@@ -3,6 +3,7 @@ import { useClubFormState } from './useClubFormState';
 import { useClubValidation } from './useClubValidation';
 import { useClubCreation } from './useClubCreation';
 import { ClubFormData } from './types';
+import { useToast } from '@/hooks/use-toast';
 
 export const useClubForm = (userId: string | undefined, onSuccess: () => void) => {
   const {
@@ -16,6 +17,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
     handleClubFileUpload
   } = useClubFormState();
 
+  const { toast } = useToast();
   const { validateClubData } = useClubValidation();
   const { createClub } = useClubCreation();
 
@@ -24,8 +26,10 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       if (isSubmitting) return; // Prevent multiple submissions
       setIsSubmitting(true);
 
+      console.log('Validating club data:', clubFormData);
       const isValid = await validateClubData(clubFormData);
       if (!isValid) {
+        console.log('Validation failed');
         setIsSubmitting(false);
         return;
       }
@@ -34,6 +38,11 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       
       const success = await createClub(clubFormData, userId);
       if (success) {
+        toast({
+          title: "Club Created Successfully",
+          description: "Your club has been created and is now pending approval.",
+        });
+        
         // Reset form and close dialog
         setClubFormData({
           name: '',
@@ -71,6 +80,11 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       }
     } catch (error) {
       console.error('Error in handleCreateClub:', error);
+      toast({
+        title: "Error Creating Club",
+        description: "An error occurred while creating your club. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }

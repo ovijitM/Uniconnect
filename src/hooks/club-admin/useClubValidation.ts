@@ -11,6 +11,8 @@ export const useClubValidation = () => {
       { field: 'name', label: 'Club Name' },
       { field: 'description', label: 'Description' },
       { field: 'category', label: 'Category' },
+      { field: 'tagline', label: 'Tagline' },
+      { field: 'establishedYear', label: 'Established Year' },
     ];
     
     for (const { field, label } of basicFields) {
@@ -25,21 +27,13 @@ export const useClubValidation = () => {
     }
 
     // Profile information validation
-    const profileFields = [
-      { field: 'tagline', label: 'Tagline' },
-      { field: 'establishedYear', label: 'Established Year' },
-      { field: 'logoUrl', label: 'Logo' },
-    ];
-    
-    for (const { field, label } of profileFields) {
-      if (!clubFormData[field as keyof ClubFormData]?.toString().trim()) {
-        toast({
-          title: `Missing ${label}`,
-          description: `Please provide a ${label.toLowerCase()} for your club.`,
-          variant: 'destructive',
-        });
-        return false;
-      }
+    if (!clubFormData.logoUrl?.trim()) {
+      toast({
+        title: `Missing Logo`,
+        description: `Please upload a logo for your club.`,
+        variant: 'destructive',
+      });
+      return false;
     }
 
     // Membership information validation
@@ -56,6 +50,7 @@ export const useClubValidation = () => {
     const contactFields = [
       { field: 'presidentName', label: 'President Name' },
       { field: 'presidentContact', label: 'President Contact' },
+      { field: 'phoneNumber', label: 'Phone Number' },
     ];
     
     for (const { field, label } of contactFields) {

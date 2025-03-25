@@ -1,9 +1,9 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload } from 'lucide-react';
+import { Upload, CheckCircle, AlertTriangle } from 'lucide-react';
 
 interface DocumentUploadTabProps {
   formData: {
@@ -20,12 +20,26 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [documentUploading, setDocumentUploading] = useState(false);
   
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'document' | 'logo') => {
     const file = e.target.files?.[0];
     if (file && onFileUpload) {
-      onFileUpload(URL.createObjectURL(file), file.name);
-      console.log(`${type} uploaded:`, file.name);
+      if (type === 'logo') setLogoUploading(true);
+      else setDocumentUploading(true);
+      
+      try {
+        // For now, we're just using URL.createObjectURL for preview
+        // In a real app, this would be an actual upload call
+        onFileUpload(URL.createObjectURL(file), file.name);
+        console.log(`${type} uploaded:`, file.name);
+      } catch (error) {
+        console.error(`Error uploading ${type}:`, error);
+      } finally {
+        if (type === 'logo') setLogoUploading(false);
+        else setDocumentUploading(false);
+      }
     }
   };
 
@@ -47,20 +61,28 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
             variant="outline"
             onClick={() => logoInputRef.current?.click()}
             className="w-full"
+            disabled={logoUploading}
           >
-            <Upload className="mr-2 h-4 w-4" />
-            Upload Logo
+            {logoUploading ? 'Uploading...' : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Logo
+              </>
+            )}
           </Button>
-          {formData.logoUrl && (
+          {formData.logoUrl ? (
             <div className="flex items-center gap-2">
               <img 
                 src={formData.logoUrl} 
                 alt="Logo preview" 
                 className="h-10 w-10 object-cover rounded-md" 
               />
-              <span className="text-sm text-muted-foreground truncate max-w-[150px]">
-                Logo uploaded
-              </span>
+              <CheckCircle className="h-4 w-4 text-green-500" />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-amber-500">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="text-sm">Required</span>
             </div>
           )}
         </div>
@@ -83,14 +105,22 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
             className="w-full"
+            disabled={documentUploading}
           >
-            <Upload className="mr-2 h-4 w-4" />
-            Upload Document
+            {documentUploading ? 'Uploading...' : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Document
+              </>
+            )}
           </Button>
           {formData.documentUrl && (
-            <span className="text-sm text-muted-foreground truncate max-w-[200px]">
-              {formData.documentName || 'Document uploaded'}
-            </span>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <span className="text-sm text-muted-foreground truncate max-w-[200px]">
+                {formData.documentName || 'Document uploaded'}
+              </span>
+            </div>
           )}
         </div>
         <p className="text-sm text-muted-foreground">Upload your club's constitution or bylaws (PDF, DOC).</p>

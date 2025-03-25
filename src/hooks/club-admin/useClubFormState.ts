@@ -46,8 +46,10 @@ export const useClubFormState = () => {
     const isImage = imageExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
     
     if (isImage) {
+      console.log("Setting logo URL:", url);
       setClubFormData(prev => ({ ...prev, logoUrl: url }));
     } else {
+      console.log("Setting document URL:", url, "Name:", fileName);
       setClubFormData(prev => ({ 
         ...prev, 
         documentUrl: url,
