@@ -34,7 +34,13 @@ const ClubDialogFooter: React.FC<ClubDialogFooterProps> = ({
         {activeTab !== 'documents' ? (
           <Button type="button" onClick={onNext}>Next</Button>
         ) : (
-          <Button type="submit" onClick={onSubmit}>{buttonText}</Button>
+          <Button type="button" onClick={(e) => {
+            e.preventDefault();
+            console.log("Submit button clicked!");
+            onSubmit();
+          }}>
+            {buttonText}
+          </Button>
         )}
       </div>
     </DialogFooter>

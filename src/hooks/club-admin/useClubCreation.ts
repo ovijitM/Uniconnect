@@ -89,7 +89,11 @@ export const useClubCreation = () => {
       let executiveMembers = {};
       if (clubFormData.executiveMembers) {
         try {
-          executiveMembers = JSON.parse(clubFormData.executiveMembers);
+          if (typeof clubFormData.executiveMembers === 'string') {
+            executiveMembers = JSON.parse(clubFormData.executiveMembers);
+          } else {
+            executiveMembers = clubFormData.executiveMembers;
+          }
         } catch (error) {
           console.error('Error parsing executive members:', error);
           // If parsing fails, store as is
