@@ -7,20 +7,56 @@ import StudentClubs from '@/components/student/StudentClubs';
 import UpcomingEventsStudent from '@/components/student/UpcomingEventsStudent';
 import RegisteredEvents from '@/components/student/RegisteredEvents';
 import AvailableClubs from '@/components/student/AvailableClubs';
+import { useStudentData } from '@/hooks/useStudentData';
 
 const StudentDashboard: React.FC = () => {
+  // Use the student data hook to get necessary data
+  const {
+    isLoading = false,
+    clubs = [],
+    events = [],
+    joinedClubs = [],
+    registeredEvents = [],
+    joinClub = () => {},
+    registerForEvent = () => {}
+  } = useStudentData?.() || {};
+
+  // Get the necessary derived data
+  const joinedClubIds = joinedClubs.map(club => club.id);
+  const registeredEventIds = registeredEvents.map(event => event.id);
+
   return (
     <DashboardLayout sidebar={<StudentSidebar />}>
       <div className="p-6">
         <Routes>
           <Route path="/" element={
             <div className="space-y-8">
-              <UpcomingEventsStudent />
-              <StudentClubs />
+              <UpcomingEventsStudent 
+                events={events}
+                registeredEventIds={registeredEventIds}
+                isLoading={isLoading}
+                onRegisterEvent={registerForEvent}
+              />
+              <StudentClubs 
+                clubs={joinedClubs}
+                isLoading={isLoading}
+              />
             </div>
           } />
-          <Route path="/events" element={<RegisteredEvents />} />
-          <Route path="/clubs" element={<AvailableClubs />} />
+          <Route path="/events" element={
+            <RegisteredEvents 
+              events={registeredEvents}
+              isLoading={isLoading}
+            />
+          } />
+          <Route path="/clubs" element={
+            <AvailableClubs 
+              clubs={clubs}
+              joinedClubIds={joinedClubIds}
+              isLoading={isLoading}
+              onJoinClub={joinClub}
+            />
+          } />
           <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>
       </div>
