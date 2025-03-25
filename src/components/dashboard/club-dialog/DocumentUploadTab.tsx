@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Upload, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useClubFileUpload } from '@/hooks/club-admin/useClubFileUpload';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface DocumentUploadTabProps {
   formData: {
@@ -24,6 +25,7 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [logoUploading, setLogoUploading] = useState(false);
   const [documentUploading, setDocumentUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const { toast } = useToast();
   const { handleClubFileUpload, isUploading } = useClubFileUpload();
   
@@ -32,8 +34,11 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
     if (!file) return;
     
     try {
+      setUploadError(null);
       if (type === 'logo') setLogoUploading(true);
       else setDocumentUploading(true);
+      
+      console.log(`Starting ${type} upload with file: ${file.name}, size: ${file.size} bytes`);
       
       // Use the club file upload hook for the actual upload
       const fileUrl = await handleClubFileUpload(file);
@@ -44,9 +49,12 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
           title: 'Upload successful',
           description: `${type === 'logo' ? 'Logo' : 'Document'} uploaded successfully`,
         });
+      } else {
+        setUploadError(`Failed to upload ${type}. Please try again.`);
       }
     } catch (error) {
       console.error(`Error uploading ${type}:`, error);
+      setUploadError(error instanceof Error ? error.message : `Error uploading ${type}`);
       toast({
         title: `Error uploading ${type}`,
         description: error instanceof Error ? error.message : 'An unknown error occurred',
@@ -60,6 +68,14 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
 
   return (
     <div className="space-y-6">
+      {uploadError && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Upload Failed</AlertTitle>
+          <AlertDescription>{uploadError}</AlertDescription>
+        </Alert>
+      )}
+      
       <div className="space-y-2">
         <Label htmlFor="logo">Club Logo Image *</Label>
         <div className="flex items-center gap-3">

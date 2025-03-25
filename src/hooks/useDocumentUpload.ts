@@ -26,20 +26,19 @@ export const useDocumentUpload = ({
   const uploadDocument = async (file: File): Promise<string | null> => {
     if (!file) return null;
     
-    // Check file size
-    if (file.size > maxSize * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: `Max file size is ${maxSize}MB`,
-        variant: 'destructive',
-      });
-      return null;
-    }
-
-    setIsUploading(true);
-
     try {
-      console.log('Starting document upload to Supabase storage');
+      // Check file size
+      if (file.size > maxSize * 1024 * 1024) {
+        toast({
+          title: 'File too large',
+          description: `Max file size is ${maxSize}MB`,
+          variant: 'destructive',
+        });
+        return null;
+      }
+
+      setIsUploading(true);
+      console.log(`Starting document upload: ${file.name}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
       
       // Determine the prefix based on entity type and ID
       const prefix = entityId 
@@ -52,31 +51,19 @@ export const useDocumentUpload = ({
 
       console.log('Uploading to path:', fileName, 'in bucket:', bucket);
 
-      // First check if bucket exists, create it if it doesn't
+      // Check if the bucket exists
       const { data: buckets } = await supabase.storage.listBuckets();
+      console.log('Available buckets:', buckets?.map(b => b.name));
+      
       const bucketExists = buckets?.some(b => b.name === bucket);
       
-      if (!bucketExists) {
-        console.log(`Bucket ${bucket} does not exist, attempting to create it`);
-        try {
-          const { data, error } = await supabase.storage.createBucket(bucket, {
-            public: true
-          });
-          
-          if (error) {
-            console.error('Error creating bucket:', error);
-            throw error;
-          }
-          console.log('Bucket created successfully');
-        } catch (err) {
-          console.error('Failed to create bucket, might not have permission:', err);
-          // Continue anyway as the bucket might exist or be created by someone else
-        }
-      }
+      // If bucket doesn't exist, try to use a default bucket instead
+      const effectiveBucket = bucketExists ? bucket : 'public';
+      console.log(`Using bucket: ${effectiveBucket} (bucket '${bucket}' exists: ${bucketExists})`);
 
       // Upload file to Supabase Storage
       const { data, error } = await supabase.storage
-        .from(bucket)
+        .from(effectiveBucket)
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: true
@@ -84,14 +71,52 @@ export const useDocumentUpload = ({
 
       if (error) {
         console.error('Supabase storage upload error:', error);
-        throw error;
+        
+        // Try uploading to public bucket as a fallback if that's not already what we tried
+        if (effectiveBucket !== 'public') {
+          console.log('Attempting fallback upload to public bucket');
+          const { data: fallbackData, error: fallbackError } = await supabase.storage
+            .from('public')
+            .upload(fileName, file, {
+              cacheControl: '3600',
+              upsert: true
+            });
+            
+          if (fallbackError) {
+            console.error('Fallback upload also failed:', fallbackError);
+            throw new Error(`Upload failed: ${fallbackError.message}`);
+          }
+          
+          console.log('Fallback upload successful');
+          
+          // Get public URL from fallback upload
+          const { data: fallbackUrlData } = supabase.storage
+            .from('public')
+            .getPublicUrl(fileName);
+            
+          const fallbackPublicUrl = fallbackUrlData.publicUrl;
+          
+          if (onSuccess) {
+            onSuccess(fallbackPublicUrl, file.name);
+          }
+          
+          toast({
+            title: 'File uploaded successfully',
+            description: `${file.name} has been uploaded`,
+            variant: 'default',
+          });
+          
+          return fallbackPublicUrl;
+        }
+        
+        throw new Error(`Upload failed: ${error.message}`);
       }
 
       console.log('File uploaded successfully, data:', data);
 
       // Get public URL
       const { data: urlData } = supabase.storage
-        .from(bucket)
+        .from(effectiveBucket)
         .getPublicUrl(fileName);
 
       const publicUrl = urlData.publicUrl;

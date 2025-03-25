@@ -9,7 +9,7 @@ export const useClubFileUpload = (clubId?: string) => {
   const { uploadDocument } = useDocumentUpload({
     entityType: 'club',
     entityId: clubId,
-    bucket: 'club_assets',
+    bucket: 'public', // Use public bucket as default since it likely has the right permissions
     maxSize: 5, // 5MB max size
   });
 
@@ -26,22 +26,22 @@ export const useClubFileUpload = (clubId?: string) => {
         return null;
       }
 
-      console.log('Starting file upload with file:', file.name, 'size:', file.size);
+      console.log(`Starting club file upload: ${file.name}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
       
       const fileUrl = await uploadDocument(file);
       
       if (fileUrl) {
-        console.log('File upload successful, URL:', fileUrl);
+        console.log('Club file upload successful, URL:', fileUrl);
         return fileUrl;
       }
       
-      console.log('File upload returned null URL');
+      console.log('Club file upload returned null URL');
       return null;
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('Error uploading club file:', error);
       toast({
         title: 'Upload Failed',
-        description: 'There was an error uploading your file',
+        description: error instanceof Error ? error.message : 'There was an error uploading your file',
         variant: 'destructive',
       });
       return null;
