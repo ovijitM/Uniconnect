@@ -165,7 +165,7 @@ const ClubAdminDashboard: React.FC = () => {
 
   return (
     <DashboardLayout sidebar={<ClubAdminSidebar />}>
-      <div className="container p-4">
+      <div className="max-w-7xl mx-auto">
         {/* Profile error alert */}
         {profileError && (
           <Alert variant="destructive" className="mb-4">

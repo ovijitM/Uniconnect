@@ -3,19 +3,30 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { 
+  LayoutDashboard,
   Calendar, 
-  Home, 
+  Building2, 
   Users, 
   ClipboardCheck, 
   Settings, 
   LogOut,
-  ChevronLeft,
-  ChevronRight
+  MenuIcon,
+  X
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { 
+  Sidebar, 
+  SidebarContent, 
+  SidebarHeader, 
+  SidebarFooter,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton
+} from '@/components/ui/sidebar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const ClubAdminSidebar: React.FC = () => {
   const location = useLocation();
@@ -23,11 +34,11 @@ const ClubAdminSidebar: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { logout, user } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems = [
     {
-      icon: <Home className="h-4 w-4" />,
+      icon: <LayoutDashboard className="h-4 w-4" />,
       name: 'Overview',
       href: '/club-admin-dashboard',
       active: pathname === '/club-admin-dashboard',
@@ -41,7 +52,7 @@ const ClubAdminSidebar: React.FC = () => {
       badge: null
     },
     {
-      icon: <Users className="h-4 w-4" />,
+      icon: <Building2 className="h-4 w-4" />,
       name: 'Clubs',
       href: '/club-admin-dashboard/clubs',
       active: pathname.includes('/club-admin-dashboard/clubs'),
@@ -87,77 +98,80 @@ const ClubAdminSidebar: React.FC = () => {
     }
   };
 
+  // Close mobile menu when location changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location]);
+
   return (
-    <aside className={cn(
-      "relative h-screen py-6 flex flex-col border-r border-border bg-card transition-all duration-300",
-      collapsed ? "w-16" : "w-64"
-    )}>
-      <button 
-        className="absolute -right-3 top-12 p-1 rounded-full bg-background border border-border z-10"
-        onClick={() => setCollapsed(!collapsed)}
-      >
-        {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-      </button>
-      
-      <div className={cn(
-        "px-4 flex items-center mb-8",
-        collapsed ? "justify-center" : "justify-start"
-      )}>
-        {collapsed ? (
-          <span className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
-            {user?.name?.charAt(0) || 'A'}
-          </span>
-        ) : (
-          <>
-            <span className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold mr-2">
-              {user?.name?.charAt(0) || 'A'}
-            </span>
-            <div className="flex flex-col overflow-hidden">
-              <span className="font-semibold truncate">{user?.name || 'Club Admin'}</span>
-              <span className="text-xs text-muted-foreground truncate">{user?.university || 'University'}</span>
-            </div>
-          </>
-        )}
-      </div>
-      
-      <nav className="space-y-1 px-2">
-        {menuItems.map((item) => (
-          <Link
-            key={item.href}
-            to={item.href}
-            className={cn(
-              "flex items-center px-4 py-2 text-sm rounded-md w-full",
-              item.active
-                ? "bg-accent text-accent-foreground font-medium"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
-              collapsed ? "justify-center" : "justify-start"
-            )}
-          >
-            {item.icon}
-            {!collapsed && <span className="ml-2">{item.name}</span>}
-            {!collapsed && item.badge && (
-              <Badge variant="outline" className="ml-auto">
-                {item.badge}
-              </Badge>
-            )}
-          </Link>
-        ))}
-      </nav>
-      
-      <div className="mt-auto px-2">
+    <>
+      {/* Mobile menu button (only visible on small screens) */}
+      <div className="md:hidden fixed top-4 left-4 z-30">
         <Button
-          onClick={handleSignOut}
-          variant="ghost"
-          className={cn(
-            "w-full flex items-center px-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50",
-            collapsed ? "justify-center" : "justify-start"
-          )}
+          variant="outline" 
+          size="icon" 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="rounded-full"
         >
-          <LogOut className="h-4 w-4" />
-          {!collapsed && <span className="ml-2">Sign Out</span>}
+          {isMobileMenuOpen ? <X className="h-4 w-4" /> : <MenuIcon className="h-4 w-4" />}
         </Button>
       </div>
-    </aside>
+      
+      {/* Shadcn Sidebar implementation */}
+      <Sidebar
+        className={cn(
+          "transition-transform duration-300 ease-in-out",
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        )}
+      >
+        <SidebarHeader>
+          <div className="flex items-center px-4 py-2">
+            <Avatar className="h-10 w-10 mr-2">
+              <AvatarImage src={user?.avatar_url} alt={user?.name || 'User'} />
+              <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="font-medium">{user?.name || 'Club Admin'}</span>
+              <span className="text-xs text-muted-foreground">{user?.university || 'University'}</span>
+            </div>
+          </div>
+        </SidebarHeader>
+        
+        <SidebarContent>
+          <SidebarMenu>
+            {menuItems.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton 
+                  asChild 
+                  isActive={item.active}
+                >
+                  <Link to={item.href} className="flex items-center">
+                    {item.icon}
+                    <span className="ml-2">{item.name}</span>
+                    {item.badge && (
+                      <Badge variant="outline" className="ml-auto">
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarContent>
+        
+        <SidebarFooter>
+          <Button
+            onClick={handleSignOut}
+            variant="ghost"
+            className="w-full flex items-center justify-start px-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            <span>Sign Out</span>
+          </Button>
+        </SidebarFooter>
+      </Sidebar>
+    </>
   );
 };
 
