@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Home, Users, Calendar, School } from 'lucide-react';
@@ -7,19 +6,17 @@ import UserProfile from '@/components/UserProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import ThemeToggle from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
-import Logo from '@/components/ui/logo';
+import { Logo } from '@/components/ui/logo';
 
 const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
   
-  // Close the mobile menu on location change
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location]);
   
-  // Close the mobile menu when window size changes
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
@@ -31,7 +28,6 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // Close mobile menu when clicked outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -58,7 +54,6 @@ const Navbar: React.FC = () => {
         <div className="flex items-center">
           <Logo />
           
-          {/* Desktop Links */}
           <div className="hidden md:flex items-center space-x-1 ml-6">
             <NavLink to="/" isActive={isActive('/')}>
               <Home className="h-4 w-4 mr-1" />
@@ -82,7 +77,6 @@ const Navbar: React.FC = () => {
         <div className="flex items-center space-x-2">
           <ThemeToggle />
           
-          {/* User Profile or Login Button */}
           {user ? (
             <UserProfile />
           ) : (
@@ -93,7 +87,6 @@ const Navbar: React.FC = () => {
             </div>
           )}
           
-          {/* Mobile Menu Toggle */}
           <Button
             variant="ghost"
             className="block md:hidden"
@@ -105,7 +98,6 @@ const Navbar: React.FC = () => {
         </div>
       </div>
       
-      {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden mobile-menu-container">
           <div className="container py-2 pb-4 flex flex-col space-y-2">

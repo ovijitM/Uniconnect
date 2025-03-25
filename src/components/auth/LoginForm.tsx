@@ -15,7 +15,7 @@ const LoginForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loginMethod, setLoginMethod] = useState('email');
-  const { signIn } = useAuth();
+  const { login } = useAuth(); // Changed from signIn to login to match AuthContextType
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,7 +24,7 @@ const LoginForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await signIn(email, password);
+      await login(email, password); // Changed from signIn to login
       navigate('/');
     } catch (err) {
       setError(
