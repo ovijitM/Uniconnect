@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useClubAdminDashboard } from '@/hooks/club-admin/dashboard/useClubAdminDashboard';
+import { useClubAdminRoutes } from '@/components/dashboard/club-admin/dashboard/useClubAdminRoutes';
 
 // Components
 import DashboardLayout from '@/components/dashboard/shared/DashboardLayout';
@@ -14,6 +15,7 @@ import ClubAdminDashboardActions from '@/components/dashboard/club-admin/dashboa
 const ClubAdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { currentView } = useClubAdminRoutes();
   const {
     adminClubs,
     clubEvents,
@@ -71,6 +73,7 @@ const ClubAdminDashboard: React.FC = () => {
         />
         
         <ClubAdminDashboardContent
+          currentView={currentView}
           adminClubs={adminClubs}
           clubEvents={clubEvents}
           clubMembers={clubMembers}

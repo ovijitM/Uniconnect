@@ -127,7 +127,7 @@ const ClubAdminSidebar: React.FC = () => {
         <SidebarHeader>
           <div className="flex items-center px-4 py-2">
             <Avatar className="h-10 w-10 mr-2">
-              <AvatarImage src={user?.avatar_url} alt={user?.name || 'User'} />
+              <AvatarImage src={user?.profileImage} alt={user?.name || 'User'} />
               <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
