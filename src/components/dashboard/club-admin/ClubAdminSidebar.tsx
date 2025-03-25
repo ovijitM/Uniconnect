@@ -1,12 +1,15 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Calendar, Home, Users, ClipboardCheck, Settings } from 'lucide-react';
+import { Calendar, Home, Users, ClipboardCheck, Settings, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ClubAdminSidebar: React.FC = () => {
   const location = useLocation();
   const pathname = location.pathname;
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const menuItems = [
     {
@@ -47,6 +50,11 @@ const ClubAdminSidebar: React.FC = () => {
     }
   ];
 
+  const handleSignOut = async () => {
+    await logout();
+    navigate('/login');
+  };
+
   return (
     <aside className="py-6 px-2 md:px-4">
       <h2 className="text-lg font-semibold tracking-tight mb-4 px-4">Club Admin</h2>
@@ -67,6 +75,17 @@ const ClubAdminSidebar: React.FC = () => {
           </Link>
         ))}
       </nav>
+      
+      {/* Add logout button */}
+      <div className="absolute bottom-8 left-0 right-0 px-4">
+        <button
+          onClick={handleSignOut}
+          className="flex items-center px-4 py-2 text-sm rounded-md w-full text-muted-foreground hover:text-foreground hover:bg-accent/50"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Sign Out
+        </button>
+      </div>
     </aside>
   );
 };
