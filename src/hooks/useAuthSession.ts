@@ -25,6 +25,22 @@ export const useAuthSession = () => {
       
       console.log('Profile loaded:', profile);
       
+      // If university is in user metadata but not in profile, update the profile
+      const userMetadata = session.user.user_metadata;
+      if (userMetadata?.university && !profile.university) {
+        console.log('University found in metadata but not in profile, updating profile:', userMetadata.university);
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ university: userMetadata.university })
+          .eq('id', session.user.id);
+          
+        if (updateError) {
+          console.warn('Failed to update university in profile:', updateError);
+        } else {
+          profile.university = userMetadata.university;
+        }
+      }
+      
       const user: User = {
         id: session.user.id,
         email: profile.email,

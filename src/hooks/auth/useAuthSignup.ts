@@ -49,7 +49,7 @@ export const useAuthSignup = (
           data: {
             name,
             role,
-            university
+            university  // Make sure university is included in the metadata
           }
         }
       });
@@ -92,15 +92,13 @@ export const useAuthSignup = (
       }
       
       // Explicitly update the profile with the correct role and university if they weren't set correctly
-      if (profile.role !== role || (university && (!profile.university || profile.university !== university))) {
+      if (profile.role !== role || (university && profile.university !== university)) {
         console.log('Updating profile with correct role and university');
-        const updateData: any = {};
+        const updateData: any = {
+          role: role
+        };
         
-        if (profile.role !== role) {
-          updateData.role = role;
-        }
-        
-        if (university && (!profile.university || profile.university !== university)) {
+        if (university) {
           updateData.university = university;
         }
         

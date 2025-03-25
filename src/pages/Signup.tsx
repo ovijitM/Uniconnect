@@ -64,9 +64,10 @@ const Signup: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const universityName = showCustomUniversity ? customUniversity : university;
+    // Determine the final university name to use
+    const finalUniversity = showCustomUniversity ? customUniversity : university;
     
-    if (!name || !email || !password || !role || !universityName) {
+    if (!name || !email || !password || !role || !finalUniversity) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -78,20 +79,9 @@ const Signup: React.FC = () => {
     try {
       setIsSubmitting(true);
       
-      // If using a custom university, add it to the database
-      if (showCustomUniversity && customUniversity) {
-        const { error: universityError } = await supabase
-          .from('universities')
-          .insert({
-            name: customUniversity
-          });
-        
-        if (universityError && !universityError.message.includes('unique constraint')) {
-          throw universityError;
-        }
-      }
+      console.log("Signing up with university:", finalUniversity);
       
-      const user = await signup(email, password, name, role, universityName);
+      const user = await signup(email, password, name, role, finalUniversity);
       toast({
         title: "Success",
         description: "Your account has been created successfully",
@@ -142,6 +132,7 @@ const Signup: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="pl-10"
+                  required
                 />
               </div>
             </div>
@@ -157,6 +148,7 @@ const Signup: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
+                  required
                 />
               </div>
             </div>
@@ -172,15 +164,16 @@ const Signup: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10"
+                  required
                 />
               </div>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="university">University</Label>
+              <Label htmlFor="university" className="block">University <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <School className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Select onValueChange={handleUniversityChange}>
+                <Select onValueChange={handleUniversityChange} required>
                   <SelectTrigger className="w-full pl-10">
                     <SelectValue placeholder="Select your university" />
                   </SelectTrigger>
@@ -204,7 +197,7 @@ const Signup: React.FC = () => {
             
             {showCustomUniversity && (
               <div className="space-y-2">
-                <Label htmlFor="customUniversity">Specify University</Label>
+                <Label htmlFor="customUniversity">Specify University <span className="text-red-500">*</span></Label>
                 <div className="relative">
                   <School className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
@@ -214,6 +207,7 @@ const Signup: React.FC = () => {
                     value={customUniversity}
                     onChange={(e) => setCustomUniversity(e.target.value)}
                     className="pl-10"
+                    required
                   />
                 </div>
               </div>
