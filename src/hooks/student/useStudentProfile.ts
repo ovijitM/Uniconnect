@@ -89,12 +89,73 @@ export const useStudentProfile = (userId: string | undefined) => {
     }
   };
 
+  // Add the missing updateUserUniversity function
+  const updateUserUniversity = async (university: string) => {
+    if (!userId) return false;
+
+    try {
+      // Check if university exists
+      const { data: universityData, error: universityError } = await supabase
+        .from('universities')
+        .select('id')
+        .eq('name', university)
+        .maybeSingle();
+      
+      if (universityError) {
+        console.error('Error checking university:', universityError);
+        return false;
+      }
+      
+      let universityId = universityData?.id;
+      
+      if (!universityId) {
+        // Create new university if it doesn't exist
+        const { data: newUniversity, error: createError } = await supabase
+          .from('universities')
+          .insert({ name: university })
+          .select()
+          .single();
+        
+        if (createError) {
+          console.error('Error creating university:', createError);
+          return false;
+        }
+        
+        universityId = newUniversity.id;
+      }
+      
+      // Update the user's profile
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ 
+          university: university,
+          university_id: universityId,
+        })
+        .eq('id', userId);
+      
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+        return false;
+      }
+      
+      // Update local state
+      setUserUniversity(university);
+      setUserUniversityId(universityId);
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating university:', error);
+      return false;
+    }
+  };
+
   return {
     userUniversity,
     userUniversityId,
     isLoadingProfile,
     profileFetched,
     fetchUserProfile,
-    getUserUniversityFromBackend
+    getUserUniversityFromBackend,
+    updateUserUniversity
   };
 };
