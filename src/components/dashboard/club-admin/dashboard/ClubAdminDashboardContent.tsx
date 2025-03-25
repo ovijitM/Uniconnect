@@ -1,3 +1,4 @@
+
 import React from 'react';
 import NoClubsViewWrapper from './views/NoClubsView';
 import EventsView from './views/EventsView';
@@ -36,6 +37,7 @@ interface ClubAdminDashboardContentProps {
   fetchClubAdminData: () => Promise<void>;
   selectEventForAttendeeManagement: (eventId: string, eventTitle: string) => void;
   handleClubFileUpload?: (url: string, fileName: string) => void;
+  handleEventFileUpload?: (url: string, fileName: string) => void;
 }
 
 const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
@@ -65,7 +67,8 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
   handleRefreshAfterDelete,
   fetchClubAdminData,
   selectEventForAttendeeManagement,
-  handleClubFileUpload
+  handleClubFileUpload,
+  handleEventFileUpload
 }) => {
   if (adminClubs.length === 0 && !isLoading) {
     return (
@@ -91,6 +94,13 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
           onCreateEvent={() => setIsEventDialogOpen(true)}
           onDeleteEvent={handleRefreshAfterDelete}
           onManageAttendees={selectEventForAttendeeManagement}
+          isEventDialogOpen={isEventDialogOpen}
+          setIsEventDialogOpen={setIsEventDialogOpen}
+          eventFormData={eventFormData}
+          handleEventInputChange={handleEventInputChange}
+          handleCreateEvent={handleCreateEvent}
+          handleEventFileUpload={handleEventFileUpload}
+          clubs={adminClubs}
         />
       );
     
@@ -100,6 +110,12 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
           clubs={adminClubs}
           isLoading={isLoading}
           onRefresh={fetchClubAdminData}
+          isClubDialogOpen={isClubDialogOpen}
+          setIsClubDialogOpen={setIsClubDialogOpen}
+          clubFormData={clubFormData}
+          handleClubInputChange={handleClubInputChange}
+          handleCreateClub={handleCreateClub}
+          handleClubFileUpload={handleClubFileUpload}
         />
       );
     
@@ -133,6 +149,12 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
           isLoading={isLoading}
           onRefresh={fetchClubAdminData}
           onCreateClub={() => setIsClubDialogOpen(true)}
+          clubFormData={clubFormData}
+          handleClubInputChange={handleClubInputChange}
+          handleCreateClub={handleCreateClub}
+          handleClubFileUpload={handleClubFileUpload}
+          isClubDialogOpen={isClubDialogOpen}
+          setIsClubDialogOpen={setIsClubDialogOpen}
         />
       );
     
@@ -154,11 +176,13 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
           clubFormData={clubFormData}
           handleClubInputChange={handleClubInputChange}
           handleCreateClub={handleCreateClub}
+          handleClubFileUpload={handleClubFileUpload}
           isEventDialogOpen={isEventDialogOpen}
           setIsEventDialogOpen={setIsEventDialogOpen}
           eventFormData={eventFormData}
           handleEventInputChange={handleEventInputChange}
           handleCreateEvent={handleCreateEvent}
+          handleEventFileUpload={handleEventFileUpload}
           handleViewEvent={handleViewEvent}
           handleEditEvent={handleEditEvent}
           handleRefreshAfterDelete={handleRefreshAfterDelete}

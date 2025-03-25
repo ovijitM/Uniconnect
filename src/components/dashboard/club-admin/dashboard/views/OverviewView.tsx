@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ClubAdminHeader from '@/components/dashboard/ClubAdminHeader';
 import ClubAdminContent from '@/components/dashboard/ClubAdminContent';
@@ -19,11 +20,13 @@ interface OverviewViewProps {
   clubFormData: ClubFormData;
   handleClubInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleCreateClub: () => void;
+  handleClubFileUpload?: (url: string, fileName: string) => void;
   isEventDialogOpen: boolean;
   setIsEventDialogOpen: (open: boolean) => void;
   eventFormData: EventFormData;
   handleEventInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   handleCreateEvent: () => void;
+  handleEventFileUpload?: (url: string, fileName: string) => void;
   handleViewEvent: (eventId: string) => void;
   handleEditEvent: (eventId: string) => void;
   handleRefreshAfterDelete: () => void;
@@ -47,11 +50,13 @@ const OverviewView: React.FC<OverviewViewProps> = ({
   clubFormData,
   handleClubInputChange,
   handleCreateClub,
+  handleClubFileUpload,
   isEventDialogOpen,
   setIsEventDialogOpen,
   eventFormData,
   handleEventInputChange,
   handleCreateEvent,
+  handleEventFileUpload,
   handleViewEvent,
   handleEditEvent,
   handleRefreshAfterDelete,
@@ -66,12 +71,14 @@ const OverviewView: React.FC<OverviewViewProps> = ({
         clubFormData={clubFormData}
         onClubInputChange={handleClubInputChange}
         onCreateClub={handleCreateClub}
+        onClubFileUpload={handleClubFileUpload}
         isEventDialogOpen={isEventDialogOpen}
         setIsEventDialogOpen={setIsEventDialogOpen}
         eventFormData={eventFormData}
         clubs={adminClubs}
         onEventInputChange={handleEventInputChange}
         onCreateEvent={handleCreateEvent}
+        onEventFileUpload={handleEventFileUpload}
       />
 
       <ClubAdminContent 

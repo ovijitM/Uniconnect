@@ -11,6 +11,8 @@ import ClubAdminSidebar from '@/components/dashboard/club-admin/ClubAdminSidebar
 import ClubAdminDashboardContent from '@/components/dashboard/club-admin/dashboard/ClubAdminDashboardContent';
 import { useClubAdminRoutes } from '@/components/dashboard/club-admin/dashboard/useClubAdminRoutes';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
 
 const ClubAdminDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -91,9 +93,42 @@ const ClubAdminDashboard: React.FC = () => {
     fetchClubAdminData();
   };
 
+  // Add quick action buttons based on current view
+  const renderQuickActions = () => {
+    switch (currentView) {
+      case 'events':
+        return (
+          <Button 
+            onClick={() => setIsEventDialogOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <PlusCircle className="h-4 w-4" />
+            Create Event
+          </Button>
+        );
+      case 'clubs':
+        return (
+          <Button 
+            onClick={() => setIsClubDialogOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <PlusCircle className="h-4 w-4" />
+            Create Club
+          </Button>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <DashboardLayout sidebar={<ClubAdminSidebar />}>
-      <div className="container">
+      <div className="container p-4">
+        {/* Quick action buttons */}
+        <div className="flex justify-end mb-4">
+          {renderQuickActions()}
+        </div>
+        
         <ClubAdminDashboardContent
           currentView={currentView}
           adminClubs={adminClubs}
@@ -117,6 +152,7 @@ const ClubAdminDashboard: React.FC = () => {
           eventFormData={eventFormData}
           handleEventInputChange={handleEventInputChange}
           handleCreateEvent={handleCreateEvent}
+          handleEventFileUpload={handleEventFileUpload}
           handleViewEvent={handleViewEvent}
           handleEditEvent={handleEditEvent}
           handleRefreshAfterDelete={handleRefreshAfterDelete}

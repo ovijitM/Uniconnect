@@ -6,72 +6,44 @@ export const useClubValidation = () => {
   const { toast } = useToast();
 
   const validateClubData = async (clubFormData: ClubFormData): Promise<boolean> => {
-    // Check for required basic information
-    if (!clubFormData.name.trim()) {
-      toast({
-        title: 'Missing Club Name',
-        description: 'Please provide a name for your club.',
-        variant: 'destructive',
-      });
-      return false;
+    // Basic information validation
+    const basicFields = [
+      { field: 'name', label: 'Club Name' },
+      { field: 'description', label: 'Description' },
+      { field: 'category', label: 'Category' },
+      { field: 'university', label: 'University' },
+    ];
+    
+    for (const { field, label } of basicFields) {
+      if (!clubFormData[field as keyof ClubFormData]?.toString().trim()) {
+        toast({
+          title: `Missing ${label}`,
+          description: `Please provide a ${label.toLowerCase()} for your club.`,
+          variant: 'destructive',
+        });
+        return false;
+      }
     }
 
-    if (!clubFormData.description.trim()) {
-      toast({
-        title: 'Missing Description',
-        description: 'Please provide a description for your club.',
-        variant: 'destructive',
-      });
-      return false;
+    // Profile information validation
+    const profileFields = [
+      { field: 'tagline', label: 'Tagline' },
+      { field: 'establishedYear', label: 'Established Year' },
+      { field: 'logoUrl', label: 'Logo' },
+    ];
+    
+    for (const { field, label } of profileFields) {
+      if (!clubFormData[field as keyof ClubFormData]?.toString().trim()) {
+        toast({
+          title: `Missing ${label}`,
+          description: `Please provide a ${label.toLowerCase()} for your club.`,
+          variant: 'destructive',
+        });
+        return false;
+      }
     }
 
-    if (!clubFormData.category.trim()) {
-      toast({
-        title: 'Missing Category',
-        description: 'Please select a category for your club.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    if (!clubFormData.university) {
-      toast({
-        title: 'Missing University',
-        description: 'Please select a university for your club.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    // Check for required profile information
-    if (!clubFormData.tagline?.trim()) {
-      toast({
-        title: 'Missing Tagline',
-        description: 'Please provide a tagline for your club.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    if (!clubFormData.establishedYear?.trim()) {
-      toast({
-        title: 'Missing Established Year',
-        description: 'Please provide the year your club was established.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    if (!clubFormData.logoUrl?.trim()) {
-      toast({
-        title: 'Missing Logo',
-        description: 'Please upload a logo for your club.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    // Check for required membership information
+    // Membership information validation
     if (!clubFormData.whyJoin?.trim()) {
       toast({
         title: 'Missing "Why Join" Information',
@@ -81,23 +53,21 @@ export const useClubValidation = () => {
       return false;
     }
 
-    // Check for required contact information
-    if (!clubFormData.presidentName?.trim()) {
-      toast({
-        title: 'Missing President Name',
-        description: 'Please provide the club president\'s name.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    if (!clubFormData.presidentContact?.trim()) {
-      toast({
-        title: 'Missing President Contact',
-        description: 'Please provide contact information for the club president.',
-        variant: 'destructive',
-      });
-      return false;
+    // Contact information validation
+    const contactFields = [
+      { field: 'presidentName', label: 'President Name' },
+      { field: 'presidentContact', label: 'President Contact' },
+    ];
+    
+    for (const { field, label } of contactFields) {
+      if (!clubFormData[field as keyof ClubFormData]?.toString().trim()) {
+        toast({
+          title: `Missing ${label}`,
+          description: `Please provide ${label.toLowerCase()} information.`,
+          variant: 'destructive',
+        });
+        return false;
+      }
     }
 
     return true;
