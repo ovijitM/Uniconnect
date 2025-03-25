@@ -40,8 +40,8 @@ const EventDetailPage: React.FC = () => {
     );
   }
 
-  // If event is university-restricted and user doesn't have access
-  const isUniversityRestricted = event.visibility === 'university_only' && !canAccess && user;
+  // Fix the type error: Check if user exists and if the event visibility is restricted
+  const isUniversityRestricted = event.visibility === 'university_only' && !canAccess && user !== null;
 
   return (
     <Layout>
