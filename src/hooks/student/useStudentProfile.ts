@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -7,13 +7,19 @@ export const useStudentProfile = (userId: string | undefined) => {
   const [userUniversity, setUserUniversity] = useState<string | null>(null);
   const [userUniversityId, setUserUniversityId] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const { toast } = useToast();
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     if (!userId) return;
     
     setIsLoadingProfile(true);
+    setError(null);
+    
     try {
+      console.log(`Fetching profile for user ${userId} (attempt ${retryCount + 1})`);
+      
       // Get the user's university
       const { data: profileData, error } = await supabase
         .from('profiles')
@@ -21,26 +27,66 @@ export const useStudentProfile = (userId: string | undefined) => {
         .eq('id', userId)
         .single();
         
-      if (error) throw error;
-      
-      if (profileData?.university) {
-        setUserUniversity(profileData.university);
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
       }
       
-      if (profileData?.university_id) {
-        setUserUniversityId(profileData.university_id);
+      if (profileData) {
+        console.log('Profile data retrieved:', profileData);
+        
+        if (profileData.university) {
+          setUserUniversity(profileData.university);
+        }
+        
+        if (profileData.university_id) {
+          setUserUniversityId(profileData.university_id);
+        }
+      } else {
+        console.warn('No profile data found for user:', userId);
       }
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load profile data',
-        variant: 'destructive',
-      });
+    } catch (error: any) {
+      console.error('Error in fetchUserProfile:', error);
+      setError(error.message || 'Failed to load profile data');
+      
+      // Show toast only on first attempt or every third retry
+      if (retryCount === 0 || retryCount % 3 === 0) {
+        toast({
+          title: 'Error',
+          description: 'Failed to load profile data. Retrying...',
+          variant: 'destructive',
+        });
+      }
+      
+      // Automatically retry after a delay, with increasing backoff
+      const retryDelay = Math.min(1000 * (retryCount + 1), 5000);
+      setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+      }, retryDelay);
     } finally {
       setIsLoadingProfile(false);
     }
-  };
+  }, [userId, retryCount, toast]);
+
+  // Trigger retry when retryCount changes
+  useEffect(() => {
+    if (retryCount > 0 && retryCount < 5) {
+      fetchUserProfile();
+    } else if (retryCount >= 5) {
+      toast({
+        title: 'Error',
+        description: 'Multiple attempts to load your profile have failed. Please refresh the page or contact support.',
+        variant: 'destructive',
+      });
+    }
+  }, [retryCount, fetchUserProfile, toast]);
+
+  // Initial fetch
+  useEffect(() => {
+    if (userId) {
+      fetchUserProfile();
+    }
+  }, [userId, fetchUserProfile]);
 
   const updateUserUniversity = async (university: string) => {
     if (!userId) return false;
@@ -94,7 +140,7 @@ export const useStudentProfile = (userId: string | undefined) => {
       });
       
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating university:', error);
       toast({
         title: 'Error',
@@ -105,10 +151,16 @@ export const useStudentProfile = (userId: string | undefined) => {
     }
   };
 
+  // Reset retry count when userId changes
+  useEffect(() => {
+    setRetryCount(0);
+  }, [userId]);
+
   return {
     userUniversity,
     userUniversityId,
     isLoadingProfile,
+    error,
     fetchUserProfile,
     updateUserUniversity
   };

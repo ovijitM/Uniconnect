@@ -7,7 +7,13 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useClubFormState = () => {
   const { user } = useAuth();
-  const { userUniversity, userUniversityId, fetchUserProfile } = useStudentProfile(user?.id);
+  const { 
+    userUniversity, 
+    userUniversityId, 
+    fetchUserProfile, 
+    isLoadingProfile,
+    error: profileError 
+  } = useStudentProfile(user?.id);
   const { toast } = useToast();
   
   const [clubFormData, setClubFormData] = useState<ClubFormData>({
@@ -46,6 +52,7 @@ export const useClubFormState = () => {
   // Fetch the user's university when component mounts
   useEffect(() => {
     if (user?.id) {
+      console.log("Fetching user profile in useClubFormState");
       fetchUserProfile();
     }
   }, [user?.id, fetchUserProfile]);
@@ -59,16 +66,24 @@ export const useClubFormState = () => {
         universityId: userUniversityId
       }));
       console.log('Set university from user profile:', userUniversity, 'with ID:', userUniversityId);
-    } else if (isClubDialogOpen && (!userUniversity || !userUniversityId)) {
-      // Alert the user if they don't have a university associated with their profile
+    } else if (isClubDialogOpen && !isLoadingProfile && !profileError && (!userUniversity || !userUniversityId)) {
+      // Only alert the user if they don't have a university associated with their profile
+      // and we're not loading and there's no error
       toast({
         title: "Missing University Affiliation",
         description: "You need to have a university in your profile to create a club. Please update your profile first.",
         variant: "warning",
       });
       setIsClubDialogOpen(false); // Close the dialog
+    } else if (isClubDialogOpen && profileError) {
+      toast({
+        title: "Profile Error",
+        description: "Failed to load your university information. Please try again later or update your profile.",
+        variant: "destructive",
+      });
+      console.error("Profile error:", profileError);
     }
-  }, [userUniversity, userUniversityId, isClubDialogOpen, toast]);
+  }, [userUniversity, userUniversityId, isClubDialogOpen, isLoadingProfile, profileError, toast]);
 
   const handleClubInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -89,6 +104,7 @@ export const useClubFormState = () => {
     }
   }, []);
 
+  // Provide profile loading state and error to consumer
   return {
     clubFormData,
     setClubFormData,
@@ -97,6 +113,9 @@ export const useClubFormState = () => {
     isSubmitting,
     setIsSubmitting,
     handleClubInputChange,
-    handleClubFileUpload
+    handleClubFileUpload,
+    isLoadingProfile,
+    profileError,
+    retryProfileFetch: fetchUserProfile
   };
 };

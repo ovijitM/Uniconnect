@@ -1,12 +1,13 @@
 
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, RefreshCw } from 'lucide-react';
 import ClubDialogWrapper from './club-dialog/ClubDialogWrapper';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStudentProfile } from '@/hooks/student/useStudentProfile';
 import { useToast } from '@/hooks/use-toast';
 import { ClubFormData } from '@/hooks/club-admin/types';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 interface CreateClubDialogProps {
   isOpen: boolean;
@@ -30,7 +31,13 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
   trigger
 }) => {
   const { user } = useAuth();
-  const { userUniversity, userUniversityId, fetchUserProfile } = useStudentProfile(user?.id);
+  const { 
+    userUniversity, 
+    userUniversityId, 
+    fetchUserProfile, 
+    isLoadingProfile,
+    error
+  } = useStudentProfile(user?.id);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -61,16 +68,49 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
 
   const handleOpenChange = (open: boolean) => {
     if (open && !userUniversity) {
-      toast({
-        title: "Missing University Affiliation",
-        description: "You need to have a university in your profile to create a club. Please update your profile first.",
-        variant: "warning",
-      });
-      return;
+      // Only show this warning if we're not still loading and there was no error
+      if (!isLoadingProfile && !error) {
+        toast({
+          title: "Missing University Affiliation",
+          description: "You need to have a university in your profile to create a club. Please update your profile first.",
+          variant: "warning",
+        });
+        return;
+      } else if (error) {
+        toast({
+          title: "Profile Error",
+          description: "There was an error loading your profile. Please try again or update your profile.",
+          variant: "destructive",
+        });
+      }
     }
     
     onOpenChange(open);
   };
+
+  const handleRetryProfile = () => {
+    if (user?.id) {
+      toast({
+        title: "Retrying",
+        description: "Attempting to reload your profile data...",
+      });
+      fetchUserProfile();
+    }
+  };
+
+  // Show fallback UI if there's an error loading profile
+  if (error && isOpen) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center space-y-4 bg-background border rounded-lg shadow-md">
+        <h3 className="text-xl font-semibold text-destructive">Error</h3>
+        <p className="text-center text-muted-foreground">{error}</p>
+        <Button onClick={handleRetryProfile} variant="outline">
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   const defaultTrigger = (
     <Button>
@@ -80,16 +120,18 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
   );
 
   return (
-    <ClubDialogWrapper
-      isOpen={isOpen}
-      onOpenChange={handleOpenChange}
-      formData={formData}
-      onInputChange={onInputChange}
-      onSubmit={onSubmit}
-      onFileUpload={onFileUpload}
-      buttonText="Create Club"
-      trigger={trigger || defaultTrigger}
-    />
+    <ErrorBoundary>
+      <ClubDialogWrapper
+        isOpen={isOpen}
+        onOpenChange={handleOpenChange}
+        formData={formData}
+        onInputChange={onInputChange}
+        onSubmit={onSubmit}
+        onFileUpload={onFileUpload}
+        buttonText="Create Club"
+        trigger={trigger || defaultTrigger}
+      />
+    </ErrorBoundary>
   );
 };
 
