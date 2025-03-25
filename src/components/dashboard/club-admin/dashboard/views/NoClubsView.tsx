@@ -1,5 +1,4 @@
 
-// Import related code and create a NoClubsViewWrapper component that includes the document upload functionality
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ClubFormData } from '@/hooks/club-admin/types';
@@ -11,7 +10,7 @@ interface NoClubsViewWrapperProps {
   clubFormData: ClubFormData;
   handleClubInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleCreateClub: () => void;
-  handleClubFileUpload?: (url: string, fileName: string) => void;
+  handleClubFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
 }
 
 const NoClubsViewWrapper: React.FC<NoClubsViewWrapperProps> = ({

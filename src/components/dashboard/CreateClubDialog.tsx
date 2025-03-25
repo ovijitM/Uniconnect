@@ -35,10 +35,11 @@ interface CreateClubDialogProps {
     discordLink?: string;
     documentUrl?: string;
     documentName?: string;
+    university?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onSubmit: () => void;
-  onFileUpload?: (url: string, fileName: string) => void;
+  onFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
   buttonText?: string;
   trigger?: React.ReactNode;
 }

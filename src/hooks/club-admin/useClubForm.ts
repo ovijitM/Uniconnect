@@ -34,6 +34,17 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
         return;
       }
 
+      // Check if logo is uploaded
+      if (!clubFormData.logoUrl) {
+        toast({
+          title: "Missing Logo",
+          description: "Please upload a logo for your club.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       console.log('Creating club with data:', clubFormData);
       
       const success = await createClub(clubFormData, userId);

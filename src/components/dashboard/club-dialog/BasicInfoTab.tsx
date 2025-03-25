@@ -35,12 +35,6 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
         if (error) throw error;
         console.log('Universities fetched:', data);
         setUniversities(data || []);
-        
-        // If user has a university and form doesn't, use the user's university as default
-        if (user?.university && !formData.university) {
-          console.log('Setting default university from user:', user.university);
-          handleUniversityChange(user.university);
-        }
       } catch (error) {
         console.error('Error fetching universities:', error);
       } finally {
@@ -49,7 +43,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
     };
 
     fetchUniversities();
-  }, [user, formData.university]);
+  }, []);
 
   const handleUniversityChange = (value: string) => {
     console.log('University selected:', value);
@@ -103,27 +97,39 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
       
       <div className="space-y-2">
         <Label htmlFor="university">University *</Label>
-        <Select 
-          value={formData.university || ''} 
-          onValueChange={handleUniversityChange}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select university" />
-          </SelectTrigger>
-          <SelectContent>
-            {isLoadingUniversities ? (
-              <SelectItem value="loading" disabled>Loading universities...</SelectItem>
-            ) : (
-              universities.map((uni) => (
-                <SelectItem key={uni.id} value={uni.name}>
-                  {uni.name}
-                </SelectItem>
-              ))
-            )}
-          </SelectContent>
-        </Select>
+        {formData.university ? (
+          <Input
+            id="university"
+            name="university"
+            value={formData.university}
+            readOnly
+            className="bg-gray-50"
+          />
+        ) : (
+          <Select 
+            value={formData.university || ''} 
+            onValueChange={handleUniversityChange}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select university" />
+            </SelectTrigger>
+            <SelectContent>
+              {isLoadingUniversities ? (
+                <SelectItem value="loading" disabled>Loading universities...</SelectItem>
+              ) : (
+                universities.map((uni) => (
+                  <SelectItem key={uni.id} value={uni.name}>
+                    {uni.name}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+        )}
         <p className="text-xs text-muted-foreground mt-1">
-          This associates your club with a specific university
+          {formData.university 
+            ? "Your club will be associated with your university" 
+            : "This associates your club with a specific university"}
         </p>
       </div>
       

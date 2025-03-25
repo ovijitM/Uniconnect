@@ -16,8 +16,8 @@ interface ClubAdminHeaderProps {
   clubs: any[];
   onEventInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onCreateEvent: () => void;
-  // Added missing prop to fix type error
-  onClubFileUpload?: (url: string, fileName: string) => void;
+  // Updated props for file upload
+  onClubFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
   onEventFileUpload?: (url: string, fileName: string) => void;
 }
 
@@ -33,7 +33,6 @@ const ClubAdminHeader: React.FC<ClubAdminHeaderProps> = ({
   clubs,
   onEventInputChange,
   onCreateEvent,
-  // Added the new props (though not using them in this component yet)
   onClubFileUpload,
   onEventFileUpload
 }) => {

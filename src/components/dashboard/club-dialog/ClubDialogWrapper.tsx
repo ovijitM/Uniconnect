@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -39,10 +38,11 @@ interface ClubDialogWrapperProps {
     discordLink?: string;
     documentUrl?: string;
     documentName?: string;
+    university?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onSubmit: () => void;
-  onFileUpload?: (url: string, fileName: string) => void;
+  onFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
   buttonText?: string;
   trigger?: React.ReactNode;
 }
@@ -161,22 +161,18 @@ const ClubDialogWrapper: React.FC<ClubDialogWrapperProps> = ({
             <TabsTrigger value="documents">Documents</TabsTrigger>
           </TabsList>
           
-          {/* Basic Information Tab */}
           <TabsContent value="basic">
             <BasicInfoTab formData={formData} onInputChange={onInputChange} />
           </TabsContent>
           
-          {/* Details Tab */}
           <TabsContent value="details">
             <DetailsTab formData={formData} onInputChange={onInputChange} />
           </TabsContent>
           
-          {/* Social Media Tab */}
           <TabsContent value="social">
             <SocialMediaTab formData={formData} onInputChange={onInputChange} />
           </TabsContent>
           
-          {/* Document Upload Tab */}
           <TabsContent value="documents">
             <DocumentUploadTab formData={formData} onFileUpload={onFileUpload} />
           </TabsContent>

@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useDocumentUpload } from '@/hooks/useDocumentUpload';
+import { useToast } from '@/hooks/use-toast';
 
 interface DocumentUploadTabProps {
   formData: {
@@ -11,7 +13,7 @@ interface DocumentUploadTabProps {
     documentName?: string;
     logoUrl?: string;
   };
-  onFileUpload?: (url: string, fileName: string) => void;
+  onFileUpload?: (url: string, fileName: string, type: 'logo' | 'document') => void;
 }
 
 const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
@@ -22,24 +24,41 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [logoUploading, setLogoUploading] = useState(false);
   const [documentUploading, setDocumentUploading] = useState(false);
+  const { toast } = useToast();
+  const { uploadDocument, isUploading } = useDocumentUpload({
+    entityType: 'club',
+    bucket: 'club_assets',
+    maxSize: 5, // 5MB max size
+  });
   
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'document' | 'logo') => {
     const file = e.target.files?.[0];
-    if (file && onFileUpload) {
+    if (!file) return;
+    
+    try {
       if (type === 'logo') setLogoUploading(true);
       else setDocumentUploading(true);
       
-      try {
-        // For now, we're just using URL.createObjectURL for preview
-        // In a real app, this would be an actual upload call
-        onFileUpload(URL.createObjectURL(file), file.name);
-        console.log(`${type} uploaded:`, file.name);
-      } catch (error) {
-        console.error(`Error uploading ${type}:`, error);
-      } finally {
-        if (type === 'logo') setLogoUploading(false);
-        else setDocumentUploading(false);
+      // Use the document upload hook for the actual upload
+      const fileUrl = await uploadDocument(file);
+      
+      if (fileUrl && onFileUpload) {
+        onFileUpload(fileUrl, file.name, type);
+        toast({
+          title: 'Upload successful',
+          description: `${type === 'logo' ? 'Logo' : 'Document'} uploaded successfully`,
+        });
       }
+    } catch (error) {
+      console.error(`Error uploading ${type}:`, error);
+      toast({
+        title: `Error uploading ${type}`,
+        description: error instanceof Error ? error.message : 'An unknown error occurred',
+        variant: 'destructive',
+      });
+    } finally {
+      if (type === 'logo') setLogoUploading(false);
+      else setDocumentUploading(false);
     }
   };
 
@@ -58,7 +77,7 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
           />
           <Button 
             type="button" 
-            variant="outline"
+            variant={formData.logoUrl ? "outline" : "destructive"}
             onClick={() => logoInputRef.current?.click()}
             className="w-full"
             disabled={logoUploading}
@@ -66,7 +85,7 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
             {logoUploading ? 'Uploading...' : (
               <>
                 <Upload className="mr-2 h-4 w-4" />
-                Upload Logo
+                {formData.logoUrl ? 'Change Logo' : 'Upload Logo'}
               </>
             )}
           </Button>
@@ -80,7 +99,7 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
               <CheckCircle className="h-4 w-4 text-green-500" />
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-amber-500">
+            <div className="flex items-center gap-2 text-destructive">
               <AlertTriangle className="h-4 w-4" />
               <span className="text-sm">Required</span>
             </div>
@@ -110,7 +129,7 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
             {documentUploading ? 'Uploading...' : (
               <>
                 <Upload className="mr-2 h-4 w-4" />
-                Upload Document
+                {formData.documentUrl ? 'Change Document' : 'Upload Document'}
               </>
             )}
           </Button>
