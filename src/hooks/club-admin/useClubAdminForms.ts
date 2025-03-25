@@ -12,7 +12,8 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
     description: '',
     logoUrl: '',
     category: 'academic',
-    university: '', // Adding required university field
+    university: '', // Required university field
+    universityId: '', // Include universityId field
   });
   
   const [eventFormData, setEventFormData] = useState<EventFormData>({
@@ -69,12 +70,19 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
   };
 
   // Handle file upload for club form
-  const handleClubFileUpload = (url: string, fileName: string) => {
-    setClubFormData(prev => ({
-      ...prev,
-      documentUrl: url,
-      documentName: fileName,
-    }));
+  const handleClubFileUpload = (url: string, fileName: string, type: 'logo' | 'document' = 'document') => {
+    if (type === 'logo') {
+      setClubFormData(prev => ({
+        ...prev,
+        logoUrl: url,
+      }));
+    } else {
+      setClubFormData(prev => ({
+        ...prev,
+        documentUrl: url,
+        documentName: fileName,
+      }));
+    }
   };
 
   // Handle file upload for event form
@@ -100,7 +108,8 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
       description: '',
       logoUrl: '',
       category: 'academic',
-      university: '', // Adding required university field
+      university: '', // Required university field
+      universityId: '', // Include universityId field
     });
     
     // Refresh club data if callback provided

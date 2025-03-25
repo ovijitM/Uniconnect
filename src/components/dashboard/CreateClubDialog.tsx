@@ -38,7 +38,7 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
     if (user?.id) {
       fetchUserProfile();
     }
-  }, [user?.id]);
+  }, [user?.id, fetchUserProfile]);
 
   useEffect(() => {
     // Update form data with university information when available
@@ -52,12 +52,15 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
         
         onInputChange(universityEvent);
         
-        // Also set universityId through a different method if needed
-        // This depends on how your form state is managed
-        // You might need to modify your form state handling to include universityId directly
+        // Also set universityId through a similar fake event
+        const universityIdEvent = {
+          target: { name: 'universityId', value: userUniversityId }
+        } as React.ChangeEvent<HTMLInputElement>;
+        
+        onInputChange(universityIdEvent);
       }
     }
-  }, [userUniversity, userUniversityId, formData.university, formData.universityId]);
+  }, [userUniversity, userUniversityId, formData.university, formData.universityId, onInputChange]);
 
   const handleOpenChange = (open: boolean) => {
     if (open && !userUniversity) {

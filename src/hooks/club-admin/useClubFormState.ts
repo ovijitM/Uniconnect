@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ClubFormData } from './types';
 import { useStudentProfile } from '@/hooks/student/useStudentProfile';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,7 +14,7 @@ export const useClubFormState = () => {
     name: '',
     description: '',
     category: '',
-    university: '',
+    university: '', // Initialize with empty string
     universityId: '',
     // New fields with default values
     tagline: '',
@@ -37,7 +37,7 @@ export const useClubFormState = () => {
     instagramLink: '',
     twitterLink: '',
     discordLink: '',
-    logoUrl: '', // Profile image link field
+    logoUrl: '', 
     documentUrl: '',
     documentName: ''
   });
@@ -49,7 +49,7 @@ export const useClubFormState = () => {
     if (user?.id) {
       fetchUserProfile();
     }
-  }, [user?.id]);
+  }, [user?.id, fetchUserProfile]);
 
   // Set the university from user profile when it's available
   useEffect(() => {
@@ -68,14 +68,14 @@ export const useClubFormState = () => {
         variant: "warning",
       });
     }
-  }, [userUniversity, userUniversityId, clubFormData.university, clubFormData.universityId, isClubDialogOpen]);
+  }, [userUniversity, userUniversityId, clubFormData.university, clubFormData.universityId, isClubDialogOpen, toast]);
 
-  const handleClubInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleClubInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setClubFormData(prev => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleClubFileUpload = (url: string, fileName: string, type: 'logo' | 'document' = 'document') => {
+  const handleClubFileUpload = useCallback((url: string, fileName: string, type: 'logo' | 'document' = 'document') => {
     if (type === 'logo') {
       console.log("Setting logo URL:", url);
       setClubFormData(prev => ({ ...prev, logoUrl: url }));
@@ -87,7 +87,7 @@ export const useClubFormState = () => {
         documentName: fileName
       }));
     }
-  };
+  }, []);
 
   return {
     clubFormData,
