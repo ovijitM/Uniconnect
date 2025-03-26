@@ -2,13 +2,15 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
 
 interface ClubDialogFooterProps {
   activeTab: string;
   onBack: () => void;
   onNext: () => void;
   onSubmit: () => void;
-  buttonText: string;
+  buttonText?: string;
+  isSubmitting?: boolean;
 }
 
 const ClubDialogFooter: React.FC<ClubDialogFooterProps> = ({
@@ -16,38 +18,39 @@ const ClubDialogFooter: React.FC<ClubDialogFooterProps> = ({
   onBack,
   onNext,
   onSubmit,
-  buttonText
+  buttonText = "Create Club",
+  isSubmitting = false
 }) => {
-  const handleSubmit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    console.log("Submit button clicked! Calling onSubmit handler");
-    onSubmit();
-  };
-
   return (
-    <DialogFooter className="mt-6 flex justify-between">
+    <DialogFooter className="flex justify-between items-center">
       {activeTab !== 'basic' && (
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={onBack}
-        >
+        <Button variant="outline" onClick={onBack} disabled={isSubmitting}>
           Back
         </Button>
       )}
       
-      <div>
-        {activeTab !== 'documents' ? (
-          <Button type="button" onClick={onNext}>Next</Button>
-        ) : (
-          <Button 
-            type="button" 
-            onClick={handleSubmit}
-          >
-            {buttonText}
-          </Button>
-        )}
-      </div>
+      <div></div> {/* Spacer */}
+      
+      {activeTab !== 'documents' ? (
+        <Button variant="default" onClick={onNext} disabled={isSubmitting}>
+          Next
+        </Button>
+      ) : (
+        <Button 
+          variant="default" 
+          onClick={onSubmit} 
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Spinner className="mr-2 h-4 w-4" />
+              Submitting...
+            </>
+          ) : (
+            buttonText
+          )}
+        </Button>
+      )}
     </DialogFooter>
   );
 };

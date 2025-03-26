@@ -71,38 +71,40 @@ export const useClubCreation = () => {
         return false;
       }
 
-      // Insert club data - now passing the userId to use with the security definer function
-      let clubData;
+      // Insert club data with explicit error handling
       try {
-        clubData = await insertClubData(clubFormData, universityId, userId);
+        const clubData = await insertClubData(clubFormData, universityId, userId);
+        
+        if (!clubData || !clubData.id) {
+          console.error('Error: No club data returned after insertion');
+          toast({
+            title: 'Error Creating Club',
+            description: 'No club data was returned after creation. Please try again.',
+            variant: 'destructive',
+          });
+          return false;
+        }
+        
         console.log('Club created successfully:', clubData);
+        
+        toast({
+          title: 'Success',
+          description: 'Club created successfully! It will be visible after admin approval.',
+          variant: 'default',
+        });
+        
+        return true;
       } catch (error: any) {
         console.error('Error creating club:', error);
         
         // Provide more detailed error message for better debugging
-        if (error.message.includes('JSON object requested, multiple (or no) rows returned')) {
-          toast({
-            title: 'Error Creating Club',
-            description: 'Database error: Could not create club due to an issue with the returned data. Please try again later.',
-            variant: 'destructive',
-          });
-        } else {
-          toast({
-            title: 'Error Creating Club',
-            description: error.message || 'Failed to create club. Please try again.',
-            variant: 'destructive',
-          });
-        }
+        toast({
+          title: 'Error Creating Club',
+          description: error.message || 'Failed to create club. Please try again.',
+          variant: 'destructive',
+        });
         return false;
       }
-
-      toast({
-        title: 'Success',
-        description: 'Club created successfully! It will be visible after admin approval.',
-        variant: 'default',
-      });
-      
-      return true;
     } catch (error: any) {
       console.error('Error creating club:', error);
       toast({

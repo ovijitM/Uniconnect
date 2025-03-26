@@ -49,9 +49,26 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
     }
   }, [user?.id, fetchUserProfile]);
 
-  // Remove the useEffect that's causing the infinite loop
-  // Only update form data when userUniversity or userUniversityId changes
-  // and NOT inside the component to avoid infinite renders
+  // Pre-fill university data when it becomes available
+  useEffect(() => {
+    if (userUniversity && userUniversityId && user?.id && isOpen && 
+        (!formData.university || !formData.universityId)) {
+      // Update the university fields if they're not already set
+      const universityEvent = {
+        target: { name: 'university', value: userUniversity }
+      } as React.ChangeEvent<HTMLInputElement>;
+      
+      onInputChange(universityEvent);
+      
+      const universityIdEvent = {
+        target: { name: 'universityId', value: userUniversityId }
+      } as React.ChangeEvent<HTMLInputElement>;
+      
+      onInputChange(universityIdEvent);
+      
+      console.log("Pre-filled university data:", userUniversity, userUniversityId);
+    }
+  }, [userUniversity, userUniversityId, user?.id, isOpen, formData.university, formData.universityId, onInputChange]);
 
   const handleOpenChange = (open: boolean) => {
     if (open && !userUniversity) {
