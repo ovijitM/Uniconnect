@@ -34,10 +34,6 @@ const CreateClubForm: React.FC = () => {
     whoCanJoin: '',
     membershipFee: '',
     howToJoin: '',
-    presidentName: '',
-    presidentContact: '',
-    executiveMembers: '',
-    advisors: '',
     phoneNumber: '',
     website: '',
     social: {
@@ -61,7 +57,6 @@ const CreateClubForm: React.FC = () => {
     primaryFacultyAdvisor: ''
   });
 
-  // Fetch universities when the component mounts
   useEffect(() => {
     const fetchUniversities = async () => {
       try {
@@ -140,7 +135,6 @@ const CreateClubForm: React.FC = () => {
       return;
     }
 
-    // Validate form
     if (!formData.name || !formData.description || !formData.category || !formData.university) {
       toast({
         title: 'Missing Information',
@@ -153,7 +147,6 @@ const CreateClubForm: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // Prepare social media links for database
       const socialMediaLinks = {
         website: formData.social.website,
         instagram: formData.social.instagram,
@@ -163,27 +156,14 @@ const CreateClubForm: React.FC = () => {
         discord: formData.social.discord
       };
 
-      // Prepare executive members structure (simple JSON for now)
-      const executiveMembers = formData.executiveMembers 
-        ? { members: formData.executiveMembers.split(',').map(m => m.trim()) } 
-        : null;
-
-      // Prepare advisors array
-      const advisors = formData.advisors 
-        ? formData.advisors.split(',').map(a => a.trim()) 
-        : null;
-
-      // Prepare regular events array
       const regularEvents = formData.regularEvents 
         ? formData.regularEvents.split(',').map(e => e.trim()) 
         : null;
       
-      // Prepare signature events array
       const signatureEvents = formData.signatureEvents 
         ? formData.signatureEvents.split(',').map(e => e.trim()) 
         : null;
       
-      // Insert club data
       const { data, error } = await supabase.rpc('insert_club', {
         name: formData.name,
         description: formData.description,
@@ -196,7 +176,6 @@ const CreateClubForm: React.FC = () => {
       
       if (error) throw error;
 
-      // Update additional fields
       const clubId = data;
       const { error: updateError } = await supabase
         .from('clubs')
@@ -211,10 +190,7 @@ const CreateClubForm: React.FC = () => {
           who_can_join: formData.whoCanJoin || null,
           membership_fee: formData.membershipFee || 'Free',
           how_to_join: formData.howToJoin || null,
-          president_name: formData.presidentName || null,
-          president_contact: formData.presidentContact || null,
-          executive_members: executiveMembers,
-          advisors: advisors,
+          executive_members: {},
           phone_number: formData.phoneNumber || null,
           website: formData.social.website || null,
           facebook_link: formData.social.facebook || null,
@@ -245,7 +221,6 @@ const CreateClubForm: React.FC = () => {
         description: 'Your club has been created successfully and is pending approval',
       });
       
-      // Redirect to the club admin dashboard
       navigate('/club-admin-dashboard');
       
     } catch (error: any) {

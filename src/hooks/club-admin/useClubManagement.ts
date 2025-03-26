@@ -23,10 +23,6 @@ export const useClubManagement = (onRefresh: () => void) => {
     whoCanJoin: '',
     membershipFee: 'Free',
     howToJoin: '',
-    presidentName: '',
-    presidentContact: '',
-    executiveMembers: '',
-    advisors: '',
     phoneNumber: '',
     website: '',
     facebookLink: '',
@@ -60,10 +56,6 @@ export const useClubManagement = (onRefresh: () => void) => {
       whoCanJoin: club.whoCanJoin || '',
       membershipFee: club.membershipFee || 'Free',
       howToJoin: club.howToJoin || '',
-      presidentName: club.presidentName || '',
-      presidentContact: club.presidentContact || '',
-      executiveMembers: club.executiveMembers ? JSON.stringify(club.executiveMembers) : '',
-      advisors: club.advisors ? club.advisors.join(', ') : '',
       phoneNumber: club.phoneNumber || '',
       website: club.website || '',
       facebookLink: club.facebookLink || '',
@@ -137,7 +129,6 @@ export const useClubManagement = (onRefresh: () => void) => {
       // Transform array and JSON fields
       const regularEvents = editFormData.regularEvents ? editFormData.regularEvents.split(',').map(e => e.trim()) : [];
       const signatureEvents = editFormData.signatureEvents ? editFormData.signatureEvents.split(',').map(e => e.trim()) : [];
-      const advisors = editFormData.advisors ? editFormData.advisors.split(',').map(e => e.trim()) : [];
       
       // Transform array and JSON fields
       const facultyAdvisors = editFormData.facultyAdvisors ? 
@@ -172,10 +163,8 @@ export const useClubManagement = (onRefresh: () => void) => {
           who_can_join: editFormData.whoCanJoin || null,
           membership_fee: editFormData.membershipFee || 'Free',
           how_to_join: editFormData.howToJoin || null,
-          president_name: editFormData.presidentName || null,
-          president_contact: editFormData.presidentContact || null,
-          executive_members: JSON.parse(editFormData.executiveMembers || '{}'),
-          advisors: advisors,
+          executive_members: {},
+          faculty_advisors: facultyAdvisors,
           phone_number: editFormData.phoneNumber || null,
           website: editFormData.website || null,
           facebook_link: editFormData.facebookLink || null,
@@ -189,7 +178,6 @@ export const useClubManagement = (onRefresh: () => void) => {
           president_chair_name: editFormData.presidentChairName || null,
           president_chair_contact: editFormData.presidentChairContact || null,
           executive_members_roles: executiveMembersRoles,
-          faculty_advisors: facultyAdvisors,
           primary_faculty_advisor: editFormData.primaryFacultyAdvisor || null,
         })
         .eq('id', selectedClub.id);

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,10 +30,14 @@ export const useClubProfileSettings = (club: Club | null, onSuccess: () => void)
     facebookLink: club?.facebookLink || '',
     instagramLink: club?.instagramLink || '',
     twitterLink: club?.twitterLink || '',
-    discordLink: club?.discordLink || ''
+    discordLink: club?.discordLink || '',
+    facultyAdvisors: club?.facultyAdvisors ? club.facultyAdvisors.join(', ') : '',
+    primaryFacultyAdvisor: club?.primaryFacultyAdvisor || '',
+    presidentChairName: club?.presidentChairName || '',
+    presidentChairContact: club?.presidentChairContact || '',
+    executiveMembersRoles: club?.executiveMembersRoles ? JSON.stringify(club.executiveMembersRoles) : ''
   });
 
-  // Updated to accept HTMLSelectElement as well
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setProfileData(prev => ({ ...prev, [name]: value }));
@@ -46,23 +49,20 @@ export const useClubProfileSettings = (club: Club | null, onSuccess: () => void)
     try {
       setIsSubmitting(true);
       
-      // Transform array and JSON fields
       const regularEvents = profileData.regularEvents ? profileData.regularEvents.split(',').map(e => e.trim()) : [];
       const signatureEvents = profileData.signatureEvents ? profileData.signatureEvents.split(',').map(e => e.trim()) : [];
-      const advisors = profileData.advisors ? profileData.advisors.split(',').map(e => e.trim()) : [];
+      const facultyAdvisors = profileData.facultyAdvisors ? profileData.facultyAdvisors.split(',').map(a => a.trim()) : [];
       
-      // Handle executive members - ensure it's valid JSON
-      let executiveMembers = {};
-      if (profileData.executiveMembers) {
+      let executiveMembersRoles = {};
+      if (profileData.executiveMembersRoles) {
         try {
-          executiveMembers = JSON.parse(profileData.executiveMembers);
+          executiveMembersRoles = JSON.parse(profileData.executiveMembersRoles);
         } catch (error) {
-          console.error('Error parsing executive members:', error);
-          executiveMembers = {};
+          console.error('Error parsing executive members roles:', error);
+          executiveMembersRoles = {};
         }
       }
 
-      // Update club in Supabase
       const { error } = await supabase
         .from('clubs')
         .update({
@@ -80,10 +80,12 @@ export const useClubProfileSettings = (club: Club | null, onSuccess: () => void)
           who_can_join: profileData.whoCanJoin || null,
           membership_fee: profileData.membershipFee || 'Free',
           how_to_join: profileData.howToJoin || null,
-          president_name: profileData.presidentName || null,
-          president_contact: profileData.presidentContact || null,
-          executive_members: executiveMembers,
-          advisors: advisors,
+          president_chair_name: profileData.presidentChairName || null,
+          president_chair_contact: profileData.presidentChairContact || null,
+          executive_members: {},
+          executive_members_roles: executiveMembersRoles,
+          faculty_advisors: facultyAdvisors,
+          primary_faculty_advisor: profileData.primaryFacultyAdvisor || null,
           phone_number: profileData.phoneNumber || null,
           website: profileData.website || null,
           facebook_link: profileData.facebookLink || null,

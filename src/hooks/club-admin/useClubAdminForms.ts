@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ClubFormData, EventFormData } from './types';
@@ -73,7 +72,6 @@ export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData
     discordLink: '',
     documentUrl: '',
     documentName: '',
-    // Additional fields
     contactEmail: '',
     contactPhone: '',
     address: '',
@@ -131,7 +129,9 @@ export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData
             contact_phone: clubFormData.contactPhone,
             address: clubFormData.address,
             social_media_links: clubFormData.socialMediaLinks,
-            executive_members: clubFormData.executiveMembers,
+            executive_members: {},
+            executive_members_roles: clubFormData.executiveMembersRoles ? 
+              parseExecutiveMembersRoles(clubFormData.executiveMembersRoles) : {},
             achievements: clubFormData.achievements,
             documents: clubFormData.documents,
             mission_statement: clubFormData.missionStatement,
@@ -144,6 +144,11 @@ export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData
             budget_info: clubFormData.budgetInfo,
             meeting_info: clubFormData.meetingInfo,
             additional_notes: clubFormData.additionalNotes,
+            president_chair_name: clubFormData.presidentChairName,
+            president_chair_contact: clubFormData.presidentChairContact,
+            faculty_advisors: clubFormData.facultyAdvisors ? 
+              clubFormData.facultyAdvisors.split(',').map(a => a.trim()) : [],
+            primary_faculty_advisor: clubFormData.primaryFacultyAdvisor,
           },
         ])
         .select();
@@ -492,3 +497,4 @@ export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData
     checkUserHasClub
   };
 };
+

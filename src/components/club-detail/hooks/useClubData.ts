@@ -220,47 +220,51 @@ export const useClubData = () => {
         
         console.log("Processing club data with member count:", memberCount);
         
-        // Format the club data with all new fields
-        const formattedClub: Club = {
-          id: clubData.id,
-          name: clubData.name,
-          description: clubData.description,
-          logoUrl: clubData.logo_url,
-          category: clubData.category,
-          status: clubData.status,
-          rejectionReason: clubData.rejection_reason,
-          memberCount: memberCount,
-          events: [],
-          
-          // New fields
-          tagline: clubData.tagline,
-          establishedYear: clubData.established_year,
-          affiliation: clubData.affiliation,
-          whyJoin: clubData.why_join,
-          regularEvents: clubData.regular_events,
-          signatureEvents: clubData.signature_events,
-          communityEngagement: clubData.community_engagement,
-          whoCanJoin: clubData.who_can_join,
-          membershipFee: clubData.membership_fee,
-          howToJoin: clubData.how_to_join,
-          presidentName: clubData.president_name,
-          presidentContact: clubData.president_contact,
-          executiveMembers: clubData.executive_members,
-          advisors: clubData.advisors,
-          phoneNumber: clubData.phone_number,
-          website: clubData.website,
-          facebookLink: clubData.facebook_link,
-          instagramLink: clubData.instagram_link,
-          twitterLink: clubData.twitter_link,
-          discordLink: clubData.discord_link,
-          
-          // Map new leadership fields
-          presidentChairName: clubData.president_chair_name,
-          presidentChairContact: clubData.president_chair_contact,
-          executiveMembersRoles: clubData.executive_members_roles,
-          facultyAdvisors: clubData.faculty_advisors,
-          primaryFacultyAdvisor: clubData.primary_faculty_advisor
+        // Transform club data to use the new column structure
+        const transformClubData = (clubData: any): Club => {
+          return {
+            id: clubData.id,
+            name: clubData.name,
+            description: clubData.description,
+            logoUrl: clubData.logo_url,
+            category: clubData.category,
+            status: clubData.status,
+            rejectionReason: clubData.rejection_reason,
+            memberCount: memberCount,
+            events: [],
+            
+            // New fields
+            tagline: clubData.tagline,
+            establishedYear: clubData.established_year,
+            affiliation: clubData.affiliation,
+            whyJoin: clubData.why_join,
+            regularEvents: clubData.regular_events,
+            signatureEvents: clubData.signature_events,
+            communityEngagement: clubData.community_engagement,
+            whoCanJoin: clubData.who_can_join,
+            membershipFee: clubData.membership_fee,
+            howToJoin: clubData.how_to_join,
+            presidentName: clubData.president_name,
+            presidentContact: clubData.president_contact,
+            executiveMembers: clubData.executive_members,
+            advisors: clubData.advisors,
+            phoneNumber: clubData.phone_number,
+            website: clubData.website,
+            facebookLink: clubData.facebook_link,
+            instagramLink: clubData.instagram_link,
+            twitterLink: clubData.twitter_link,
+            discordLink: clubData.discord_link,
+            
+            // Map new leadership fields
+            presidentChairName: clubData.president_chair_name || '',
+            presidentChairContact: clubData.president_chair_contact || '',
+            executiveMembersRoles: clubData.executive_members_roles || {},
+            facultyAdvisors: clubData.faculty_advisors || [],
+            primaryFacultyAdvisor: clubData.primary_faculty_advisor || ''
+          };
         };
+        
+        const formattedClub = transformClubData(clubData);
         
         // Format the events data with all the new fields and ensure status is of correct type
         const formattedEvents: Event[] = eventsData.map(event => {

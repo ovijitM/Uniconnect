@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Club } from '@/types';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -28,10 +27,11 @@ interface EditClubDialogProps {
     whoCanJoin: string;
     membershipFee: string;
     howToJoin: string;
-    presidentName: string;
-    presidentContact: string;
-    executiveMembers: string;
-    advisors: string;
+    presidentChairName: string;
+    presidentChairContact: string;
+    executiveMembersRoles: string;
+    facultyAdvisors: string;
+    primaryFacultyAdvisor: string;
     phoneNumber: string;
     website: string;
     facebookLink: string;
@@ -276,41 +276,41 @@ const EditClubDialog: React.FC<EditClubDialogProps> = ({
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="presidentName" className="text-right">
-                President Name
+              <Label htmlFor="presidentChairName" className="text-right">
+                President/Chair Name
               </Label>
               <Input
-                id="presidentName"
-                name="presidentName"
-                value={editFormData.presidentName}
+                id="presidentChairName"
+                name="presidentChairName"
+                value={editFormData.presidentChairName}
                 onChange={handleInputChange}
                 className="col-span-3"
-                placeholder="Club president's name"
+                placeholder="Club president/chair's name"
               />
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="presidentContact" className="text-right">
-                President Contact
+              <Label htmlFor="presidentChairContact" className="text-right">
+                President/Chair Contact
               </Label>
               <Input
-                id="presidentContact"
-                name="presidentContact"
-                value={editFormData.presidentContact}
+                id="presidentChairContact"
+                name="presidentChairContact"
+                value={editFormData.presidentChairContact}
                 onChange={handleInputChange}
                 className="col-span-3"
-                placeholder="Club president's contact info"
+                placeholder="Club president/chair's contact info"
               />
             </div>
             
             <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="executiveMembers" className="text-right mt-3">
-                Executive Members
+              <Label htmlFor="executiveMembersRoles" className="text-right mt-3">
+                Executive Members Roles
               </Label>
               <Textarea
-                id="executiveMembers"
-                name="executiveMembers"
-                value={editFormData.executiveMembers}
+                id="executiveMembersRoles"
+                name="executiveMembersRoles"
+                value={editFormData.executiveMembersRoles}
                 onChange={handleInputChange}
                 className="col-span-3"
                 rows={3}
@@ -319,17 +319,31 @@ const EditClubDialog: React.FC<EditClubDialogProps> = ({
             </div>
             
             <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="advisors" className="text-right mt-3">
-                Advisors
+              <Label htmlFor="facultyAdvisors" className="text-right mt-3">
+                Faculty Advisors
               </Label>
               <Textarea
-                id="advisors"
-                name="advisors"
-                value={editFormData.advisors}
+                id="facultyAdvisors"
+                name="facultyAdvisors"
+                value={editFormData.facultyAdvisors}
                 onChange={handleInputChange}
                 className="col-span-3"
                 rows={2}
-                placeholder="List advisors, separated by commas"
+                placeholder="List faculty advisors, separated by commas"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="primaryFacultyAdvisor" className="text-right mt-3">
+                Primary Faculty Advisor
+              </Label>
+              <Input
+                id="primaryFacultyAdvisor"
+                name="primaryFacultyAdvisor"
+                value={editFormData.primaryFacultyAdvisor}
+                onChange={handleInputChange}
+                className="col-span-3"
+                placeholder="Name of primary faculty advisor"
               />
             </div>
           </TabsContent>

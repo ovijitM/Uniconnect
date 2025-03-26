@@ -172,7 +172,6 @@ export type Database = {
       }
       clubs: {
         Row: {
-          advisors: string[] | null
           affiliation: string | null
           category: string
           community_engagement: string | null
@@ -195,8 +194,6 @@ export type Database = {
           phone_number: string | null
           president_chair_contact: string | null
           president_chair_name: string | null
-          president_contact: string | null
-          president_name: string | null
           primary_faculty_advisor: string | null
           regular_events: string[] | null
           rejection_reason: string | null
@@ -212,7 +209,6 @@ export type Database = {
           why_join: string | null
         }
         Insert: {
-          advisors?: string[] | null
           affiliation?: string | null
           category: string
           community_engagement?: string | null
@@ -235,8 +231,6 @@ export type Database = {
           phone_number?: string | null
           president_chair_contact?: string | null
           president_chair_name?: string | null
-          president_contact?: string | null
-          president_name?: string | null
           primary_faculty_advisor?: string | null
           regular_events?: string[] | null
           rejection_reason?: string | null
@@ -252,7 +246,6 @@ export type Database = {
           why_join?: string | null
         }
         Update: {
-          advisors?: string[] | null
           affiliation?: string | null
           category?: string
           community_engagement?: string | null
@@ -275,8 +268,6 @@ export type Database = {
           phone_number?: string | null
           president_chair_contact?: string | null
           president_chair_name?: string | null
-          president_contact?: string | null
-          president_name?: string | null
           primary_faculty_advisor?: string | null
           regular_events?: string[] | null
           rejection_reason?: string | null
