@@ -6,23 +6,27 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 export interface FileUploadProps {
+  onUploadComplete?: (url: string, fileName: string) => void;
   onFileUpload?: (url: string, fileName: string) => void;
-  maxSize?: number; // in MB
-  allowedTypes?: string[];
+  maxFileSize?: number; // in MB
+  acceptedFileTypes?: string[];
   buttonText?: string;
   className?: string;
   defaultValue?: string;
   uploadType?: 'logo' | 'document';
+  helperText?: string;
 }
 
 export const FileUpload: React.FC<FileUploadProps> = ({
+  onUploadComplete,
   onFileUpload,
-  maxSize = 5, // Default max size 5MB
-  allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
+  maxFileSize = 5, // Default max size 5MB
+  acceptedFileTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
   buttonText = 'Upload Document',
   className,
   defaultValue,
-  uploadType = 'document'
+  uploadType = 'document',
+  helperText
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<string | null>(defaultValue || null);
@@ -34,10 +38,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     if (!file) return;
 
     // Check file size
-    if (file.size > maxSize * 1024 * 1024) {
+    if (file.size > maxFileSize * 1024 * 1024) {
       toast({
         title: 'File too large',
-        description: `Max file size is ${maxSize}MB`,
+        description: `Max file size is ${maxFileSize}MB`,
         variant: 'destructive',
       });
       return;
@@ -67,17 +71,25 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     setFileName(file.name);
 
     try {
-      // The actual upload happens in the parent component via onFileUpload
-      // We just pass the file to the parent and let it handle the upload
-      if (onFileUpload) {
-        onFileUpload(URL.createObjectURL(file), file.name);
-      }
+      // Create a temporary URL for the file
+      const fileUrl = URL.createObjectURL(file);
       
       // Store temporary URL for preview
-      setUploadedFile(URL.createObjectURL(file));
+      setUploadedFile(fileUrl);
       
-      // Note: The real URL will be set by the parent when upload is complete
-      // This is just for preview purposes
+      // Call either onUploadComplete or onFileUpload callback
+      if (onUploadComplete) {
+        onUploadComplete(fileUrl, file.name);
+      }
+      
+      if (onFileUpload) {
+        onFileUpload(fileUrl, file.name);
+      }
+      
+      toast({
+        title: 'File processed',
+        description: 'Your file has been processed successfully.',
+      });
     } catch (error) {
       console.error('Error processing file:', error);
       toast({
@@ -98,10 +110,20 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     setUploadedFile(null);
     setFileName(null);
     
+    // Call either callback with empty values to indicate removal
+    if (onUploadComplete) {
+      onUploadComplete('', '');
+    }
+    
     if (onFileUpload) {
       onFileUpload('', '');
     }
   };
+
+  // Determine which file types to accept based on uploadType
+  const allowedTypes = uploadType === 'logo' 
+    ? ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'] 
+    : acceptedFileTypes;
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -114,7 +136,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 <span className="font-semibold">Click to upload</span> or drag and drop
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Max size: {maxSize}MB
+                {helperText || `Max size: ${maxFileSize}MB`}
               </p>
             </div>
             <input 

@@ -49,12 +49,12 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange, on
           </div>
           <div className="flex-grow">
             <FileUpload 
-              bucket="clubs" 
               onUploadComplete={handleLogoUpload}
               acceptedFileTypes={["image/jpeg", "image/png", "image/gif"]}
               maxFileSize={5}
               buttonText="Upload Logo"
               helperText="Upload a logo for your club (JPEG, PNG, GIF, max 5MB)"
+              uploadType="logo"
             />
           </div>
         </div>

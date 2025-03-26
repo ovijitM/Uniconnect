@@ -46,7 +46,8 @@ const ClubCreationForm: React.FC<ClubCreationFormProps> = ({
         <TabsContent value="basic" className="pt-4">
           <BasicInfoTab 
             formData={formData} 
-            onInputChange={onInputChange} 
+            onInputChange={onInputChange}
+            onFileUpload={onFileUpload} 
           />
         </TabsContent>
         
