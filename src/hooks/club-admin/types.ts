@@ -53,10 +53,11 @@ export interface ClubFormData {
   whoCanJoin: string;
   membershipFee: string;
   howToJoin: string;
-  presidentName: string;
-  presidentContact: string;
-  executiveMembers: string;
-  advisors: string;
+  presidentChairName: string;
+  presidentChairContact: string;
+  executiveMembersRoles: string;
+  facultyAdvisors: string;
+  primaryFacultyAdvisor: string;
   phoneNumber: string;
   website: string;
   facebookLink: string;
@@ -82,10 +83,9 @@ export interface ClubFormData {
   budgetInfo: string;
   meetingInfo: string;
   additionalNotes: string;
-  // New leadership fields
-  presidentChairName: string;
-  presidentChairContact: string;
-  executiveMembersRoles: string;
-  facultyAdvisors: string;
-  primaryFacultyAdvisor: string;
+  // Keeping these for backward compatibility
+  presidentName?: string;
+  presidentContact?: string;
+  executiveMembers?: string;
+  advisors?: string;
 }

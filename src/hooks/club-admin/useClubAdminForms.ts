@@ -1,10 +1,11 @@
+
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ClubFormData, EventFormData } from './types';
 import { useToast } from '@/hooks/use-toast';
 import { useClubValidation } from './useClubValidation';
 import { useEventValidation } from './useEventValidation';
-import { isNetworkError, parseArrayField } from './utils/dataTransformUtils';
+import { isNetworkError, parseArrayField, parseExecutiveMembersRoles } from './utils/dataTransformUtils';
 
 export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData: () => Promise<void>) => {
   const [eventFormData, setEventFormData] = useState<EventFormData>({
@@ -60,10 +61,11 @@ export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData
     whoCanJoin: '',
     membershipFee: '',
     howToJoin: '',
-    presidentName: '',
-    presidentContact: '',
-    executiveMembers: '',
-    advisors: '',
+    presidentChairName: '',
+    presidentChairContact: '',
+    executiveMembersRoles: '',
+    facultyAdvisors: '',
+    primaryFacultyAdvisor: '',
     phoneNumber: '',
     website: '',
     facebookLink: '',
@@ -186,10 +188,11 @@ export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData
         whoCanJoin: '',
         membershipFee: '',
         howToJoin: '',
-        presidentName: '',
-        presidentContact: '',
-        executiveMembers: '',
-        advisors: '',
+        presidentChairName: '',
+        presidentChairContact: '',
+        executiveMembersRoles: '',
+        facultyAdvisors: '',
+        primaryFacultyAdvisor: '',
         phoneNumber: '',
         website: '',
         facebookLink: '',
@@ -497,4 +500,3 @@ export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData
     checkUserHasClub
   };
 };
-

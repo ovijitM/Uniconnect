@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Club, Event, EventStatus } from '@/types';
@@ -50,21 +51,18 @@ export const useClubData = () => {
             who_can_join,
             membership_fee,
             how_to_join,
-            president_name,
-            president_contact,
+            president_chair_name,
+            president_chair_contact,
             executive_members,
-            advisors,
+            executive_members_roles,
+            faculty_advisors,
+            primary_faculty_advisor,
             phone_number,
             website,
             facebook_link,
             instagram_link,
             twitter_link,
-            discord_link,
-            president_chair_name,
-            president_chair_contact,
-            executive_members_roles,
-            faculty_advisors,
-            primary_faculty_advisor
+            discord_link
           `)
           .eq('id', clubId)
           .single();
@@ -244,10 +242,6 @@ export const useClubData = () => {
             whoCanJoin: clubData.who_can_join,
             membershipFee: clubData.membership_fee,
             howToJoin: clubData.how_to_join,
-            presidentName: clubData.president_name,
-            presidentContact: clubData.president_contact,
-            executiveMembers: clubData.executive_members,
-            advisors: clubData.advisors,
             phoneNumber: clubData.phone_number,
             website: clubData.website,
             facebookLink: clubData.facebook_link,
@@ -255,9 +249,10 @@ export const useClubData = () => {
             twitterLink: clubData.twitter_link,
             discordLink: clubData.discord_link,
             
-            // Map new leadership fields
+            // Leadership fields using the consolidated columns
             presidentChairName: clubData.president_chair_name || '',
             presidentChairContact: clubData.president_chair_contact || '',
+            executiveMembers: clubData.executive_members || {},
             executiveMembersRoles: clubData.executive_members_roles || {},
             facultyAdvisors: clubData.faculty_advisors || [],
             primaryFacultyAdvisor: clubData.primary_faculty_advisor || ''

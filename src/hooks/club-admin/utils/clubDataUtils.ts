@@ -1,6 +1,7 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ClubFormData } from '../types';
-import { parseArrayField, parseExecutiveMembers, parseExecutiveMembersRoles } from './dataTransformUtils';
+import { parseArrayField, parseExecutiveMembersRoles } from './dataTransformUtils';
 
 export const insertClubData = async (
   formData: ClubFormData,
