@@ -3,7 +3,6 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ClubFormData } from './types';
 import { findOrCreateUniversity } from './utils/universityUtils';
-import { addClubAdmin } from './utils/clubAdminUtils';
 import { insertClubData } from './utils/clubDataUtils';
 
 export const useClubCreation = () => {
@@ -65,7 +64,14 @@ export const useClubCreation = () => {
 
       // Add the current user as an admin of the club
       try {
-        await addClubAdmin(clubData.id, userId);
+        const { error } = await supabase
+          .from('club_admins')
+          .insert({
+            club_id: clubData.id,
+            user_id: userId
+          });
+          
+        if (error) throw error;
       } catch (error: any) {
         console.error('Error adding club admin:', error);
         // If we fail to add admin, we should delete the club to avoid orphaned clubs

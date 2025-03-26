@@ -41,18 +41,18 @@ export const useAdminClubCreation = (userId: string | undefined, onSuccess: () =
   });
   
   // Get university information if available
-  const { userUniversity, userUniversityId, fetchUserProfile } = useStudentProfile(userId);
+  const { userUniversity, userUniversityId, fetchUserProfile, isLoadingProfile, error: profileError } = useStudentProfile(userId);
   
   // Set university info from user profile only once when it becomes available
   useEffect(() => {
     if (userUniversity && userUniversityId && 
         (!clubFormData.university || !clubFormData.universityId)) {
-      console.log(`Setting university in form: ${userUniversity} ${userUniversityId}`);
       setClubFormData(prev => ({
         ...prev, 
         university: userUniversity,
         universityId: userUniversityId
       }));
+      console.log('Set university from user profile:', userUniversity, 'with ID:', userUniversityId);
     }
   }, [userUniversity, userUniversityId]);
   
@@ -119,8 +119,8 @@ export const useAdminClubCreation = (userId: string | undefined, onSuccess: () =
           name: '',
           description: '',
           category: '',
-          university: '',
-          universityId: '',
+          university: userUniversity || '',
+          universityId: userUniversityId || '',
           tagline: '',
           establishedYear: '',
           affiliation: '',
@@ -171,6 +171,8 @@ export const useAdminClubCreation = (userId: string | undefined, onSuccess: () =
     clubFormData,
     setClubFormData,
     isSubmitting,
+    isLoadingProfile,
+    profileError,
     handleClubInputChange,
     handleCreateClub,
     handleFileUpload

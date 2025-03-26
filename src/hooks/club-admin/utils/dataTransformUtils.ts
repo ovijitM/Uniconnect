@@ -1,21 +1,33 @@
 
-import { Json } from '@/integrations/supabase/types';
-
-export const parseArrayField = (field: string | undefined): string[] => {
-  if (!field) return [];
-  return field.split(',').map(item => item.trim());
+/**
+ * Parses a comma-separated string into an array
+ */
+export const parseArrayField = (value: string | undefined | null): string[] | null => {
+  if (!value) return null;
+  
+  return value
+    .split(',')
+    .map(item => item.trim())
+    .filter(item => item.length > 0);
 };
 
-export const parseExecutiveMembers = (executiveMembers: string | object | undefined): Json => {
-  if (!executiveMembers) return {};
+/**
+ * Parses the executive members string into a structured JSON object
+ * Format expected: "Name 1, Position 1; Name 2, Position 2"
+ */
+export const parseExecutiveMembers = (value: string | undefined | null): Record<string, string> | null => {
+  if (!value) return null;
   
-  try {
-    if (typeof executiveMembers === 'string') {
-      return JSON.parse(executiveMembers) as Json;
+  const members: Record<string, string> = {};
+  
+  const memberEntries = value.split(';').map(entry => entry.trim()).filter(entry => entry.length > 0);
+  
+  memberEntries.forEach(entry => {
+    const [name, position] = entry.split(',').map(part => part.trim());
+    if (name && position) {
+      members[name] = position;
     }
-    return executiveMembers as Json;
-  } catch (error) {
-    console.error('Error parsing executive members:', error);
-    return {};
-  }
+  });
+  
+  return Object.keys(members).length > 0 ? members : null;
 };

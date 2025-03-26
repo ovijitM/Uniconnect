@@ -1,53 +1,57 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
-export const findOrCreateUniversity = async (universityName: string, universityId?: string) => {
-  const { toast } = useToast();
-  
-  try {
-    // Return existing universityId if provided
-    if (universityId) {
-      console.log("Using provided university ID:", universityId);
-      return universityId;
-    }
-    
-    console.log("Looking up university:", universityName);
-    
-    // Try to find the university
-    const { data: uniData, error: uniError } = await supabase
+/**
+ * Finds a university by ID or name, or creates it if it doesn't exist
+ * @param universityName University name
+ * @param universityId Optional university ID
+ * @returns University ID
+ */
+export const findOrCreateUniversity = async (universityName: string, universityId?: string): Promise<string> => {
+  // If we have a university ID, verify it exists
+  if (universityId) {
+    const { data, error } = await supabase
       .from('universities')
       .select('id')
-      .eq('name', universityName)
-      .maybeSingle();
-      
-    if (uniError) {
-      console.error('Error finding university:', uniError);
-      throw new Error(`Failed to verify university: ${uniError.message}`);
-    } 
-    
-    if (uniData) {
-      console.log("Found existing university ID:", uniData.id);
-      return uniData.id;
-    }
-    
-    console.log("University not found, creating new one");
-    // Create the university if it doesn't exist
-    const { data: newUni, error: createError } = await supabase
-      .from('universities')
-      .insert({ name: universityName })
-      .select()
+      .eq('id', universityId)
       .single();
-      
-    if (createError) {
-      console.error('Error creating university:', createError);
-      throw new Error(`Failed to create university record: ${createError.message}`);
-    }
     
-    console.log("Created new university with ID:", newUni.id);
-    return newUni.id;
-  } catch (error) {
-    console.error("Error in findOrCreateUniversity:", error);
-    throw error;
+    if (!error && data) {
+      return universityId;
+    }
   }
+  
+  // Look up university by name
+  const { data: existingUniv, error: lookupError } = await supabase
+    .from('universities')
+    .select('id')
+    .ilike('name', universityName)
+    .maybeSingle();
+  
+  if (lookupError) {
+    console.error('Error looking up university:', lookupError);
+  }
+  
+  // If university exists, return its ID
+  if (existingUniv) {
+    return existingUniv.id;
+  }
+  
+  // Otherwise create a new university
+  const { data: newUniv, error: createError } = await supabase
+    .from('universities')
+    .insert({
+      name: universityName
+    })
+    .select('id')
+    .single();
+  
+  if (createError) {
+    throw new Error(`Failed to create university: ${createError.message}`);
+  }
+  
+  if (!newUniv) {
+    throw new Error('No university data returned after creation');
+  }
+  
+  return newUniv.id;
 };
