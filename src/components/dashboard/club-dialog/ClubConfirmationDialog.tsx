@@ -1,9 +1,17 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { ClubFormData } from '@/hooks/club-admin/types';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ClubConfirmationDialogProps {
   isOpen: boolean;
@@ -18,119 +26,120 @@ const ClubConfirmationDialog: React.FC<ClubConfirmationDialogProps> = ({
   onOpenChange,
   formData,
   onConfirm,
-  isSubmitting
+  isSubmitting,
 }) => {
+  const renderSection = (title: string, fields: Array<{ key: keyof ClubFormData; label: string }>) => {
+    return (
+      <div className="mb-6">
+        <h3 className="text-sm font-medium mb-3 border-b pb-1">{title}</h3>
+        <div className="space-y-2">
+          {fields.map(({ key, label }) => {
+            const value = formData[key];
+            if (!value || (typeof value === 'string' && value.trim() === '')) return null;
+            
+            return (
+              <div key={key as string} className="grid grid-cols-3 gap-2">
+                <dt className="text-xs text-muted-foreground">{label}:</dt>
+                <dd className="text-xs col-span-2">{value as string}</dd>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Confirm Club Submission</DialogTitle>
+          <DialogTitle>Confirm Club Details</DialogTitle>
           <DialogDescription>
-            Please review your club information before final submission.
+            Please review the club details before final submission. Once submitted, your club will be created and await approval.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 my-4">
-          <section className="border rounded-md p-4">
-            <h3 className="font-semibold text-lg">Basic Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+        <ScrollArea className="h-[400px] pr-4">
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 mb-6">
+              {formData.logoUrl && (
+                <img 
+                  src={formData.logoUrl} 
+                  alt={formData.name} 
+                  className="w-24 h-24 rounded-md object-cover"
+                />
+              )}
               <div>
-                <p className="text-sm text-muted-foreground">Club Name</p>
-                <p className="font-medium">{formData.name || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Category</p>
-                <p className="font-medium">{formData.category || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">University</p>
-                <p className="font-medium">{formData.university || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Tagline</p>
-                <p className="font-medium">{formData.tagline || 'Not provided'}</p>
+                <h2 className="text-xl font-bold">{formData.name}</h2>
+                {formData.tagline && <p className="text-sm text-muted-foreground">{formData.tagline}</p>}
+                <p className="text-xs mt-1">Category: {formData.category}</p>
+                <p className="text-xs">University: {formData.university}</p>
               </div>
             </div>
-            <div className="mt-2">
-              <p className="text-sm text-muted-foreground">Description</p>
-              <p className="font-medium">{formData.description || 'Not provided'}</p>
-            </div>
-          </section>
 
-          <section className="border rounded-md p-4">
-            <h3 className="font-semibold text-lg">Club Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Established Year</p>
-                <p className="font-medium">{formData.establishedYear || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Affiliation</p>
-                <p className="font-medium">{formData.affiliation || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Membership Fee</p>
-                <p className="font-medium">{formData.membershipFee || 'Free'}</p>
-              </div>
-            </div>
-            <div className="mt-2">
-              <p className="text-sm text-muted-foreground">Why Join</p>
-              <p className="font-medium">{formData.whyJoin || 'Not provided'}</p>
-            </div>
-          </section>
+            {renderSection('Basic Information', [
+              { key: 'description', label: 'Description' }
+            ])}
 
-          <section className="border rounded-md p-4">
-            <h3 className="font-semibold text-lg">Contact Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-              <div>
-                <p className="text-sm text-muted-foreground">President Name</p>
-                <p className="font-medium">{formData.presidentName || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">President Contact</p>
-                <p className="font-medium">{formData.presidentContact || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Phone Number</p>
-                <p className="font-medium">{formData.phoneNumber || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Website</p>
-                <p className="font-medium">{formData.website || 'Not provided'}</p>
-              </div>
-            </div>
-          </section>
+            {renderSection('Club Details', [
+              { key: 'establishedYear', label: 'Established Year' },
+              { key: 'affiliation', label: 'Affiliation' },
+              { key: 'whyJoin', label: 'Why Join' },
+              { key: 'regularEvents', label: 'Regular Events' },
+              { key: 'signatureEvents', label: 'Signature Events' },
+              { key: 'communityEngagement', label: 'Community Engagement' },
+              { key: 'whoCanJoin', label: 'Who Can Join' },
+              { key: 'membershipFee', label: 'Membership Fee' },
+              { key: 'howToJoin', label: 'How To Join' }
+            ])}
 
-          <section className="border rounded-md p-4">
-            <h3 className="font-semibold text-lg">Social Media</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Facebook</p>
-                <p className="font-medium">{formData.facebookLink || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Instagram</p>
-                <p className="font-medium">{formData.instagramLink || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Twitter</p>
-                <p className="font-medium">{formData.twitterLink || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Discord</p>
-                <p className="font-medium">{formData.discordLink || 'Not provided'}</p>
-              </div>
-            </div>
-          </section>
-        </div>
+            {renderSection('Leadership', [
+              { key: 'presidentName', label: 'President Name' },
+              { key: 'presidentContact', label: 'President Contact' },
+              { key: 'executiveMembers', label: 'Executive Members' },
+              { key: 'advisors', label: 'Advisors' }
+            ])}
 
-        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+            {renderSection('Contact Information', [
+              { key: 'phoneNumber', label: 'Phone Number' },
+              { key: 'website', label: 'Website' }
+            ])}
+
+            {renderSection('Social Media', [
+              { key: 'facebookLink', label: 'Facebook' },
+              { key: 'instagramLink', label: 'Instagram' },
+              { key: 'twitterLink', label: 'Twitter' },
+              { key: 'discordLink', label: 'Discord' }
+            ])}
+
+            {formData.documentUrl && (
+              <div className="mb-6">
+                <h3 className="text-sm font-medium mb-3 border-b pb-1">Uploaded Documents</h3>
+                <div className="flex items-center gap-2">
+                  <svg className="h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <a 
+                    href={formData.documentUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline"
+                  >
+                    {formData.documentName || 'View Document'}
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+        
+        <DialogFooter>
           <Button 
             variant="outline" 
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
-            Go Back & Edit
+            Go Back
           </Button>
           <Button 
             onClick={onConfirm}
@@ -139,10 +148,10 @@ const ClubConfirmationDialog: React.FC<ClubConfirmationDialogProps> = ({
             {isSubmitting ? (
               <>
                 <Spinner className="mr-2 h-4 w-4" />
-                Submitting...
+                Creating Club...
               </>
             ) : (
-              'Confirm & Submit'
+              'Create Club'
             )}
           </Button>
         </DialogFooter>

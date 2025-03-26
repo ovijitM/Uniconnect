@@ -11,6 +11,7 @@ export const useClubCreation = () => {
   const createClub = async (clubFormData: ClubFormData, userId: string | undefined): Promise<boolean> => {
     try {
       console.log("Starting createClub function with user ID:", userId);
+      console.log("Full form data being processed:", clubFormData);
       
       if (!userId) {
         console.error("No user ID provided");

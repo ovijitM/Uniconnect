@@ -9,7 +9,7 @@ export const insertClubData = async (
   userId?: string
 ) => {
   // Log the complete form data being processed
-  logFormData(clubFormData, "Club Form Data");
+  logFormData(clubFormData, "Club Form Data Before Processing");
   
   console.log("Inserting club data:", {
     name: clubFormData.name,
@@ -93,6 +93,7 @@ export const insertClubData = async (
       logFormData(updateData, "Club Update Data");
       
       try {
+        console.log("Updating club with ID", clubId, "with additional fields:", JSON.stringify(updateData, null, 2));
         const { error: updateError } = await supabase
           .from('clubs')
           .update(updateData)

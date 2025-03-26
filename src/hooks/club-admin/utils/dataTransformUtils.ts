@@ -29,6 +29,7 @@ export const parseExecutiveMembers = (value: string | undefined | null): Record<
     }
   });
   
+  console.log("Parsed executive members:", members);
   return Object.keys(members).length > 0 ? members : null;
 };
 
@@ -44,13 +45,19 @@ export const logFormData = (formData: any, label: string = 'Form Data') => {
  */
 export const validateRequiredFields = (formData: any, requiredFields: string[]): boolean => {
   let isValid = true;
+  const missingFields: string[] = [];
   
   requiredFields.forEach(field => {
-    if (!formData[field] || formData[field].trim() === '') {
+    if (!formData[field] || (typeof formData[field] === 'string' && formData[field].trim() === '')) {
       console.error(`Missing required field: ${field}`);
+      missingFields.push(field);
       isValid = false;
     }
   });
+  
+  if (!isValid) {
+    console.error("Missing required fields:", missingFields);
+  }
   
   return isValid;
 };

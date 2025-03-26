@@ -60,7 +60,17 @@ const ClubDialogWrapper: React.FC<ClubDialogWrapperProps> = ({
 
   const handleSubmit = () => {
     console.log("ClubDialogWrapper: handleSubmit called");
-    if (validateDocuments(formData)) {
+    console.log("Form data before submission:", JSON.stringify(formData, null, 2));
+    
+    // Validate all tabs before submitting
+    const basicValid = validateBasicInfo(formData);
+    const detailsValid = validateDetails(formData);
+    const socialValid = validateSocialMedia(formData);
+    const documentsValid = validateDocuments(formData);
+    
+    console.log("Validation results:", { basicValid, detailsValid, socialValid, documentsValid });
+    
+    if (basicValid && documentsValid) {
       console.log("Form validation successful, triggering submission");
       onSubmit();
     } else {
