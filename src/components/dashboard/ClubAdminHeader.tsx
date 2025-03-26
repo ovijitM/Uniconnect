@@ -1,4 +1,3 @@
-
 import React from 'react';
 import CreateClubDialog from './CreateClubDialog';
 import CreateEventDialog from './CreateEventDialog';
@@ -19,6 +18,7 @@ interface ClubAdminHeaderProps {
   // Updated props for file upload
   onClubFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
   onEventFileUpload?: (url: string, fileName: string) => void;
+  hasExistingClub?: boolean;
 }
 
 const ClubAdminHeader: React.FC<ClubAdminHeaderProps> = ({
@@ -34,21 +34,24 @@ const ClubAdminHeader: React.FC<ClubAdminHeaderProps> = ({
   onEventInputChange,
   onCreateEvent,
   onClubFileUpload,
-  onEventFileUpload
+  onEventFileUpload,
+  hasExistingClub
 }) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
       <h1 className="text-3xl font-bold">Club Admin Dashboard</h1>
       
       <div className="flex gap-3">
-        <CreateClubDialog
-          isOpen={isClubDialogOpen}
-          onOpenChange={setIsClubDialogOpen}
-          formData={clubFormData}
-          onInputChange={onClubInputChange}
-          onSubmit={onCreateClub}
-          onFileUpload={onClubFileUpload}
-        />
+        {hasExistingClub ? null : (
+          <CreateClubDialog
+            isOpen={isClubDialogOpen}
+            onOpenChange={setIsClubDialogOpen}
+            formData={clubFormData}
+            onInputChange={onClubInputChange}
+            onSubmit={onCreateClub}
+            onFileUpload={onClubFileUpload}
+          />
+        )}
         
         <CreateEventDialog
           isOpen={isEventDialogOpen}

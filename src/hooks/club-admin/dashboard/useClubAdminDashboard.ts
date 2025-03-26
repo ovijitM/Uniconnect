@@ -44,15 +44,19 @@ export const useClubAdminDashboard = () => {
     handleEventInputChange,
     handleClubInputChange,
     handleClubFileUpload,
-    handleEventFileUpload
+    handleEventFileUpload,
+    hasExistingClub,
+    isCheckingClubs,
+    checkUserHasClub
   } = useClubAdminForms(user?.id, fetchClubAdminData);
 
   // Fetch the user's university on initial load
   useEffect(() => {
     if (user?.id) {
       fetchUserProfile();
+      checkUserHasClub();
     }
-  }, [user?.id, fetchUserProfile]);
+  }, [user?.id, fetchUserProfile, checkUserHasClub]);
 
   // Handle opening event dialog when navigated with state
   useEffect(() => {
@@ -81,6 +85,17 @@ export const useClubAdminDashboard = () => {
       });
       return;
     }
+    
+    // Check if user already has a club
+    if (hasExistingClub || adminClubs.length > 0) {
+      toast({
+        title: "Club Limit Reached",
+        description: "You can only be an admin for one club. Please manage your existing club.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsClubDialogOpen(true);
   };
 
@@ -145,6 +160,8 @@ export const useClubAdminDashboard = () => {
     isLoadingProfile,
     profileError,
     handleRetryProfileFetch,
-    handleCreateClubClick
+    handleCreateClubClick,
+    hasExistingClub,
+    isCheckingClubs
   };
 };

@@ -1,8 +1,10 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ClubFormData } from './types';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { useClubValidation } from './useClubValidation';
+import { addClubAdmin } from './utils/clubAdminUtils';
 
 export const useClubCreation = () => {
   const { toast } = useToast();
@@ -30,35 +32,35 @@ export const useClubCreation = () => {
         return { success: false, error: 'Invalid club data' };
       }
       
-      // Check if the user already has a club admin relationship for this university
+      // Check if the user already has a club admin relationship
       if (createClubAdmin) {
-        console.log('Checking for existing club admin relationships for user', userId, 'at university', clubData.universityId);
+        console.log('Checking if user already has a club');
         
-        const { data: existingClubs, error: checkError } = await supabase
-          .from('clubs')
-          .select('id, name')
-          .eq('university_id', clubData.universityId);
+        const { data: existingAdminRoles, error: adminCheckError } = await supabase
+          .from('club_admins')
+          .select('club_id')
+          .eq('user_id', userId);
           
-        if (checkError) {
-          console.error('Error checking existing clubs:', checkError);
-        } else if (existingClubs && existingClubs.length > 0) {
-          console.log('Found existing clubs at this university:', existingClubs);
-          
-          // Check if the user is already an admin for any of these clubs
-          const clubIds = existingClubs.map(club => club.id);
-          
-          const { data: existingAdminRoles, error: adminCheckError } = await supabase
-            .from('club_admins')
-            .select('club_id, user_id')
-            .eq('user_id', userId)
-            .in('club_id', clubIds);
-            
-          if (adminCheckError) {
-            console.error('Error checking existing admin roles:', adminCheckError);
-          } else if (existingAdminRoles && existingAdminRoles.length > 0) {
-            console.log('User is already an admin for these clubs:', existingAdminRoles);
-            // We don't need to block creation, but this is useful for debugging
-          }
+        if (adminCheckError) {
+          console.error('Error checking existing admin roles:', adminCheckError);
+          toast({
+            title: 'Error',
+            description: 'Failed to check if you already have a club',
+            variant: 'destructive',
+          });
+          setIsSubmitting(false);
+          return { success: false, error: adminCheckError.message };
+        }
+        
+        if (existingAdminRoles && existingAdminRoles.length > 0) {
+          console.log('User already has a club admin role:', existingAdminRoles);
+          toast({
+            title: 'Club Limit Reached',
+            description: 'You can only be an admin for one club. Please manage your existing club.',
+            variant: 'destructive',
+          });
+          setIsSubmitting(false);
+          return { success: false, error: 'User already has a club' };
         }
       }
       
@@ -116,53 +118,22 @@ export const useClubCreation = () => {
       if (createClubAdmin && data && data.length > 0) {
         const clubId = data[0].id;
         
-        // Check if the club_admin entry already exists
-        const { data: existingAdmin, error: checkError } = await supabase
-          .from('club_admins')
-          .select('*')
-          .eq('club_id', clubId)
-          .eq('user_id', userId)
-          .single();
-          
-        if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
-          console.error('Error checking for existing admin relationship:', checkError);
-        }
-        
-        // Only create the club_admin relationship if it doesn't already exist
-        if (!existingAdmin) {
-          console.log(`Creating club_admin relationship for user ${userId} and club ${clubId}`);
-          
-          const { error: adminError } = await supabase
-            .from('club_admins')
-            .insert({
-              club_id: clubId,
-              user_id: userId
-            });
-          
-          if (adminError) {
-            console.error('Error creating club admin relationship:', adminError);
-            
-            if (adminError.code === '23505') { // Duplicate key violation
-              toast({
-                title: 'Club Created',
-                description: 'Club created successfully! You are already an admin for this club.',
-                variant: 'default',
-              });
-              setIsSubmitting(false);
-              return { success: true, clubId, warning: 'Admin relationship already exists' };
-            } else {
-              // Other errors
-              toast({
-                title: 'Partial Success',
-                description: 'Club created but there was an issue assigning you as admin. Please contact support.',
-                variant: 'default',
-              });
-              setIsSubmitting(false);
-              return { success: true, clubId, warning: 'Admin relationship failed' };
-            }
-          }
-        } else {
-          console.log('Admin relationship already exists for this club and user');
+        try {
+          await addClubAdmin(clubId, userId);
+          toast({
+            title: 'Success',
+            description: 'Club created successfully and you have been added as an admin!',
+            variant: 'default',
+          });
+        } catch (adminError: any) {
+          console.error('Error adding club admin:', adminError);
+          toast({
+            title: 'Partial Success',
+            description: 'Club created but there was an issue assigning you as admin. Please contact support.',
+            variant: 'default',
+          });
+          setIsSubmitting(false);
+          return { success: true, clubId, warning: 'Admin relationship failed' };
         }
       }
       

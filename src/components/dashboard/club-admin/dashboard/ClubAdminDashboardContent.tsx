@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { ClubFormData, EventFormData } from '@/hooks/club-admin/types';
+import ClubAdminHeader from '@/components/dashboard/ClubAdminHeader';
+import NoClubsView from '@/components/dashboard/NoClubsView';
 import QuickViewSection from '@/components/dashboard/content/QuickViewSection';
 import EventsSection from '@/components/dashboard/content/EventsSection';
 import ClubsSection from '@/components/dashboard/content/ClubsSection';
 import MembersSection from '@/components/dashboard/content/MembersSection';
 import AttendeeSection from '@/components/dashboard/content/AttendeeSection';
 import ClubProfileSettings from '@/components/dashboard/ClubProfileSettings';
-import ClubAdminHeader from '@/components/dashboard/ClubAdminHeader';
-import NoClubsView from '@/components/dashboard/NoClubsView';
 
 export interface ClubAdminDashboardContentProps {
   currentView: 'overview' | 'events' | 'clubs' | 'members' | 'attendance' | 'profile';
@@ -43,6 +43,8 @@ export interface ClubAdminDashboardContentProps {
   profileError?: string | null;
   handleRetryProfileFetch?: () => void;
   handleCreateClubClick: () => void;
+  hasExistingClub?: boolean;
+  isCheckingClubs?: boolean;
 }
 
 const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
@@ -77,22 +79,26 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
   isLoadingProfile,
   profileError,
   handleRetryProfileFetch,
-  handleCreateClubClick
+  handleCreateClubClick,
+  hasExistingClub,
+  isCheckingClubs
 }) => {
   // Show the NoClubsView if there are no clubs and not loading
   if (adminClubs.length === 0 && !isLoading && currentView !== 'profile') {
     return (
       <NoClubsView 
-        onCreateClub={handleCreateClubClick}
+        handleCreateClubClick={handleCreateClubClick}
         isClubDialogOpen={isClubDialogOpen}
         setIsClubDialogOpen={setIsClubDialogOpen}
         clubFormData={clubFormData}
-        onClubInputChange={handleClubInputChange}
-        onCreateClubSubmit={handleCreateClub}
-        onClubFileUpload={handleClubFileUpload}
-        isLoadingProfile={isLoadingProfile}
+        handleClubInputChange={handleClubInputChange}
+        handleCreateClub={handleCreateClub}
+        handleClubFileUpload={handleClubFileUpload}
+        isLoadingProfile={isLoadingProfile || false}
         profileError={profileError}
-        onRetryProfileFetch={handleRetryProfileFetch}
+        handleRetryProfileFetch={handleRetryProfileFetch}
+        hasExistingClub={hasExistingClub}
+        isCheckingClubs={isCheckingClubs}
       />
     );
   }
@@ -103,27 +109,30 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
         isClubDialogOpen={isClubDialogOpen}
         setIsClubDialogOpen={setIsClubDialogOpen}
         clubFormData={clubFormData}
-        onClubInputChange={handleClubInputChange}
-        onCreateClub={handleCreateClub}
+        handleClubInputChange={handleClubInputChange}
+        handleCreateClub={handleCreateClub}
         isEventDialogOpen={isEventDialogOpen}
         setIsEventDialogOpen={setIsEventDialogOpen}
         eventFormData={eventFormData}
         clubs={adminClubs}
-        onEventInputChange={handleEventInputChange}
-        onCreateEvent={handleCreateEvent}
-        onClubFileUpload={handleClubFileUpload}
-        onEventFileUpload={handleEventFileUpload}
+        handleEventInputChange={handleEventInputChange}
+        handleCreateEvent={handleCreateEvent}
+        handleClubFileUpload={handleClubFileUpload}
+        handleEventFileUpload={handleEventFileUpload}
+        hasExistingClub={hasExistingClub}
       />
 
       {currentView === 'overview' && (
         <QuickViewSection
-          activeEventCount={activeEventCount}
-          pastEventCount={pastEventCount}
-          totalMembersCount={totalMembersCount}
-          averageAttendance={averageAttendance}
+          statsData={{
+            activeEventCount,
+            pastEventCount,
+            totalMembersCount,
+            averageAttendance
+          }}
           isLoading={isLoading}
           clubs={adminClubs}
-          events={clubEvents.slice(0, 5)}
+          recentEvents={clubEvents.slice(0, 5)}
           onViewEvent={handleViewEvent}
         />
       )}
@@ -134,8 +143,8 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
           isLoading={isLoading}
           onViewEvent={handleViewEvent}
           onEditEvent={handleEditEvent}
-          onRefresh={handleRefreshAfterDelete}
-          onCreateEvent={() => setIsEventDialogOpen(true)}
+          handleRefreshAfterDelete={handleRefreshAfterDelete}
+          handleCreateEventClick={() => setIsEventDialogOpen(true)}
         />
       )}
 
@@ -143,7 +152,7 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
         <ClubsSection
           clubs={adminClubs}
           isLoading={isLoading}
-          onRefresh={fetchClubAdminData}
+          handleRefreshData={fetchClubAdminData}
         />
       )}
 
@@ -151,7 +160,7 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
         <MembersSection
           members={clubMembers}
           isLoading={isLoading}
-          onRefresh={fetchClubAdminData}
+          handleRefreshData={fetchClubAdminData}
         />
       )}
 
@@ -159,13 +168,17 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
         <AttendeeSection
           eventId={selectedEventId}
           eventTitle={selectedEventTitle || 'Event'}
-          onSelectEvent={selectEventForAttendeeManagement}
+          handleSelectEvent={selectEventForAttendeeManagement}
           events={clubEvents}
         />
       )}
 
       {currentView === 'profile' && (
-        <ClubProfileSettings />
+        <ClubProfileSettings 
+          club={adminClubs[0]} 
+          handleRefreshData={fetchClubAdminData} 
+          isLoading={isLoading} 
+        />
       )}
     </div>
   );

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ClubFormData } from '@/hooks/club-admin/types';
 import { Button } from '@/components/ui/button';
@@ -16,6 +15,8 @@ interface ClubCreationFormProps {
   onSubmit: () => void;
   isSubmitting: boolean;
   isLoadingProfile: boolean;
+  hasExistingClub?: boolean;
+  isCheckingClubs?: boolean;
 }
 
 const ClubCreationForm: React.FC<ClubCreationFormProps> = ({
@@ -24,7 +25,9 @@ const ClubCreationForm: React.FC<ClubCreationFormProps> = ({
   onFileUpload,
   onSubmit,
   isSubmitting,
-  isLoadingProfile
+  isLoadingProfile,
+  hasExistingClub,
+  isCheckingClubs
 }) => {
   const [activeTab, setActiveTab] = useState('basic');
 
@@ -32,6 +35,24 @@ const ClubCreationForm: React.FC<ClubCreationFormProps> = ({
     e.preventDefault();
     onSubmit();
   };
+
+  if (hasExistingClub) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-lg font-medium mb-2">Club Limit Reached</p>
+        <p className="text-muted-foreground">You can only be an admin for one club. Please manage your existing club.</p>
+      </div>
+    );
+  }
+
+  if (isCheckingClubs) {
+    return (
+      <div className="p-6 text-center">
+        <Spinner className="mx-auto mb-4 h-8 w-8" />
+        <p className="text-muted-foreground">Checking your club status...</p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
