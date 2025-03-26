@@ -1,79 +1,41 @@
 
 import { useState } from 'react';
-
-export interface ClubFormData {
-  name: string;
-  description: string;
-  logoUrl: string;
-  category: string;
-  tagline?: string;
-  establishedYear?: string;
-  affiliation?: string;
-  whyJoin?: string;
-  regularEvents?: string;
-  signatureEvents?: string;
-  communityEngagement?: string;
-  whoCanJoin?: string;
-  membershipFee?: string;
-  howToJoin?: string;
-  presidentName?: string;
-  presidentContact?: string;
-  phoneNumber?: string;
-  website?: string;
-  facebookLink?: string;
-  instagramLink?: string;
-  twitterLink?: string;
-  discordLink?: string;
-  documentUrl?: string;
-  documentName?: string;
-}
-
-export interface EventFormData {
-  title: string;
-  description: string;
-  date: string;
-  location: string;
-  category: string;
-  maxParticipants: string;
-  clubId: string;
-  imageUrl?: string;
-  tagline?: string;
-  eventType?: string;
-  registrationDeadline?: string;
-  onlinePlatform?: string;
-  eligibility?: string;
-  teamSize?: string;
-  registrationLink?: string;
-  entryFee?: string;
-  theme?: string;
-  subTracks?: string;
-  prizePool?: string;
-  prizeCategories?: string;
-  additionalPerks?: string;
-  judgingCriteria?: string;
-  judges?: string;
-  deliverables?: string;
-  submissionPlatform?: string;
-  mentors?: string;
-  sponsors?: string;
-  contactEmail?: string;
-  communityLink?: string;
-  eventWebsite?: string;
-  eventHashtag?: string;
-  documentUrl?: string;
-  documentName?: string;
-}
+import { ClubFormData, EventFormData } from './types'; // Updated to import types from types.ts
 
 export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<void>) => {
   const [isClubDialogOpen, setIsClubDialogOpen] = useState(false);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   
-  // Initialize with empty form data
+  // Initialize with empty form data including required university fields
   const [clubFormData, setClubFormData] = useState<ClubFormData>({
     name: '',
     description: '',
     logoUrl: '',
     category: 'academic',
+    university: '', // Required university field
+    universityId: '', // Include universityId field
+    tagline: '',
+    establishedYear: '',
+    affiliation: '',
+    whyJoin: '',
+    regularEvents: '',
+    signatureEvents: '',
+    communityEngagement: '',
+    whoCanJoin: '',
+    membershipFee: 'Free',
+    howToJoin: '',
+    presidentName: '',
+    presidentContact: '',
+    executiveMembers: '',
+    advisors: '',
+    phoneNumber: '',
+    website: '',
+    facebookLink: '',
+    instagramLink: '',
+    twitterLink: '',
+    discordLink: '', 
+    documentUrl: '',
+    documentName: ''
   });
   
   const [eventFormData, setEventFormData] = useState<EventFormData>({
@@ -84,6 +46,32 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
     category: 'workshop',
     maxParticipants: '',
     clubId: '',
+    imageUrl: '',
+    tagline: '', // Now required
+    eventType: 'in-person',
+    registrationDeadline: '',
+    onlinePlatform: '',
+    eligibility: '',
+    teamSize: '',
+    registrationLink: '',
+    entryFee: 'Free',
+    theme: '',
+    subTracks: '',
+    prizePool: '',
+    prizeCategories: '',
+    additionalPerks: '',
+    judgingCriteria: '',
+    judges: '',
+    schedule: '', // Added missing schedule field
+    deliverables: '',
+    submissionPlatform: '',
+    mentors: '',
+    sponsors: '',
+    contactEmail: '',
+    communityLink: '',
+    eventWebsite: '',
+    eventHashtag: '',
+    visibility: 'public' // Required field with default value
   });
 
   // Handle input changes for club form
@@ -105,12 +93,19 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
   };
 
   // Handle file upload for club form
-  const handleClubFileUpload = (url: string, fileName: string) => {
-    setClubFormData(prev => ({
-      ...prev,
-      documentUrl: url,
-      documentName: fileName,
-    }));
+  const handleClubFileUpload = (url: string, fileName: string, type: 'logo' | 'document' = 'document') => {
+    if (type === 'logo') {
+      setClubFormData(prev => ({
+        ...prev,
+        logoUrl: url,
+      }));
+    } else {
+      setClubFormData(prev => ({
+        ...prev,
+        documentUrl: url,
+        documentName: fileName,
+      }));
+    }
   };
 
   // Handle file upload for event form
@@ -130,12 +125,36 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
     // Close the dialog
     setIsClubDialogOpen(false);
     
-    // Reset form data
+    // Reset form data with required fields included
     setClubFormData({
       name: '',
       description: '',
       logoUrl: '',
       category: 'academic',
+      university: '', // Required university field
+      universityId: '', // Include universityId field
+      tagline: '',
+      establishedYear: '',
+      affiliation: '',
+      whyJoin: '',
+      regularEvents: '',
+      signatureEvents: '',
+      communityEngagement: '',
+      whoCanJoin: '',
+      membershipFee: 'Free',
+      howToJoin: '',
+      presidentName: '',
+      presidentContact: '',
+      executiveMembers: '',
+      advisors: '',
+      phoneNumber: '',
+      website: '',
+      facebookLink: '',
+      instagramLink: '',
+      twitterLink: '',
+      discordLink: '', 
+      documentUrl: '',
+      documentName: ''
     });
     
     // Refresh club data if callback provided
@@ -161,6 +180,32 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
       category: 'workshop',
       maxParticipants: '',
       clubId: '',
+      imageUrl: '',
+      tagline: '', // Required field
+      eventType: 'in-person',
+      registrationDeadline: '',
+      onlinePlatform: '',
+      eligibility: '',
+      teamSize: '',
+      registrationLink: '',
+      entryFee: 'Free',
+      theme: '',
+      subTracks: '',
+      prizePool: '',
+      prizeCategories: '',
+      additionalPerks: '',
+      judgingCriteria: '',
+      judges: '',
+      schedule: '', // Added missing schedule field
+      deliverables: '',
+      submissionPlatform: '',
+      mentors: '',
+      sponsors: '',
+      contactEmail: '',
+      communityLink: '',
+      eventWebsite: '',
+      eventHashtag: '',
+      visibility: 'public' // Required field
     });
     
     // Refresh event data if callback provided

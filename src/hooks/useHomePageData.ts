@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Event, Club } from '@/types';
+import { Event, Club, EventStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useHomePageData = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -10,13 +11,26 @@ export const useHomePageData = () => {
   const [featuredEvent, setFeaturedEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchData() {
       try {
         setIsLoading(true);
         
-        // Fetch clubs from Supabase with status filter
+        let userUniversity = null;
+        if (user) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('university')
+            .eq('id', user.id)
+            .single();
+            
+          if (profileData) {
+            userUniversity = profileData.university;
+          }
+        }
+        
         const { data: clubsData, error: clubsError } = await supabase
           .from('clubs')
           .select('*')
@@ -24,7 +38,6 @@ export const useHomePageData = () => {
         
         if (clubsError) throw clubsError;
         
-        // Get club members count for each club
         const clubsWithCounts = await Promise.all(
           clubsData.map(async (club) => {
             const { count, error: countError } = await supabase
@@ -65,16 +78,25 @@ export const useHomePageData = () => {
           })
         );
         
-        // Fetch events from Supabase - FIX: Specify the relationship explicitly using !events_club_id_fkey
-        const { data: eventsData, error: eventsError } = await supabase
+        let eventsQuery = supabase
           .from('events')
-          .select('*, clubs!events_club_id_fkey(*)')
-          .eq('clubs.status', 'approved')
-          .order('date');
+          .select('*, clubs!events_club_id_fkey(*)');
+        
+        if (user && userUniversity) {
+          // Fixed OR clause syntax
+          eventsQuery = eventsQuery
+            .eq('clubs.status', 'approved')
+            .or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${JSON.stringify(userUniversity)})`);
+        } else {
+          eventsQuery = eventsQuery
+            .eq('clubs.status', 'approved')
+            .eq('visibility', 'public');
+        }
+        
+        const { data: eventsData, error: eventsError } = await eventsQuery.order('date');
         
         if (eventsError) throw eventsError;
         
-        // Get participants count and club details for each event
         const eventsWithDetails = await Promise.all(
           eventsData.map(async (event) => {
             const { count: participantsCount } = await supabase
@@ -82,10 +104,8 @@ export const useHomePageData = () => {
               .select('*', { count: 'exact', head: true })
               .eq('event_id', event.id);
             
-            // Get club data (already joined in the query above)
             const clubData = event.clubs;
             
-            // Get club member count
             const { count: memberCount } = await supabase
               .from('club_members')
               .select('*', { count: 'exact', head: true })
@@ -99,11 +119,12 @@ export const useHomePageData = () => {
               location: event.location,
               imageUrl: event.image_url,
               category: event.category,
-              status: event.status,
+              status: (event.status || 'upcoming') as EventStatus,
               participants: participantsCount || 0,
               maxParticipants: event.max_participants || undefined,
               eventType: event.event_type,
               tagline: event.tagline,
+              visibility: (event.visibility || 'public') as 'public' | 'university_only',
               registrationDeadline: event.registration_deadline,
               onlinePlatform: event.online_platform,
               eligibility: event.eligibility,
@@ -163,7 +184,6 @@ export const useHomePageData = () => {
         setClubs(clubsWithCounts);
         setEvents(eventsWithDetails);
         
-        // Set the featured event (first upcoming event)
         const upcomingEvents = eventsWithDetails.filter(event => event.status === 'upcoming');
         if (upcomingEvents.length > 0) {
           setFeaturedEvent(upcomingEvents[0]);
@@ -181,7 +201,7 @@ export const useHomePageData = () => {
     }
     
     fetchData();
-  }, [toast]);
+  }, [toast, user]);
 
   return {
     events,

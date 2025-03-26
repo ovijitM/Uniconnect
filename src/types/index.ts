@@ -1,4 +1,3 @@
-
 export interface Club {
   id: string;
   name: string;
@@ -9,6 +8,8 @@ export interface Club {
   rejectionReason?: string;
   memberCount: number;
   events: Event[];
+  university?: string;
+  universityId?: string;
   
   // New fields
   tagline?: string;
@@ -49,7 +50,10 @@ export interface Event {
   participants: number;
   maxParticipants?: number;
   
-  // New fields
+  // New field for visibility
+  visibility?: 'public' | 'university_only';
+  
+  // Existing fields
   eventType?: string;
   tagline?: string;
   registrationDeadline?: string;
@@ -96,5 +100,14 @@ export interface Collaboration {
 export interface EventCollaborator {
   eventId: string;
   clubId: string;
+  createdAt: string;
+}
+
+// New interface for University
+export interface University {
+  id: string;
+  name: string;
+  logoUrl?: string;
+  description?: string;
   createdAt: string;
 }

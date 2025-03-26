@@ -27,7 +27,7 @@ interface EventDialogWrapperProps {
     category: string;
     maxParticipants: string;
     clubId: string;
-    tagline?: string;
+    tagline: string; // Changed from optional to required
     eventType?: string;
     registrationDeadline?: string;
     onlinePlatform?: string;
@@ -52,6 +52,7 @@ interface EventDialogWrapperProps {
     eventHashtag?: string;
     documentUrl?: string;
     documentName?: string;
+    visibility: 'public' | 'university_only'; // Required field
   };
   clubs: any[];
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;

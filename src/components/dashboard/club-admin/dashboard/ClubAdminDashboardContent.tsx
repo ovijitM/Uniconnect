@@ -1,12 +1,15 @@
+
 import React from 'react';
-import NoClubsViewWrapper from './views/NoClubsView';
+import NoClubsView from './views/NoClubsView';
 import EventsView from './views/EventsView';
 import ClubsView from './views/ClubsView';
 import MembersView from './views/MembersView';
 import AttendanceView from './views/AttendanceView';
 import ProfileView from './views/ProfileView';
 import OverviewView from './views/OverviewView';
-import { ClubFormData, EventFormData } from '@/hooks/club-admin/useClubAdminForms';
+import { ClubFormData, EventFormData } from '@/hooks/club-admin/types';
+import { Card } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 interface ClubAdminDashboardContentProps {
   currentView: 'overview' | 'events' | 'clubs' | 'members' | 'attendance' | 'profile';
@@ -36,6 +39,9 @@ interface ClubAdminDashboardContentProps {
   fetchClubAdminData: () => Promise<void>;
   selectEventForAttendeeManagement: (eventId: string, eventTitle: string) => void;
   handleClubFileUpload?: (url: string, fileName: string) => void;
+  handleEventFileUpload?: (url: string, fileName: string) => void;
+  isLoadingProfile?: boolean;
+  profileError?: string;
 }
 
 const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
@@ -65,11 +71,13 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
   handleRefreshAfterDelete,
   fetchClubAdminData,
   selectEventForAttendeeManagement,
-  handleClubFileUpload
+  handleClubFileUpload,
+  handleEventFileUpload
 }) => {
+  // Show empty state for no clubs
   if (adminClubs.length === 0 && !isLoading) {
     return (
-      <NoClubsViewWrapper 
+      <NoClubsView 
         isClubDialogOpen={isClubDialogOpen}
         setIsClubDialogOpen={setIsClubDialogOpen}
         clubFormData={clubFormData}
@@ -80,93 +88,150 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
     );
   }
 
-  switch (currentView) {
-    case 'events':
-      return (
-        <EventsView 
-          events={clubEvents}
-          isLoading={isLoading}
-          onEditEvent={handleEditEvent}
-          onViewEvent={handleViewEvent}
-          onCreateEvent={() => setIsEventDialogOpen(true)}
-          onDeleteEvent={handleRefreshAfterDelete}
-          onManageAttendees={selectEventForAttendeeManagement}
-        />
-      );
-    
-    case 'clubs':
-      return (
-        <ClubsView 
-          clubs={adminClubs}
-          isLoading={isLoading}
-          onRefresh={fetchClubAdminData}
-        />
-      );
-    
-    case 'members':
-      return (
-        <MembersView 
-          members={clubMembers}
-          isLoading={isLoading}
-        />
-      );
-    
-    case 'attendance':
-      return (
-        <AttendanceView 
-          events={clubEvents}
-          isLoading={isLoading}
-          selectedEventId={selectedEventId}
-          selectedEventTitle={selectedEventTitle}
-          onEditEvent={handleEditEvent}
-          onViewEvent={handleViewEvent}
-          onCreateEvent={() => setIsEventDialogOpen(true)}
-          onDeleteEvent={handleRefreshAfterDelete}
-          onManageAttendees={selectEventForAttendeeManagement}
-        />
-      );
-    
-    case 'profile':
-      return (
-        <ProfileView 
-          clubs={adminClubs}
-          isLoading={isLoading}
-          onRefresh={fetchClubAdminData}
-          onCreateClub={() => setIsClubDialogOpen(true)}
-        />
-      );
-    
-    default:
-      return (
-        <OverviewView 
-          adminClubs={adminClubs}
-          clubEvents={clubEvents}
-          clubMembers={clubMembers}
-          activeEventCount={activeEventCount}
-          pastEventCount={pastEventCount}
-          totalMembersCount={totalMembersCount}
-          averageAttendance={averageAttendance}
-          isLoading={isLoading}
-          selectedEventId={selectedEventId}
-          selectedEventTitle={selectedEventTitle}
-          isClubDialogOpen={isClubDialogOpen}
-          setIsClubDialogOpen={setIsClubDialogOpen}
-          clubFormData={clubFormData}
-          handleClubInputChange={handleClubInputChange}
-          handleCreateClub={handleCreateClub}
-          isEventDialogOpen={isEventDialogOpen}
-          setIsEventDialogOpen={setIsEventDialogOpen}
-          eventFormData={eventFormData}
-          handleEventInputChange={handleEventInputChange}
-          handleCreateEvent={handleCreateEvent}
-          handleViewEvent={handleViewEvent}
-          handleEditEvent={handleEditEvent}
-          handleRefreshAfterDelete={handleRefreshAfterDelete}
-          fetchClubAdminData={fetchClubAdminData}
-          selectEventForAttendeeManagement={selectEventForAttendeeManagement}
-        />
-      );
-  }
+  // Render the current view content with consistent card layout
+  const renderViewContent = () => {
+    switch (currentView) {
+      case 'events':
+        return (
+          <EventsView 
+            events={clubEvents}
+            isLoading={isLoading}
+            onEditEvent={handleEditEvent}
+            onViewEvent={handleViewEvent}
+            onCreateEvent={() => setIsEventDialogOpen(true)}
+            onDeleteEvent={handleRefreshAfterDelete}
+            onManageAttendees={selectEventForAttendeeManagement}
+            isEventDialogOpen={isEventDialogOpen}
+            setIsEventDialogOpen={setIsEventDialogOpen}
+            eventFormData={eventFormData}
+            handleEventInputChange={handleEventInputChange}
+            handleCreateEvent={handleCreateEvent}
+            handleEventFileUpload={handleEventFileUpload}
+            clubs={adminClubs}
+          />
+        );
+      
+      case 'clubs':
+        return (
+          <ClubsView 
+            clubs={adminClubs}
+            isLoading={isLoading}
+            onRefresh={fetchClubAdminData}
+            isClubDialogOpen={isClubDialogOpen}
+            setIsClubDialogOpen={setIsClubDialogOpen}
+            clubFormData={clubFormData}
+            handleClubInputChange={handleClubInputChange}
+            handleCreateClub={handleCreateClub}
+            handleClubFileUpload={handleClubFileUpload}
+          />
+        );
+      
+      case 'members':
+        return (
+          <MembersView 
+            members={clubMembers}
+            isLoading={isLoading}
+          />
+        );
+      
+      case 'attendance':
+        return (
+          <AttendanceView 
+            events={clubEvents}
+            isLoading={isLoading}
+            selectedEventId={selectedEventId}
+            selectedEventTitle={selectedEventTitle}
+            onEditEvent={handleEditEvent}
+            onViewEvent={handleViewEvent}
+            onCreateEvent={() => setIsEventDialogOpen(true)}
+            onDeleteEvent={handleRefreshAfterDelete}
+            onManageAttendees={selectEventForAttendeeManagement}
+          />
+        );
+      
+      case 'profile':
+        return (
+          <ProfileView 
+            clubs={adminClubs}
+            isLoading={isLoading}
+            onRefresh={fetchClubAdminData}
+            onCreateClub={() => setIsClubDialogOpen(true)}
+            clubFormData={clubFormData}
+            handleClubInputChange={handleClubInputChange}
+            handleCreateClub={handleCreateClub}
+            handleClubFileUpload={handleClubFileUpload}
+            isClubDialogOpen={isClubDialogOpen}
+            setIsClubDialogOpen={setIsClubDialogOpen}
+          />
+        );
+      
+      default:
+        return (
+          <OverviewView 
+            adminClubs={adminClubs}
+            clubEvents={clubEvents}
+            clubMembers={clubMembers}
+            activeEventCount={activeEventCount}
+            pastEventCount={pastEventCount}
+            totalMembersCount={totalMembersCount}
+            averageAttendance={averageAttendance}
+            isLoading={isLoading}
+            selectedEventId={selectedEventId}
+            selectedEventTitle={selectedEventTitle}
+            isClubDialogOpen={isClubDialogOpen}
+            setIsClubDialogOpen={setIsClubDialogOpen}
+            clubFormData={clubFormData}
+            handleClubInputChange={handleClubInputChange}
+            handleCreateClub={handleCreateClub}
+            handleClubFileUpload={handleClubFileUpload}
+            isEventDialogOpen={isEventDialogOpen}
+            setIsEventDialogOpen={setIsEventDialogOpen}
+            eventFormData={eventFormData}
+            handleEventInputChange={handleEventInputChange}
+            handleCreateEvent={handleCreateEvent}
+            handleEventFileUpload={handleEventFileUpload}
+            handleViewEvent={handleViewEvent}
+            handleEditEvent={handleEditEvent}
+            handleRefreshAfterDelete={handleRefreshAfterDelete}
+            fetchClubAdminData={fetchClubAdminData}
+            selectEventForAttendeeManagement={selectEventForAttendeeManagement}
+          />
+        );
+    }
+  };
+
+  // Render a title based on the current view
+  const getViewTitle = () => {
+    switch (currentView) {
+      case 'events': return 'Manage Events';
+      case 'clubs': return 'Manage Clubs';
+      case 'members': return 'Club Members';
+      case 'attendance': return 'Event Attendance';
+      case 'profile': return 'Club Profile';
+      default: return 'Dashboard Overview';
+    }
+  };
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Page header */}
+      <div className="flex flex-col space-y-2">
+        <h1 className="text-2xl font-bold tracking-tight">{getViewTitle()}</h1>
+        <p className="text-muted-foreground">
+          {currentView === 'overview' 
+            ? 'Check your club activity and key metrics.' 
+            : `Manage your ${currentView} and related activities.`}
+        </p>
+      </div>
+      
+      <Separator />
+      
+      {/* Main content area */}
+      <Card className="p-6">
+        {renderViewContent()}
+      </Card>
+    </div>
+  );
 };
 
 export default ClubAdminDashboardContent;

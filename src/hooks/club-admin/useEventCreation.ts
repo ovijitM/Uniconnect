@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -11,7 +10,6 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCollaborators, setSelectedCollaborators] = useState<string[]>([]);
 
-  // Convert array-like string inputs to actual arrays
   const convertToArray = (value: string): string[] | null => {
     if (!value || !value.trim()) return null;
     return value.split(',').map(item => item.trim()).filter(Boolean);
@@ -26,15 +24,29 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
     try {
       setIsSubmitting(true);
       
-      // Check if the user has clubs if clubId is not set
+      console.log('Creating event with data:', eventFormData);
+      console.log('User ID:', userId);
+      
       if (!eventFormData.clubId) {
-        const { data: clubsData } = await supabase
+        const { data: clubsData, error: clubsError } = await supabase
           .from('club_admins')
           .select('club_id')
           .eq('user_id', userId);
           
+        if (clubsError) {
+          console.error('Error fetching user clubs:', clubsError);
+          toast({
+            title: 'Error',
+            description: 'Failed to fetch your clubs. Please try again.',
+            variant: 'destructive',
+          });
+          setIsSubmitting(false);
+          return;
+        }
+          
         if (clubsData && clubsData.length > 0) {
           eventFormData.clubId = clubsData[0].club_id;
+          console.log('Using first club ID:', eventFormData.clubId);
         } else {
           toast({
             title: 'Error',
@@ -46,7 +58,6 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         }
       }
       
-      // Validate form data
       if (!validateEventData(eventFormData, eventFormData.clubId)) {
         setIsSubmitting(false);
         return;
@@ -63,9 +74,8 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
           max_participants: eventFormData.maxParticipants ? parseInt(eventFormData.maxParticipants) : null,
           club_id: eventFormData.clubId,
           status: 'upcoming',
-          image_url: eventFormData.imageUrl || null, // Added imageUrl field
-          
-          // New fields
+          image_url: eventFormData.imageUrl || null,
+          visibility: eventFormData.visibility,
           tagline: eventFormData.tagline || null,
           event_type: eventFormData.eventType,
           registration_deadline: eventFormData.registrationDeadline ? new Date(eventFormData.registrationDeadline).toISOString() : null,
@@ -88,13 +98,24 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
           contact_email: eventFormData.contactEmail || null,
           community_link: eventFormData.communityLink || null,
           event_website: eventFormData.eventWebsite || null,
-          event_hashtag: eventFormData.eventHashtag || null
+          event_hashtag: eventFormData.eventHashtag || null,
+          schedule: eventFormData.schedule ? JSON.parse(eventFormData.schedule) : null
         })
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating event:', error);
+        toast({
+          title: 'Error Creating Event',
+          description: `Failed to create event: ${error.message || 'Please try again.'}`,
+          variant: 'destructive',
+        });
+        setIsSubmitting(false);
+        return;
+      }
       
-      // Add collaborators if any were selected
+      console.log('Event created successfully:', data);
+      
       if (collaborators.length > 0 && data && data.length > 0) {
         const eventId = data[0].id;
         
@@ -109,7 +130,6 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         
         if (collaboratorsError) {
           console.error('Error adding collaborators:', collaboratorsError);
-          // We won't throw here as the event was successfully created
         }
       }
       
@@ -119,7 +139,6 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         variant: 'default',
       });
       
-      // Reset form and close dialog
       setEventFormData({
         title: '',
         description: '',
@@ -128,7 +147,7 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         category: '',
         maxParticipants: '',
         clubId: '',
-        imageUrl: '', // Reset imageUrl field
+        imageUrl: '',
         tagline: '',
         eventType: 'in-person',
         registrationDeadline: '',
@@ -144,6 +163,7 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         additionalPerks: '',
         judgingCriteria: '',
         judges: '',
+        schedule: '',
         deliverables: '',
         submissionPlatform: '',
         mentors: '',
@@ -151,18 +171,18 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         contactEmail: '',
         communityLink: '',
         eventWebsite: '',
-        eventHashtag: ''
+        eventHashtag: '',
+        visibility: 'public'
       });
       setSelectedCollaborators([]);
       setIsEventDialogOpen(false);
       
-      // Refresh event data
       onSuccess();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating event:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create event. Please try again.',
+        description: `Failed to create event: ${error.message || 'Please try again.'}`,
         variant: 'destructive',
       });
     } finally {

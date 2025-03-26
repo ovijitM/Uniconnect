@@ -1,65 +1,80 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { format } from 'date-fns';
+import { CalendarIcon, MapPinIcon, UsersIcon, TagIcon, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft } from 'lucide-react';
 
 interface EventHeaderProps {
   title: string;
-  description: string;
-  category: string;
-  status: string;
-  organizerId: string;
-  organizerName: string;
   tagline?: string;
+  date: string;
+  location: string;
+  category: string;
+  participants: number;
+  maxParticipants?: number;
+  visibility?: 'public' | 'university_only';
+  organizerName: string;
+  organizerUniversity?: string;
 }
 
 const EventHeader: React.FC<EventHeaderProps> = ({
   title,
-  description,
+  tagline,
+  date,
+  location,
   category,
-  status,
-  organizerId,
+  participants,
+  maxParticipants,
+  visibility,
   organizerName,
-  tagline
+  organizerUniversity
 }) => {
-  const statusColors = {
-    upcoming: 'bg-blue-100 text-blue-800 border-blue-200',
-    ongoing: 'bg-green-100 text-green-800 border-green-200',
-    past: 'bg-gray-100 text-gray-800 border-gray-200',
-  };
+  const formattedDate = format(new Date(date), 'EEEE, MMMM d, yyyy h:mm a');
 
   return (
-    <>
-      <div className="mb-6">
-        <Link to="/events" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Events
-        </Link>
+    <div className="mb-8">
+      <div className="flex flex-wrap gap-2 mb-3">
+        <Badge variant="outline" className="capitalize">
+          {category}
+        </Badge>
+        {visibility === 'university_only' && (
+          <Badge variant="outline" className="flex items-center gap-1 bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-800 dark:text-yellow-300">
+            <Lock className="h-3 w-3" />
+            <span>{organizerUniversity || 'University'} Only</span>
+          </Badge>
+        )}
       </div>
       
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
-          <Badge variant="outline" className="capitalize">
-            {category}
-          </Badge>
-          <Badge className={`${statusColors[status as keyof typeof statusColors]} capitalize`}>
-            {status}
-          </Badge>
-          <div className="text-sm text-muted-foreground">
-            Organized by:{' '}
-            <Link to={`/clubs/${organizerId}`} className="text-primary hover:underline">
-              {organizerName}
-            </Link>
-          </div>
+      <h1 className="text-3xl font-semibold mb-3">{title}</h1>
+      
+      {tagline && (
+        <p className="text-lg text-muted-foreground mb-4 italic">{tagline}</p>
+      )}
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <CalendarIcon className="h-5 w-5" />
+          <span>{formattedDate}</span>
         </div>
-        <h1 className="text-3xl font-semibold mb-2">{title}</h1>
-        {tagline && (
-          <p className="text-lg text-muted-foreground mb-4 italic">{tagline}</p>
-        )}
-        <p className="text-muted-foreground whitespace-pre-line">{description}</p>
+        
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <MapPinIcon className="h-5 w-5" />
+          <span>{location}</span>
+        </div>
+        
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <UsersIcon className="h-5 w-5" />
+          <span>
+            {participants} {maxParticipants ? `/ ${maxParticipants}` : ''} participants
+          </span>
+        </div>
+        
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <TagIcon className="h-5 w-5" />
+          <span>By {organizerName}</span>
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 

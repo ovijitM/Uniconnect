@@ -4,11 +4,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
-  FileSpreadsheet, 
+  Building,
   Settings, 
   LogOut,
   Bell,
-  Shield
+  Shield,
+  GraduationCap,
+  AlertCircle
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -64,8 +66,8 @@ const AdminSidebar: React.FC = () => {
           <SidebarMenuItem>
             <SidebarMenuButton 
               isActive={isActive('/admin-dashboard/users')}
-              onClick={() => navigate('/admin-dashboard?tab=users')}
-              tooltip="Users"
+              onClick={() => navigate('/admin-dashboard/users')}
+              tooltip="Users Management"
             >
               <Users className="h-5 w-5" />
               <span>Users</span>
@@ -75,22 +77,44 @@ const AdminSidebar: React.FC = () => {
           <SidebarMenuItem>
             <SidebarMenuButton 
               isActive={isActive('/admin-dashboard/clubs')}
-              onClick={() => navigate('/admin-dashboard?tab=clubs')}
-              tooltip="Clubs"
+              onClick={() => navigate('/admin-dashboard/clubs')}
+              tooltip="Clubs Management"
             >
-              <FileSpreadsheet className="h-5 w-5" />
+              <Building className="h-5 w-5" />
               <span>Clubs</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           
           <SidebarMenuItem>
             <SidebarMenuButton 
-              isActive={isActive('/admin-dashboard/notifications')}
-              onClick={() => navigate('/admin-dashboard/notifications')}
-              tooltip="Notifications"
+              isActive={isActive('/admin-dashboard/universities')}
+              onClick={() => navigate('/admin-dashboard/universities')}
+              tooltip="Universities"
+            >
+              <GraduationCap className="h-5 w-5" />
+              <span>Universities</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              isActive={isActive('/admin-dashboard/alerts')}
+              onClick={() => navigate('/admin-dashboard/alerts')}
+              tooltip="System Alerts"
+            >
+              <AlertCircle className="h-5 w-5" />
+              <span>System Alerts</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              isActive={isActive('/admin-dashboard/activity')}
+              onClick={() => navigate('/admin-dashboard/activity')}
+              tooltip="Recent Activity"
             >
               <Bell className="h-5 w-5" />
-              <span>Notifications</span>
+              <span>Activity</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           

@@ -80,8 +80,48 @@ export const useEventParticipation = (
     }
   };
 
+  const handleUnregister = async () => {
+    try {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to manage your event registrations",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (!eventId) return;
+      
+      const { error } = await supabase
+        .from('event_participants')
+        .delete()
+        .eq('event_id', eventId)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      setIsParticipating(false);
+      setEvent(prev => prev ? { ...prev, participants: Math.max(0, prev.participants - 1) } : null);
+      
+      toast({
+        title: "Successfully unregistered",
+        description: `You've canceled your registration for ${event?.title}`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Error unregistering from event:', error);
+      toast({
+        title: "Failed to unregister",
+        description: "There was an error canceling your registration. Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     isParticipating,
-    handleParticipate
+    handleParticipate,
+    handleUnregister
   };
 };

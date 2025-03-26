@@ -1,15 +1,8 @@
 
 import React, { createContext, useContext } from 'react';
-import { User, UserRole, AuthState } from '@/types/auth';
+import { User, UserRole, AuthState, AuthContextType } from '@/types/auth';
 import { useAuthSession } from '@/hooks/useAuthSession';
 import { useAuthActions } from '@/hooks/useAuthActions';
-
-interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<User>;
-  signup: (email: string, password: string, name: string, role: UserRole) => Promise<User>;
-  logout: () => void;
-  updateUser: (user: Partial<User>) => void;
-}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, X } from 'lucide-react';
@@ -11,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -21,14 +21,27 @@ const EventsPage: React.FC = () => {
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchEvents() {
       try {
         setIsLoading(true);
         
-        // Fetch events from Supabase
-        const { data: eventsData, error: eventsError } = await supabase
+        let userUniversity = null;
+        if (user) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('university')
+            .eq('id', user.id)
+            .single();
+            
+          if (profileData) {
+            userUniversity = profileData.university;
+          }
+        }
+        
+        let eventsQuery = supabase
           .from('events')
           .select(`
             id,
@@ -41,13 +54,20 @@ const EventsPage: React.FC = () => {
             status,
             max_participants,
             club_id,
+            visibility,
             event_participants(count)
-          `)
-          .order('date');
+          `);
+          
+        if (user && userUniversity) {
+          eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${JSON.stringify(userUniversity)})`);
+        } else {
+          eventsQuery = eventsQuery.eq('visibility', 'public');
+        }
+        
+        const { data: eventsData, error: eventsError } = await eventsQuery.order('date');
         
         if (eventsError) throw eventsError;
         
-        // Get club details for each event
         const eventsWithOrganizers = await Promise.all(
           eventsData.map(async (event) => {
             const { data: clubData } = await supabase
@@ -58,10 +78,51 @@ const EventsPage: React.FC = () => {
                 description,
                 logo_url,
                 category,
+                university,
                 club_members(count)
               `)
               .eq('id', event.club_id)
               .single();
+            
+            let participants = 0;
+            if (event.event_participants && Array.isArray(event.event_participants) && event.event_participants.length > 0) {
+              const countData = event.event_participants[0];
+              
+              if (typeof countData === 'number') {
+                participants = countData;
+              } else if (typeof countData === 'string') {
+                participants = parseInt(countData, 10) || 0;
+              } else if (countData && typeof countData === 'object') {
+                const rawCount = countData.count;
+                if (typeof rawCount === 'number') {
+                  participants = rawCount;
+                } else if (typeof rawCount === 'string') {
+                  participants = parseInt(rawCount, 10) || 0;
+                }
+              }
+              
+              participants = isNaN(participants) ? 0 : participants;
+            }
+            
+            let memberCount = 0;
+            if (clubData.club_members && Array.isArray(clubData.club_members) && clubData.club_members.length > 0) {
+              const countData = clubData.club_members[0];
+              
+              if (typeof countData === 'number') {
+                memberCount = countData;
+              } else if (typeof countData === 'string') {
+                memberCount = parseInt(countData, 10) || 0;
+              } else if (countData && typeof countData === 'object') {
+                const rawCount = countData.count;
+                if (typeof rawCount === 'number') {
+                  memberCount = rawCount;
+                } else if (typeof rawCount === 'string') {
+                  memberCount = parseInt(rawCount, 10) || 0;
+                }
+              }
+              
+              memberCount = isNaN(memberCount) ? 0 : memberCount;
+            }
             
             return {
               id: event.id,
@@ -71,8 +132,9 @@ const EventsPage: React.FC = () => {
               location: event.location,
               imageUrl: event.image_url,
               category: event.category,
-              status: event.status,
-              participants: event.event_participants[0]?.count || 0,
+              status: (event.status || 'upcoming') as EventStatus,
+              visibility: (event.visibility || 'public') as 'public' | 'university_only',
+              participants: participants,
               maxParticipants: event.max_participants || undefined,
               organizer: {
                 id: clubData.id,
@@ -80,7 +142,8 @@ const EventsPage: React.FC = () => {
                 description: clubData.description,
                 logoUrl: clubData.logo_url,
                 category: clubData.category,
-                memberCount: clubData.club_members[0]?.count || 0,
+                university: clubData.university,
+                memberCount: memberCount,
                 events: []
               }
             };
@@ -89,7 +152,6 @@ const EventsPage: React.FC = () => {
         
         setEvents(eventsWithOrganizers);
         
-        // Extract unique categories
         if (eventsWithOrganizers.length > 0) {
           const uniqueCategories = Array.from(new Set(eventsWithOrganizers.map(event => event.category)));
           setCategories(uniqueCategories);
@@ -107,13 +169,11 @@ const EventsPage: React.FC = () => {
     }
     
     fetchEvents();
-  }, [toast]);
+  }, [toast, user]);
 
   useEffect(() => {
-    // Filter events based on search, status, and categories
     let filtered = [...events];
     
-    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(event => 
         event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -122,12 +182,10 @@ const EventsPage: React.FC = () => {
       );
     }
     
-    // Filter by status
     if (selectedStatus !== 'all') {
       filtered = filtered.filter(event => event.status === selectedStatus);
     }
     
-    // Filter by categories
     if (selectedCategories.length > 0) {
       filtered = filtered.filter(event => selectedCategories.includes(event.category));
     }

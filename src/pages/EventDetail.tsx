@@ -15,10 +15,14 @@ import EventThemeAndPrizes from '@/components/event-detail/EventThemeAndPrizes';
 import EventSubmissionAndContact from '@/components/event-detail/EventSubmissionAndContact';
 import EventCollaborators from '@/components/event-detail/EventCollaborators';
 import EventReviews from '@/components/event-detail/EventReviews';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Lock } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const EventDetailPage: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
-  const { event, isLoading, isParticipating, handleParticipate } = useEventDetail(eventId);
+  const { event, isLoading, isParticipating, canAccess, handleParticipate, handleUnregister } = useEventDetail(eventId);
+  const { user } = useAuth();
 
   if (isLoading) {
     return (
@@ -36,17 +40,33 @@ const EventDetailPage: React.FC = () => {
     );
   }
 
+  // Fix the type error: Check if user exists and if the event visibility is restricted
+  const isUniversityRestricted = event.visibility === 'university_only' && !canAccess && user !== null;
+
   return (
     <Layout>
       <EventHeader 
         title={event.title}
-        description={event.description}
-        category={event.category}
-        status={event.status}
-        organizerId={event.organizer.id}
-        organizerName={event.organizer.name}
         tagline={event.tagline}
+        date={event.date}
+        location={event.location}
+        category={event.category}
+        participants={event.participants}
+        maxParticipants={event.maxParticipants}
+        visibility={event.visibility}
+        organizerName={event.organizer.name}
+        organizerUniversity={event.organizer.university}
       />
+
+      {isUniversityRestricted && (
+        <Alert className="mb-6 border-amber-500 bg-amber-50 dark:bg-amber-900/20">
+          <Lock className="h-4 w-4 text-amber-500" />
+          <AlertTitle>University-Only Event</AlertTitle>
+          <AlertDescription>
+            This event is only available to students from {event.organizer.university}.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <motion.div 
@@ -120,6 +140,9 @@ const EventDetailPage: React.FC = () => {
               status={event.status}
               isParticipating={isParticipating}
               onParticipate={handleParticipate}
+              onUnregister={handleUnregister}
+              isDisabled={isUniversityRestricted}
+              disabledReason={isUniversityRestricted ? "This event is only for students from " + event.organizer.university : undefined}
             />
           </div>
 
@@ -128,6 +151,7 @@ const EventDetailPage: React.FC = () => {
             name={event.organizer.name}
             logoUrl={event.organizer.logoUrl}
             description={event.organizer.description}
+            university={event.organizer.university}
           />
         </motion.div>
       </div>

@@ -1,17 +1,20 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, ExternalLink } from 'lucide-react';
+import { Calendar, ExternalLink, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 interface RegisteredEventsProps {
   events: any[];
   isLoading: boolean;
+  onUnregister?: (eventId: string) => void;
 }
 
-const RegisteredEvents: React.FC<RegisteredEventsProps> = ({ events, isLoading }) => {
+const RegisteredEvents: React.FC<RegisteredEventsProps> = ({ events, isLoading, onUnregister }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -23,6 +26,22 @@ const RegisteredEvents: React.FC<RegisteredEventsProps> = ({ events, isLoading }
       minute: 'numeric',
       hour12: true
     }).format(date);
+  };
+  
+  const handleUnregister = (eventId: string, eventTitle: string) => {
+    if (!onUnregister) {
+      toast({
+        title: "Action not available",
+        description: "Unable to unregister at this time.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Confirm before unregistering
+    if (window.confirm(`Are you sure you want to unregister from ${eventTitle}?`)) {
+      onUnregister(eventId);
+    }
   };
   
   return (
@@ -49,13 +68,25 @@ const RegisteredEvents: React.FC<RegisteredEventsProps> = ({ events, isLoading }
                   <h4 className="font-semibold">{event.title}</h4>
                   <p className="text-sm text-muted-foreground">{formatDate(event.date)}</p>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => navigate(`/events/${event.id}`)}
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
+                <div className="flex space-x-2">
+                  {onUnregister && event.status === 'upcoming' && (
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:bg-destructive/10"
+                      onClick={() => handleUnregister(event.id, event.title)}
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => navigate(`/events/${event.id}`)}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

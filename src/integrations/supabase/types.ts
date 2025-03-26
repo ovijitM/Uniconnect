@@ -11,7 +11,7 @@ export type Database = {
     Tables: {
       club_activity_posts: {
         Row: {
-          club_id: string
+          club_id: string | null
           content: string
           created_at: string
           id: string
@@ -19,15 +19,15 @@ export type Database = {
           title: string
         }
         Insert: {
-          club_id: string
+          club_id?: string | null
           content: string
           created_at?: string
-          id: string
+          id?: string
           image_url?: string | null
           title: string
         }
         Update: {
-          club_id?: string
+          club_id?: string | null
           content?: string
           created_at?: string
           id?: string
@@ -72,21 +72,21 @@ export type Database = {
       }
       club_announcements: {
         Row: {
-          club_id: string
+          club_id: string | null
           content: string
           created_at: string
           id: string
           title: string
         }
         Insert: {
-          club_id: string
+          club_id?: string | null
           content: string
           created_at?: string
-          id: string
+          id?: string
           title: string
         }
         Update: {
-          club_id?: string
+          club_id?: string | null
           content?: string
           created_at?: string
           id?: string
@@ -106,24 +106,24 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          requested_club_id: string
-          requester_club_id: string
+          requested_club_id: string | null
+          requester_club_id: string | null
           status: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
-          requested_club_id: string
-          requester_club_id: string
+          requested_club_id?: string | null
+          requester_club_id?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
-          requested_club_id?: string
-          requester_club_id?: string
+          requested_club_id?: string | null
+          requester_club_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -179,6 +179,8 @@ export type Database = {
           created_at: string
           description: string
           discord_link: string | null
+          document_name: string | null
+          document_url: string | null
           established_year: number | null
           executive_members: Json | null
           facebook_link: string | null
@@ -197,6 +199,8 @@ export type Database = {
           status: string
           tagline: string | null
           twitter_link: string | null
+          university: string | null
+          university_id: string | null
           updated_at: string
           website: string | null
           who_can_join: string | null
@@ -210,6 +214,8 @@ export type Database = {
           created_at?: string
           description: string
           discord_link?: string | null
+          document_name?: string | null
+          document_url?: string | null
           established_year?: number | null
           executive_members?: Json | null
           facebook_link?: string | null
@@ -228,6 +234,8 @@ export type Database = {
           status?: string
           tagline?: string | null
           twitter_link?: string | null
+          university?: string | null
+          university_id?: string | null
           updated_at?: string
           website?: string | null
           who_can_join?: string | null
@@ -241,6 +249,8 @@ export type Database = {
           created_at?: string
           description?: string
           discord_link?: string | null
+          document_name?: string | null
+          document_url?: string | null
           established_year?: number | null
           executive_members?: Json | null
           facebook_link?: string | null
@@ -259,12 +269,22 @@ export type Database = {
           status?: string
           tagline?: string | null
           twitter_link?: string | null
+          university?: string | null
+          university_id?: string | null
           updated_at?: string
           website?: string | null
           who_can_join?: string | null
           why_join?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clubs_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       event_collaborators: {
         Row: {
@@ -321,15 +341,7 @@ export type Database = {
           event_id?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "event_participants_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       event_reviews: {
         Row: {
@@ -359,21 +371,13 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "event_reviews_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       events: {
         Row: {
           additional_perks: string[] | null
           category: string
-          club_id: string
+          club_id: string | null
           community_link: string | null
           contact_email: string | null
           created_at: string
@@ -399,7 +403,7 @@ export type Database = {
           registration_link: string | null
           schedule: Json | null
           sponsors: string[] | null
-          status: Database["public"]["Enums"]["event_status"]
+          status: string
           sub_tracks: string[] | null
           submission_platform: string | null
           tagline: string | null
@@ -407,11 +411,12 @@ export type Database = {
           theme: string | null
           title: string
           updated_at: string
+          visibility: string
         }
         Insert: {
           additional_perks?: string[] | null
           category: string
-          club_id: string
+          club_id?: string | null
           community_link?: string | null
           contact_email?: string | null
           created_at?: string
@@ -437,7 +442,7 @@ export type Database = {
           registration_link?: string | null
           schedule?: Json | null
           sponsors?: string[] | null
-          status?: Database["public"]["Enums"]["event_status"]
+          status?: string
           sub_tracks?: string[] | null
           submission_platform?: string | null
           tagline?: string | null
@@ -445,11 +450,12 @@ export type Database = {
           theme?: string | null
           title: string
           updated_at?: string
+          visibility?: string
         }
         Update: {
           additional_perks?: string[] | null
           category?: string
-          club_id?: string
+          club_id?: string | null
           community_link?: string | null
           contact_email?: string | null
           created_at?: string
@@ -475,7 +481,7 @@ export type Database = {
           registration_link?: string | null
           schedule?: Json | null
           sponsors?: string[] | null
-          status?: Database["public"]["Enums"]["event_status"]
+          status?: string
           sub_tracks?: string[] | null
           submission_platform?: string | null
           tagline?: string | null
@@ -483,6 +489,7 @@ export type Database = {
           theme?: string | null
           title?: string
           updated_at?: string
+          visibility?: string
         }
         Relationships: [
           {
@@ -502,6 +509,8 @@ export type Database = {
           name: string
           profile_image: string | null
           role: Database["public"]["Enums"]["user_role"]
+          university: string | null
+          university_id: string | null
           updated_at: string
         }
         Insert: {
@@ -511,6 +520,8 @@ export type Database = {
           name: string
           profile_image?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          university?: string | null
+          university_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -520,7 +531,41 @@ export type Database = {
           name?: string
           profile_image?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          university?: string | null
+          university_id?: string | null
           updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      universities: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
         }
         Relationships: []
       }
@@ -540,6 +585,18 @@ export type Database = {
           user_id: string
         }
         Returns: Database["public"]["Enums"]["user_role"]
+      }
+      insert_club: {
+        Args: {
+          name: string
+          description: string
+          category: string
+          university: string
+          university_id: string
+          logo_url: string
+          club_admin_id: string
+        }
+        Returns: string
       }
     }
     Enums: {

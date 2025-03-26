@@ -2,30 +2,32 @@
 export interface ClubFormData {
   name: string;
   description: string;
-  logoUrl: string;
   category: string;
-  tagline?: string;
-  establishedYear?: string;
-  affiliation?: string;
-  whyJoin?: string;
-  regularEvents?: string;
-  signatureEvents?: string;
-  communityEngagement?: string;
-  whoCanJoin?: string;
-  membershipFee?: string;
-  howToJoin?: string;
-  presidentName?: string;
-  presidentContact?: string;
-  executiveMembers?: string;
-  advisors?: string;
-  phoneNumber?: string;
-  website?: string;
-  facebookLink?: string;
-  instagramLink?: string;
-  twitterLink?: string;
-  discordLink?: string;
-  documentUrl?: string;
-  documentName?: string;
+  university: string;
+  universityId: string;
+  tagline: string;
+  establishedYear: string;
+  affiliation: string;
+  whyJoin: string;
+  regularEvents: string;
+  signatureEvents: string;
+  communityEngagement: string;
+  whoCanJoin: string;
+  membershipFee: string;
+  howToJoin: string;
+  presidentName: string;
+  presidentContact: string;
+  executiveMembers: string;
+  advisors: string;
+  phoneNumber: string;
+  website: string;
+  facebookLink: string;
+  instagramLink: string;
+  twitterLink: string;
+  discordLink: string;
+  logoUrl: string;
+  documentUrl: string;
+  documentName: string;
 }
 
 export interface EventFormData {
@@ -34,13 +36,12 @@ export interface EventFormData {
   date: string;
   location: string;
   category: string;
-  maxParticipants: string;
-  clubId: string;
-  imageUrl: string; // Added field for event banner/poster
-  
-  // New fields
-  tagline: string;
   eventType: string;
+  maxParticipants: string;
+  visibility: 'public' | 'university_only';
+  clubId: string;
+  imageUrl: string;
+  tagline: string;
   registrationDeadline: string;
   onlinePlatform: string;
   eligibility: string;
@@ -54,6 +55,7 @@ export interface EventFormData {
   additionalPerks: string;
   judgingCriteria: string;
   judges: string;
+  schedule: string; // Added this required field
   deliverables: string;
   submissionPlatform: string;
   mentors: string;

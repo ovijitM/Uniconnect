@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
@@ -8,24 +8,66 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Layout from '@/components/Layout';
 import { UserRole } from '@/types/auth';
-import { Mail, KeyRound, User, UserPlus, GraduationCap, Users, Shield } from 'lucide-react';
+import { Mail, KeyRound, User, UserPlus, GraduationCap, Users, School } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Signup: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [university, setUniversity] = useState('');
+  const [universities, setUniversities] = useState<{ id: string, name: string }[]>([]);
+  const [customUniversity, setCustomUniversity] = useState('');
+  const [showCustomUniversity, setShowCustomUniversity] = useState(false);
   const [role, setRole] = useState<UserRole>('student');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingUniversities, setIsLoadingUniversities] = useState(false);
   const { signup } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchUniversities = async () => {
+      setIsLoadingUniversities(true);
+      try {
+        const { data, error } = await supabase
+          .from('universities')
+          .select('id, name')
+          .order('name');
+        
+        if (error) throw error;
+        setUniversities(data || []);
+      } catch (error) {
+        console.error('Error fetching universities:', error);
+      } finally {
+        setIsLoadingUniversities(false);
+      }
+    };
+
+    fetchUniversities();
+  }, []);
+
+  const handleUniversityChange = (value: string) => {
+    if (value === 'other') {
+      setShowCustomUniversity(true);
+      setUniversity('');
+    } else {
+      setShowCustomUniversity(false);
+      setUniversity(value);
+      setCustomUniversity('');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !email || !password || !role) {
+    // Determine the final university name to use
+    const finalUniversity = showCustomUniversity ? customUniversity : university;
+    
+    if (!name || !email || !password || !role || !finalUniversity) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -36,7 +78,10 @@ const Signup: React.FC = () => {
     
     try {
       setIsSubmitting(true);
-      const user = await signup(email, password, name, role);
+      
+      console.log("Signing up with role:", role, "university:", finalUniversity);
+      
+      const user = await signup(email, password, name, role, finalUniversity);
       toast({
         title: "Success",
         description: "Your account has been created successfully",
@@ -56,10 +101,10 @@ const Signup: React.FC = () => {
     }
   };
 
+  // Only show student and club_admin options
   const roleOptions = [
     { id: 'student', label: 'Student', icon: GraduationCap },
     { id: 'club_admin', label: 'Club Administrator', icon: Users },
-    { id: 'admin', label: 'System Administrator', icon: Shield },
   ];
 
   return (
@@ -88,6 +133,7 @@ const Signup: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="pl-10"
+                  required
                 />
               </div>
             </div>
@@ -103,6 +149,7 @@ const Signup: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
+                  required
                 />
               </div>
             </div>
@@ -118,9 +165,54 @@ const Signup: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10"
+                  required
                 />
               </div>
             </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="university" className="block">University <span className="text-red-500">*</span></Label>
+              <div className="relative">
+                <School className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Select onValueChange={handleUniversityChange} required>
+                  <SelectTrigger className="w-full pl-10">
+                    <SelectValue placeholder="Select your university" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {isLoadingUniversities ? (
+                      <SelectItem value="loading" disabled>Loading universities...</SelectItem>
+                    ) : (
+                      <>
+                        {universities.map((uni) => (
+                          <SelectItem key={uni.id} value={uni.name}>
+                            {uni.name}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="other">Other (specify)</SelectItem>
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {showCustomUniversity && (
+              <div className="space-y-2">
+                <Label htmlFor="customUniversity">Specify University <span className="text-red-500">*</span></Label>
+                <div className="relative">
+                  <School className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    id="customUniversity"
+                    type="text"
+                    placeholder="Enter your university name"
+                    value={customUniversity}
+                    onChange={(e) => setCustomUniversity(e.target.value)}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+            )}
             
             <div className="space-y-2">
               <Label>Account Type</Label>

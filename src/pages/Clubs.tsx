@@ -1,24 +1,59 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, X } from 'lucide-react';
 import Layout from '@/components/Layout';
 import ClubCard from '@/components/ClubCard';
-import { Club } from '@/types';
+import { Club, University } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import UniversityFilter from '@/components/UniversityFilter';
 
 const ClubsPage: React.FC = () => {
   const [clubs, setClubs] = useState<Club[]>([]);
+  const [universities, setUniversities] = useState<University[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedUniversity, setSelectedUniversity] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [filteredClubs, setFilteredClubs] = useState<Club[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchUniversities() {
+      try {
+        const { data, error } = await supabase
+          .from('universities')
+          .select('*')
+          .order('name');
+        
+        if (error) throw error;
+        
+        // Transform data to match the University type
+        const transformedData: University[] = data?.map(uni => ({
+          id: uni.id,
+          name: uni.name,
+          logoUrl: uni.logo_url,
+          description: uni.description,
+          createdAt: uni.created_at
+        })) || [];
+        
+        setUniversities(transformedData);
+      } catch (error) {
+        console.error('Error fetching universities:', error);
+        toast({
+          title: 'Error fetching universities',
+          description: 'Failed to load university list',
+          variant: 'destructive',
+        });
+      }
+    }
+
+    fetchUniversities();
+  }, [toast]);
 
   useEffect(() => {
     async function fetchClubs() {
@@ -26,7 +61,7 @@ const ClubsPage: React.FC = () => {
         setIsLoading(true);
         
         // Fetch clubs from Supabase - only approved clubs
-        const { data, error } = await supabase
+        let query = supabase
           .from('clubs')
           .select(`
             id,
@@ -34,10 +69,19 @@ const ClubsPage: React.FC = () => {
             description,
             logo_url,
             category,
+            tagline,
+            established_year,
+            university,
             club_members(count)
           `)
-          .eq('status', 'approved')  // Only fetch approved clubs
-          .order('name');
+          .eq('status', 'approved');  // Only fetch approved clubs
+        
+        // Filter by university if selected
+        if (selectedUniversity) {
+          query = query.eq('university', selectedUniversity);
+        }
+        
+        const { data, error } = await query.order('name');
         
         if (error) {
           throw error;
@@ -50,6 +94,9 @@ const ClubsPage: React.FC = () => {
           description: club.description,
           logoUrl: club.logo_url,
           category: club.category,
+          tagline: club.tagline,
+          establishedYear: club.established_year,
+          university: club.university,
           memberCount: club.club_members[0]?.count || 0,
           events: [] // We'll fetch events separately if needed
         }));
@@ -74,7 +121,7 @@ const ClubsPage: React.FC = () => {
     }
     
     fetchClubs();
-  }, [toast]);
+  }, [toast, selectedUniversity]);
 
   useEffect(() => {
     // Filter clubs based on search and categories
@@ -85,7 +132,8 @@ const ClubsPage: React.FC = () => {
       filtered = filtered.filter(club => 
         club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         club.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        club.category.toLowerCase().includes(searchTerm.toLowerCase())
+        club.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (club.university && club.university.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     
@@ -108,6 +156,7 @@ const ClubsPage: React.FC = () => {
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedCategories([]);
+    setSelectedUniversity(null);
   };
 
   return (
@@ -140,12 +189,20 @@ const ClubsPage: React.FC = () => {
             variant="outline"
             className="flex items-center gap-2"
             onClick={clearFilters}
-            disabled={!searchTerm && selectedCategories.length === 0}
+            disabled={!searchTerm && selectedCategories.length === 0 && !selectedUniversity}
           >
             <X className="h-4 w-4" />
             Clear Filters
           </Button>
         </div>
+        
+        <UniversityFilter
+          universities={universities}
+          selectedUniversity={selectedUniversity}
+          onSelect={setSelectedUniversity}
+          isLoading={isLoading}
+          className="mb-4"
+        />
         
         <div className="flex flex-wrap gap-2">
           {categories.map(category => (
