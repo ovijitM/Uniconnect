@@ -1,20 +1,22 @@
+import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { ClubFormData, EventFormData } from './types';
+import { useClubCreation } from './useClubCreation';
+import { useEventCreation } from './useEventCreation';
+import { useStudentProfile } from '@/hooks/student/useStudentProfile';
 
-import { useState } from 'react';
-import { ClubFormData, EventFormData } from './types'; // Updated to import types from types.ts
-
-export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<void>) => {
-  const [isClubDialogOpen, setIsClubDialogOpen] = useState(false);
-  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
+export const useClubAdminForms = (userId: string | undefined, onClubCreationSuccess: () => void) => {
+  const { toast } = useToast();
+  const { userUniversity, userUniversityId, fetchUserProfile } = useStudentProfile(userId);
+  const { createClub } = useClubCreation();
+  const { createEvent } = useEventCreation();
   
-  // Initialize with empty form data including required university fields
+  // Club form state
   const [clubFormData, setClubFormData] = useState<ClubFormData>({
     name: '',
     description: '',
-    logoUrl: '',
-    category: 'academic',
-    university: '', // Required university field
-    universityId: '', // Include universityId field
     tagline: '',
+    category: '',
     establishedYear: '',
     affiliation: '',
     whyJoin: '',
@@ -33,199 +35,224 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
     facebookLink: '',
     instagramLink: '',
     twitterLink: '',
-    discordLink: '', 
+    discordLink: '',
+    university: '',
+    universityId: '',
+    logoUrl: '',
     documentUrl: '',
     documentName: ''
   });
-  
+
+  // Event form state
   const [eventFormData, setEventFormData] = useState<EventFormData>({
     title: '',
+    tagline: '',
     description: '',
     date: '',
+    time: '',
     location: '',
-    category: 'workshop',
-    maxParticipants: '',
+    category: '',
     clubId: '',
-    imageUrl: '',
-    tagline: '', // Now required
-    eventType: 'in-person',
+    maxParticipants: '',
     registrationDeadline: '',
-    onlinePlatform: '',
-    eligibility: '',
-    teamSize: '',
-    registrationLink: '',
+    imageUrl: '',
+    eventType: 'in-person',
     entryFee: 'Free',
-    theme: '',
-    subTracks: '',
-    prizePool: '',
-    prizeCategories: '',
-    additionalPerks: '',
-    judgingCriteria: '',
-    judges: '',
-    schedule: '', // Added missing schedule field
-    deliverables: '',
-    submissionPlatform: '',
-    mentors: '',
-    sponsors: '',
-    contactEmail: '',
-    communityLink: '',
-    eventWebsite: '',
-    eventHashtag: '',
-    visibility: 'public' // Required field with default value
+    howToRegister: ''
   });
+  
+  const [isClubDialogOpen, setIsClubDialogOpen] = useState(false);
+  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Fetch university data from profile
+  useEffect(() => {
+    if (userId) {
+      fetchUserProfile();
+    }
+  }, [userId]);
+  
+  // Pre-fill university data when it becomes available
+  useEffect(() => {
+    if (userUniversity && userUniversityId && !clubFormData.university) {
+      setClubFormData(prev => ({
+        ...prev,
+        university: userUniversity,
+        universityId: userUniversityId
+      }));
+    }
+  }, [userUniversity, userUniversityId]);
 
-  // Handle input changes for club form
   const handleClubInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setClubFormData(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
   };
   
-  // Handle input changes for event form
   const handleEventInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setEventFormData(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
   };
-
-  // Handle file upload for club form
-  const handleClubFileUpload = (url: string, fileName: string, type: 'logo' | 'document' = 'document') => {
+  
+  const handleClubFileUpload = (url: string, fileName: string, type?: 'logo' | 'document') => {
+    console.log(`Club ${type} uploaded:`, url, fileName);
+    
     if (type === 'logo') {
       setClubFormData(prev => ({
         ...prev,
-        logoUrl: url,
+        logoUrl: url
       }));
-    } else {
+    } else if (type === 'document') {
       setClubFormData(prev => ({
         ...prev,
         documentUrl: url,
-        documentName: fileName,
+        documentName: fileName
       }));
     }
   };
-
-  // Handle file upload for event form
+  
   const handleEventFileUpload = (url: string, fileName: string) => {
+    console.log("Event image uploaded:", url, fileName);
     setEventFormData(prev => ({
       ...prev,
-      documentUrl: url,
-      documentName: fileName,
+      imageUrl: url
     }));
   };
   
-  // Create a new club
   const handleCreateClub = async () => {
-    // Implementation should be handled in the component that uses this hook
-    console.log('Creating club with data:', clubFormData);
+    if (isSubmitting) return;
     
-    // Close the dialog
-    setIsClubDialogOpen(false);
-    
-    // Reset form data with required fields included
-    setClubFormData({
-      name: '',
-      description: '',
-      logoUrl: '',
-      category: 'academic',
-      university: '', // Required university field
-      universityId: '', // Include universityId field
-      tagline: '',
-      establishedYear: '',
-      affiliation: '',
-      whyJoin: '',
-      regularEvents: '',
-      signatureEvents: '',
-      communityEngagement: '',
-      whoCanJoin: '',
-      membershipFee: 'Free',
-      howToJoin: '',
-      presidentName: '',
-      presidentContact: '',
-      executiveMembers: '',
-      advisors: '',
-      phoneNumber: '',
-      website: '',
-      facebookLink: '',
-      instagramLink: '',
-      twitterLink: '',
-      discordLink: '', 
-      documentUrl: '',
-      documentName: ''
-    });
-    
-    // Refresh club data if callback provided
-    if (onRefresh) {
-      await onRefresh();
+    setIsSubmitting(true);
+    try {
+      console.log("Creating club with data:", clubFormData);
+      const success = await createClub(clubFormData, userId);
+      
+      if (success) {
+        toast({
+          title: "Club Created",
+          description: "Your club has been created and is pending approval."
+        });
+        
+        setIsClubDialogOpen(false);
+        
+        // Reset form
+        setClubFormData({
+          ...clubFormData,
+          name: '',
+          description: '',
+          tagline: '',
+          category: '',
+          logoUrl: '',
+          // Keep university data
+          establishedYear: '',
+          // Reset all other fields
+          affiliation: '',
+          whyJoin: '',
+          regularEvents: '',
+          signatureEvents: '',
+          communityEngagement: '',
+          whoCanJoin: '',
+          membershipFee: 'Free',
+          howToJoin: '',
+          presidentName: '',
+          presidentContact: '',
+          executiveMembers: '',
+          advisors: '',
+          phoneNumber: '',
+          website: '',
+          facebookLink: '',
+          instagramLink: '',
+          twitterLink: '',
+          discordLink: '',
+          documentUrl: '',
+          documentName: ''
+        });
+        
+        // Call the success callback to refresh the clubs list
+        if (onClubCreationSuccess) {
+          console.log("Calling onClubCreationSuccess callback to refresh clubs");
+          setTimeout(() => {
+            onClubCreationSuccess();
+          }, 500); // Small delay to ensure database has updated
+        }
+      }
+    } catch (error) {
+      console.error("Error creating club:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create club. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
-  
-  // Create a new event
+
   const handleCreateEvent = async () => {
-    // Implementation should be handled in the component that uses this hook
-    console.log('Creating event with data:', eventFormData);
+    if (isSubmitting) return;
     
-    // Close the dialog
-    setIsEventDialogOpen(false);
-    
-    // Reset form data
-    setEventFormData({
-      title: '',
-      description: '',
-      date: '',
-      location: '',
-      category: 'workshop',
-      maxParticipants: '',
-      clubId: '',
-      imageUrl: '',
-      tagline: '', // Required field
-      eventType: 'in-person',
-      registrationDeadline: '',
-      onlinePlatform: '',
-      eligibility: '',
-      teamSize: '',
-      registrationLink: '',
-      entryFee: 'Free',
-      theme: '',
-      subTracks: '',
-      prizePool: '',
-      prizeCategories: '',
-      additionalPerks: '',
-      judgingCriteria: '',
-      judges: '',
-      schedule: '', // Added missing schedule field
-      deliverables: '',
-      submissionPlatform: '',
-      mentors: '',
-      sponsors: '',
-      contactEmail: '',
-      communityLink: '',
-      eventWebsite: '',
-      eventHashtag: '',
-      visibility: 'public' // Required field
-    });
-    
-    // Refresh event data if callback provided
-    if (onRefresh) {
-      await onRefresh();
+    setIsSubmitting(true);
+    try {
+      console.log("Creating event with data:", eventFormData);
+      const success = await createEvent(eventFormData, userId);
+      
+      if (success) {
+        toast({
+          title: "Event Created",
+          description: "Your event has been created successfully."
+        });
+        
+        setIsEventDialogOpen(false);
+        
+        // Reset form but keep club id
+        const clubId = eventFormData.clubId;
+        setEventFormData({
+          title: '',
+          tagline: '',
+          description: '',
+          date: '',
+          time: '',
+          location: '',
+          category: '',
+          clubId: clubId, // Keep the club id
+          maxParticipants: '',
+          registrationDeadline: '',
+          imageUrl: '',
+          eventType: 'in-person',
+          entryFee: 'Free',
+          howToRegister: ''
+        });
+      }
+    } catch (error) {
+      console.error("Error creating event:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create event. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return {
     clubFormData,
-    eventFormData,
     isClubDialogOpen,
-    isEventDialogOpen,
     setIsClubDialogOpen,
-    setIsEventDialogOpen,
     handleClubInputChange,
-    handleEventInputChange,
     handleCreateClub,
-    handleCreateEvent,
     handleClubFileUpload,
-    handleEventFileUpload
+    eventFormData,
+    isEventDialogOpen,
+    setIsEventDialogOpen,
+    handleEventInputChange,
+    handleCreateEvent,
+    handleEventFileUpload,
+    isSubmitting
   };
 };
