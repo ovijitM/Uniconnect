@@ -1,5 +1,6 @@
 
 import { ClubFormData } from './types';
+import { validateRequiredFields } from './utils/dataTransformUtils';
 
 interface ValidationResult {
   isValid: boolean;
@@ -7,33 +8,34 @@ interface ValidationResult {
 }
 
 export const useClubValidation = () => {
-  const validateClubData = (data: ClubFormData): ValidationResult => {
+  const validateClubData = (formData: ClubFormData): ValidationResult => {
+    console.log("Validating club data:", formData);
+    
+    // Required fields for basic info
+    const requiredFields = [
+      'name',
+      'description',
+      'category',
+      'tagline',
+      'university'
+    ];
+    
     // Check required fields
-    if (!data.name || data.name.trim() === '') {
-      return { isValid: false, errorMessage: "Club name is required" };
+    if (!validateRequiredFields(formData, requiredFields)) {
+      return {
+        isValid: false,
+        errorMessage: "Please fill in all required fields in the Basic Info tab."
+      };
     }
     
-    if (!data.description || data.description.trim() === '') {
-      return { isValid: false, errorMessage: "Club description is required" };
+    // Check logo is present
+    if (!formData.logoUrl) {
+      return {
+        isValid: false,
+        errorMessage: "Please upload a logo for your club in the Basic Info tab."
+      };
     }
-    
-    if (!data.category || data.category.trim() === '') {
-      return { isValid: false, errorMessage: "Club category is required" };
-    }
-    
-    if (!data.university || data.university.trim() === '') {
-      return { isValid: false, errorMessage: "University is required" };
-    }
-    
-    // Validate length constraints
-    if (data.name.length > 100) {
-      return { isValid: false, errorMessage: "Club name must be less than 100 characters" };
-    }
-    
-    if (data.description.length > 2000) {
-      return { isValid: false, errorMessage: "Description must be less than 2000 characters" };
-    }
-    
+
     // All validations passed
     return { isValid: true };
   };

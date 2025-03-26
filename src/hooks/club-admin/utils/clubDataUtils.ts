@@ -1,14 +1,16 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { ClubFormData } from '../types';
-import { parseArrayField, parseExecutiveMembers } from './dataTransformUtils';
+import { parseArrayField, parseExecutiveMembers, logFormData } from './dataTransformUtils';
 
 export const insertClubData = async (
   clubFormData: ClubFormData, 
   universityId: string,
   userId?: string
 ) => {
-  // Log the data being inserted
+  // Log the complete form data being processed
+  logFormData(clubFormData, "Club Form Data");
+  
   console.log("Inserting club data:", {
     name: clubFormData.name,
     description: clubFormData.description,
@@ -45,37 +47,44 @@ export const insertClubData = async (
         
         // If the RPC worked, we still need to update the club with additional fields
         // that weren't included in the function parameters
+        const updateData = {
+          tagline: clubFormData.tagline || null,
+          established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
+          affiliation: clubFormData.affiliation || null,
+          why_join: clubFormData.whyJoin || null,
+          regular_events: regularEvents,
+          signature_events: signatureEvents,
+          community_engagement: clubFormData.communityEngagement || null,
+          who_can_join: clubFormData.whoCanJoin || null,
+          membership_fee: clubFormData.membershipFee || 'Free',
+          how_to_join: clubFormData.howToJoin || null,
+          president_name: clubFormData.presidentName || null,
+          president_contact: clubFormData.presidentContact || null,
+          executive_members: executiveMembers,
+          advisors: advisors,
+          phone_number: clubFormData.phoneNumber || null,
+          website: clubFormData.website || null,
+          facebook_link: clubFormData.facebookLink || null,
+          instagram_link: clubFormData.instagramLink || null,
+          twitter_link: clubFormData.twitterLink || null,
+          discord_link: clubFormData.discordLink || null,
+          document_url: clubFormData.documentUrl || null,
+          document_name: clubFormData.documentName || null
+        };
+        
+        // Log the update data for debugging
+        logFormData(updateData, "Club Update Data");
+        
         const { data: updatedData, error: updateError } = await supabase
           .from('clubs')
-          .update({
-            tagline: clubFormData.tagline || null,
-            established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
-            affiliation: clubFormData.affiliation || null,
-            why_join: clubFormData.whyJoin || null,
-            regular_events: regularEvents,
-            signature_events: signatureEvents,
-            community_engagement: clubFormData.communityEngagement || null,
-            who_can_join: clubFormData.whoCanJoin || null,
-            membership_fee: clubFormData.membershipFee || 'Free',
-            how_to_join: clubFormData.howToJoin || null,
-            president_name: clubFormData.presidentName || null,
-            president_contact: clubFormData.presidentContact || null,
-            executive_members: executiveMembers,
-            advisors: advisors,
-            phone_number: clubFormData.phoneNumber || null,
-            website: clubFormData.website || null,
-            facebook_link: clubFormData.facebookLink || null,
-            instagram_link: clubFormData.instagramLink || null,
-            twitter_link: clubFormData.twitterLink || null,
-            discord_link: clubFormData.discordLink || null,
-            document_url: clubFormData.documentUrl || null,
-            document_name: clubFormData.documentName || null
-          })
+          .update(updateData)
           .eq('id', data)
           .select();
         
         if (updateError) {
           console.error("Error updating club with additional fields:", updateError);
+        } else {
+          console.log("Successfully updated club with additional fields:", updatedData);
         }
         
         // Get the club data to return
@@ -91,45 +100,52 @@ export const insertClubData = async (
         }
         
         console.log("Final club data:", clubData);
-        return clubData;
+        return { ...clubData, created_with_rpc: true };
       }
     }
 
     // Regular insert as a fallback
     console.log("Attempting direct insert as fallback");
+    
+    // Create a structured insert object with all fields
+    const insertData = {
+      name: clubFormData.name,
+      description: clubFormData.description,
+      category: clubFormData.category,
+      logo_url: clubFormData.logoUrl,
+      status: 'pending',
+      university: clubFormData.university,
+      university_id: universityId,
+      tagline: clubFormData.tagline || null,
+      established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
+      affiliation: clubFormData.affiliation || null,
+      why_join: clubFormData.whyJoin || null,
+      regular_events: regularEvents,
+      signature_events: signatureEvents,
+      community_engagement: clubFormData.communityEngagement || null,
+      who_can_join: clubFormData.whoCanJoin || null,
+      membership_fee: clubFormData.membershipFee || 'Free',
+      how_to_join: clubFormData.howToJoin || null,
+      president_name: clubFormData.presidentName || null,
+      president_contact: clubFormData.presidentContact || null,
+      executive_members: executiveMembers,
+      advisors: advisors,
+      phone_number: clubFormData.phoneNumber || null,
+      website: clubFormData.website || null,
+      facebook_link: clubFormData.facebookLink || null,
+      instagram_link: clubFormData.instagramLink || null,
+      twitter_link: clubFormData.twitterLink || null,
+      discord_link: clubFormData.discordLink || null,
+      document_url: clubFormData.documentUrl || null,
+      document_name: clubFormData.documentName || null
+    };
+    
+    // Log the insert data for debugging
+    logFormData(insertData, "Club Insert Data");
+    
     const { data, error } = await supabase
       .from('clubs')
-      .insert({
-        name: clubFormData.name,
-        description: clubFormData.description,
-        category: clubFormData.category,
-        logo_url: clubFormData.logoUrl,
-        status: 'pending',
-        university: clubFormData.university,
-        university_id: universityId,
-        tagline: clubFormData.tagline || null,
-        established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
-        affiliation: clubFormData.affiliation || null,
-        why_join: clubFormData.whyJoin || null,
-        regular_events: regularEvents,
-        signature_events: signatureEvents,
-        community_engagement: clubFormData.communityEngagement || null,
-        who_can_join: clubFormData.whoCanJoin || null,
-        membership_fee: clubFormData.membershipFee || 'Free',
-        how_to_join: clubFormData.howToJoin || null,
-        president_name: clubFormData.presidentName || null,
-        president_contact: clubFormData.presidentContact || null,
-        executive_members: executiveMembers,
-        advisors: advisors,
-        phone_number: clubFormData.phoneNumber || null,
-        website: clubFormData.website || null,
-        facebook_link: clubFormData.facebookLink || null,
-        instagram_link: clubFormData.instagramLink || null,
-        twitter_link: clubFormData.twitterLink || null,
-        discord_link: clubFormData.discordLink || null,
-        document_url: clubFormData.documentUrl || null,
-        document_name: clubFormData.documentName || null
-      })
+      .insert(insertData)
       .select();
     
     if (error) {
@@ -143,7 +159,7 @@ export const insertClubData = async (
     }
     
     console.log("Successfully created club data:", data[0]);
-    return data[0];
+    return { ...data[0], created_with_rpc: false };
   } catch (error: any) {
     console.error("Error in insertClubData:", error);
     throw error;

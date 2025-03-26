@@ -3,6 +3,9 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { FileUpload } from '@/components/file-upload/FileUpload';
+import { Card } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface BasicInfoTabProps {
   formData: {
@@ -11,13 +14,52 @@ interface BasicInfoTabProps {
     category: string;
     tagline?: string;
     university?: string;
+    logoUrl?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
 }
 
-const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) => {
+const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange, onFileUpload }) => {
+  const handleLogoUpload = (url: string, fileName: string) => {
+    if (onFileUpload) {
+      onFileUpload(url, fileName, 'logo');
+    }
+  };
+
   return (
     <div className="space-y-4 py-4">
+      {/* Club Logo */}
+      <div className="space-y-2">
+        <Label>Club Logo *</Label>
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            {formData.logoUrl ? (
+              <Avatar className="h-24 w-24">
+                <AvatarImage src={formData.logoUrl} alt={formData.name || "Club logo"} />
+                <AvatarFallback className="text-xl">
+                  {formData.name?.substring(0, 2) || "CL"}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <Card className="h-24 w-24 flex items-center justify-center text-muted-foreground">
+                No Logo
+              </Card>
+            )}
+          </div>
+          <div className="flex-grow">
+            <FileUpload 
+              bucket="clubs" 
+              onUploadComplete={handleLogoUpload}
+              acceptedFileTypes={["image/jpeg", "image/png", "image/gif"]}
+              maxFileSize={5}
+              buttonText="Upload Logo"
+              helperText="Upload a logo for your club (JPEG, PNG, GIF, max 5MB)"
+            />
+          </div>
+        </div>
+      </div>
+      
       <div className="space-y-2">
         <Label htmlFor="name">Club Name *</Label>
         <Input
