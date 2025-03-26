@@ -12,8 +12,11 @@ interface OrganizerCardProps {
 }
 
 const OrganizerCard: React.FC<OrganizerCardProps> = ({ id, name, logoUrl, description, university }) => {
-  // Add validation to ensure id is valid
+  // Add stronger validation to ensure id is valid
   const validId = id && id !== 'undefined' && id !== 'null' ? id : null;
+  
+  // Log the ID to help with debugging
+  console.log("OrganizerCard: rendering with club ID:", id, "isValid:", !!validId);
   
   return (
     <div className="glass-panel rounded-xl p-6">
@@ -24,6 +27,10 @@ const OrganizerCard: React.FC<OrganizerCardProps> = ({ id, name, logoUrl, descri
               src={logoUrl} 
               alt={name} 
               className="object-cover w-full h-full"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = 'https://via.placeholder.com/150?text=Club+Logo';
+              }}
             />
           )}
         </div>

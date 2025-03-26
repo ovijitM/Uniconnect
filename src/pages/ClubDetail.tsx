@@ -58,7 +58,7 @@ const ClubDetailPage: React.FC = () => {
     isLoading, 
     clubExists: !!club, 
     memberCount: club?.memberCount,
-    error 
+    error: error ? { message: error.message } : null 
   });
 
   const handleRetry = () => {

@@ -30,6 +30,10 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, index }) => {
             src={club.logoUrl}
             alt={club.name}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = 'https://via.placeholder.com/150?text=Club+Logo';
+            }}
           />
         ) : (
           <div className="w-full h-full bg-primary/5 flex items-center justify-center">
@@ -44,7 +48,7 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, index }) => {
       </div>
       
       <div className="p-4">
-        <Link to={hasValidId ? `/clubs/${club.id}` : "#"} className="block">
+        <Link to={hasValidId ? `/clubs/${club.id}` : "#"} className={`block ${!hasValidId ? 'pointer-events-none' : ''}`}>
           <h3 className="font-semibold text-lg mb-1 hover:text-primary transition-colors">
             {club.name}
           </h3>
