@@ -129,11 +129,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                 bucket="club-logos" 
                 onUploadComplete={handleLogoUpload}
                 buttonText="Change Logo"
-                acceptedFileTypes={{
-                  'image/jpeg': ['.jpg', '.jpeg'],
-                  'image/png': ['.png'],
-                  'image/svg+xml': ['.svg'],
-                }}
+                acceptedFileTypes={['image/jpeg', 'image/png', 'image/svg+xml']}
                 maxFileSize={2}
               />
             </div>
@@ -142,11 +138,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
           <FileUpload 
             bucket="club-logos" 
             onUploadComplete={handleLogoUpload}
-            acceptedFileTypes={{
-              'image/jpeg': ['.jpg', '.jpeg'],
-              'image/png': ['.png'],
-              'image/svg+xml': ['.svg'],
-            }}
+            acceptedFileTypes={['image/jpeg', 'image/png', 'image/svg+xml']}
             maxFileSize={2}
           />
         )}

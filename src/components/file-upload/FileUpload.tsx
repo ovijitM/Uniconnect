@@ -14,7 +14,8 @@ export interface FileUploadProps {
   helperText?: string;
   uploadType?: 'logo' | 'document';
   disabled?: boolean;
-  maxSize?: number; // Added this prop to fix the type error
+  maxSize?: number;
+  bucket?: string;
 }
 
 export const FileUpload: React.FC<FileUploadProps> = ({ 
@@ -25,7 +26,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   buttonText = "Upload File", 
   helperText = "Upload a file (Max 5MB)",
   uploadType = 'document',
-  disabled = false
+  disabled = false,
+  bucket = 'club-files'
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -78,7 +80,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       
       // Upload file to Supabase Storage
       const { data, error } = await supabase.storage
-        .from('club-files')
+        .from(bucket)
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
@@ -90,7 +92,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       
       // Get public URL for the uploaded file
       const { data: { publicUrl } } = supabase.storage
-        .from('club-files')
+        .from(bucket)
         .getPublicUrl(filePath);
       
       // Set success state
