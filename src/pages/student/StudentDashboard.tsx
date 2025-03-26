@@ -36,12 +36,10 @@ const StudentDashboard: React.FC = () => {
   const joinedClubIds = joinedClubs.map(club => club.id);
   const registeredEventIds = registeredEvents.map(event => event.id);
 
-  // Create a wrapper function that always returns a Promise for joinClub
+  // Create a wrapper function that properly handles the Promise<void> return type for joinClub
   const handleJoinClub = async (clubId: string): Promise<void> => {
-    if (joinClub) {
-      return joinClub(clubId);
-    }
-    return Promise.resolve();
+    if (!joinClub) return Promise.resolve();
+    return joinClub(clubId);
   };
 
   // Render different content based on the current route
