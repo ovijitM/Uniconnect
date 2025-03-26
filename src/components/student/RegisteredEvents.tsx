@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, ExternalLink, LogOut } from 'lucide-react';
+import { Calendar, ExternalLink, LogOut, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -45,10 +45,24 @@ const RegisteredEvents: React.FC<RegisteredEventsProps> = ({ events, isLoading, 
   };
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Your Events</CardTitle>
-        <CardDescription>Events you've registered for</CardDescription>
+    <Card className="border-0">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Your Events</CardTitle>
+            <CardDescription>Events you've registered for</CardDescription>
+          </div>
+          {events.length > 4 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-sm" 
+              onClick={() => navigate('/student-dashboard/events')}
+            >
+              More <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -58,11 +72,11 @@ const RegisteredEvents: React.FC<RegisteredEventsProps> = ({ events, isLoading, 
             ))}
           </div>
         ) : events.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {events.map(event => (
-              <div key={event.id} className="flex items-center p-3 bg-secondary/50 rounded-lg">
+              <div key={event.id} className="flex items-center p-3 hover:bg-secondary/20 rounded-lg transition-colors">
                 <div className="bg-primary/10 p-2 rounded-full mr-3">
-                  <Calendar className="h-6 w-6 text-primary" />
+                  <Calendar className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold">{event.title}</h4>

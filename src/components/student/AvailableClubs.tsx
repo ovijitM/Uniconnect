@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Tag, Loader2, Check } from 'lucide-react';
+import { Users, Tag, Loader2, Check, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface AvailableClubsProps {
   clubs: any[];
@@ -21,6 +22,7 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
 }) => {
   // The filtering is now done in the parent component
   const availableClubs = clubs;
+  const navigate = useNavigate();
   
   // Add local state to track which club is being joined
   const [joiningClubId, setJoiningClubId] = useState<string | null>(null);
@@ -49,10 +51,24 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
   };
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Available Clubs</CardTitle>
-        <CardDescription>Clubs you can join</CardDescription>
+    <Card className="border-0">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Available Clubs</CardTitle>
+            <CardDescription>Clubs you can join</CardDescription>
+          </div>
+          {availableClubs.length > 4 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-sm" 
+              onClick={() => navigate('/student-dashboard/clubs')}
+            >
+              More <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -62,11 +78,11 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
             ))}
           </div>
         ) : availableClubs.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {availableClubs.map(club => (
-              <div key={club.id} className="flex items-center p-3 bg-secondary/50 rounded-lg">
+              <div key={club.id} className="flex items-center p-3 hover:bg-secondary/20 rounded-lg transition-colors">
                 <div className="bg-primary/10 p-2 rounded-full mr-3">
-                  <Users className="h-6 w-6 text-primary" />
+                  <Users className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold">{club.name}</h4>

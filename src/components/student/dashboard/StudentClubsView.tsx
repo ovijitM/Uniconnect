@@ -22,18 +22,22 @@ const StudentClubsView: React.FC<StudentClubsViewProps> = ({
 }) => {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">My Clubs</h1>
+      <div className="mb-8 bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+        <h1 className="text-2xl font-bold mb-2">My Clubs</h1>
+        <p className="text-muted-foreground">Manage your club memberships</p>
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <h2 className="text-lg font-medium mb-4">Joined Clubs</h2>
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold px-2">Joined Clubs</h2>
           <StudentClubs 
             clubs={joinedClubs}
             isLoading={isLoading}
             onLeaveClub={onLeaveClub}
           />
         </div>
-        <div>
-          <h2 className="text-lg font-medium mb-4">Available Clubs</h2>
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold px-2">Available Clubs</h2>
           <AvailableClubs 
             clubs={clubs.filter(club => !joinedClubIds.includes(club.id))}
             joinedClubIds={joinedClubIds}

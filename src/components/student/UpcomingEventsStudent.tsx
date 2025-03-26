@@ -2,7 +2,8 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar } from 'lucide-react';
+import { Calendar, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface UpcomingEventsStudentProps {
   events: any[];
@@ -17,6 +18,8 @@ const UpcomingEventsStudent: React.FC<UpcomingEventsStudentProps> = ({
   isLoading,
   onRegisterEvent
 }) => {
+  const navigate = useNavigate();
+  
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
@@ -30,10 +33,24 @@ const UpcomingEventsStudent: React.FC<UpcomingEventsStudentProps> = ({
   };
 
   return (
-    <Card className="lg:col-span-2">
-      <CardHeader>
-        <CardTitle>Upcoming Events</CardTitle>
-        <CardDescription>Events you can attend</CardDescription>
+    <Card className="border-0">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Upcoming Events</CardTitle>
+            <CardDescription>Events you can attend</CardDescription>
+          </div>
+          {events.length > 3 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-sm" 
+              onClick={() => navigate('/student-dashboard/events')}
+            >
+              More <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -43,11 +60,11 @@ const UpcomingEventsStudent: React.FC<UpcomingEventsStudentProps> = ({
             ))}
           </div>
         ) : events.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {events.map(event => (
-              <div key={event.id} className="flex items-center p-3 bg-secondary/50 rounded-lg">
+              <div key={event.id} className="flex items-center p-3 hover:bg-secondary/20 rounded-lg transition-colors">
                 <div className="bg-primary/10 p-2 rounded-full mr-3">
-                  <Calendar className="h-6 w-6 text-primary" />
+                  <Calendar className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold">{event.title}</h4>
@@ -57,7 +74,7 @@ const UpcomingEventsStudent: React.FC<UpcomingEventsStudentProps> = ({
                   </p>
                 </div>
                 <Button 
-                  variant="outline" 
+                  variant={registeredEventIds.includes(event.id) ? "secondary" : "outline"}
                   size="sm"
                   onClick={() => onRegisterEvent(event.id)}
                   disabled={registeredEventIds.includes(event.id)}

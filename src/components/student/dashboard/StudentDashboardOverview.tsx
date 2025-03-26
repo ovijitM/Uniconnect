@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Users, Clock, Info } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui/card';
+import { Calendar, Users, Clock, Info, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import AvailableClubs from '@/components/student/AvailableClubs';
 import UpcomingEventsStudent from '@/components/student/UpcomingEventsStudent';
 import StudentClubs from '@/components/student/StudentClubs';
@@ -36,11 +37,13 @@ const StudentDashboardOverview: React.FC<StudentDashboardOverviewProps> = ({
   onLeaveClub,
   registerForEvent
 }) => {
+  const navigate = useNavigate();
+  
   return (
     <>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back, {user.name}</p>
+      <div className="mb-8 bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+        <h1 className="text-3xl font-bold mb-2">Welcome back, {user.name}</h1>
+        <p className="text-muted-foreground">Your student dashboard at a glance</p>
       </div>
 
       <StatCards 
@@ -51,34 +54,82 @@ const StudentDashboardOverview: React.FC<StudentDashboardOverviewProps> = ({
         isLoading={isLoading}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <UpcomingEventsStudent 
-          events={events}
-          registeredEventIds={registeredEventIds}
-          isLoading={isLoading}
-          onRegisterEvent={registerForEvent}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Upcoming Events</h2>
+            <Button 
+              variant="ghost" 
+              className="text-sm" 
+              onClick={() => navigate('/student-dashboard/events')}
+            >
+              See all <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          </div>
+          <Card className="overflow-hidden border-none shadow-md">
+            <CardContent className="p-0">
+              <UpcomingEventsStudent 
+                events={events.slice(0, 3)}
+                registeredEventIds={registeredEventIds}
+                isLoading={isLoading}
+                onRegisterEvent={registerForEvent}
+              />
+            </CardContent>
+          </Card>
+        </div>
 
-        <StudentClubs 
-          clubs={joinedClubs}
-          isLoading={isLoading}
-          onLeaveClub={onLeaveClub}
-        />
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Your Clubs</h2>
+            <Button 
+              variant="ghost" 
+              className="text-sm" 
+              onClick={() => navigate('/student-dashboard/clubs')}
+            >
+              See all <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          </div>
+          <Card className="overflow-hidden border-none shadow-md">
+            <CardContent className="p-0">
+              <StudentClubs 
+                clubs={joinedClubs.slice(0, 3)}
+                isLoading={isLoading}
+                onLeaveClub={onLeaveClub}
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <AvailableClubs 
-          clubs={clubs.filter(club => !joinedClubIds.includes(club.id))}
-          joinedClubIds={joinedClubIds}
-          isLoading={isLoading}
-          onJoinClub={onJoinClub}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-5">
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold">Discover Clubs</h2>
+            <Card className="overflow-hidden border-none shadow-md">
+              <CardContent className="p-0">
+                <AvailableClubs 
+                  clubs={clubs.filter(club => !joinedClubIds.includes(club.id)).slice(0, 4)}
+                  joinedClubIds={joinedClubIds}
+                  isLoading={isLoading}
+                  onJoinClub={onJoinClub}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
         
-        <div className="lg:col-span-2">
-          <RegisteredEvents 
-            events={registeredEvents}
-            isLoading={isLoading}
-          />
+        <div className="lg:col-span-7">
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold">Your Events</h2>
+            <Card className="overflow-hidden border-none shadow-md">
+              <CardContent className="p-0">
+                <RegisteredEvents 
+                  events={registeredEvents.slice(0, 4)}
+                  isLoading={isLoading}
+                />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </>

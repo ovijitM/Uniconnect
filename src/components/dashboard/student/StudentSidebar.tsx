@@ -8,7 +8,8 @@ import {
   Bookmark, 
   LogOut,
   Search,
-  GraduationCap
+  GraduationCap,
+  Settings
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -21,6 +22,7 @@ import {
   SidebarMenuButton,
   SidebarSeparator
 } from '@/components/ui/sidebar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const StudentSidebar: React.FC = () => {
   const navigate = useNavigate();
@@ -36,16 +38,29 @@ const StudentSidebar: React.FC = () => {
     navigate('/login');
   };
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase();
+  };
+
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
-          <GraduationCap className="h-6 w-6 text-primary" />
-          <div className="font-semibold text-lg">Student Portal</div>
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 border-2 border-primary/20">
+            <AvatarImage src={user?.avatar_url} />
+            <AvatarFallback className="bg-primary/10 text-primary">
+              {user?.name ? getInitials(user.name) : 'ST'}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="font-semibold">{user?.name || 'Student'}</div>
+            <p className="text-xs text-muted-foreground">{user?.university || 'University Student'}</p>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">
-          {user?.name || 'Student'}
-        </p>
       </SidebarHeader>
       
       <SidebarContent>
@@ -55,6 +70,7 @@ const StudentSidebar: React.FC = () => {
               isActive={isActive('/student-dashboard')}
               onClick={() => navigate('/student-dashboard')}
               tooltip="Dashboard"
+              className="gap-3"
             >
               <LayoutDashboard className="h-5 w-5" />
               <span>Overview</span>
@@ -66,6 +82,7 @@ const StudentSidebar: React.FC = () => {
               isActive={isActive('/student-dashboard/events')}
               onClick={() => navigate('/student-dashboard/events')}
               tooltip="Events"
+              className="gap-3"
             >
               <Calendar className="h-5 w-5" />
               <span>My Events</span>
@@ -77,17 +94,21 @@ const StudentSidebar: React.FC = () => {
               isActive={isActive('/student-dashboard/clubs')}
               onClick={() => navigate('/student-dashboard/clubs')}
               tooltip="Clubs"
+              className="gap-3"
             >
               <Users className="h-5 w-5" />
               <span>My Clubs</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           
+          <SidebarSeparator />
+          
           <SidebarMenuItem>
             <SidebarMenuButton 
               isActive={isActive('/events')}
               onClick={() => navigate('/events')}
               tooltip="Discover Events"
+              className="gap-3"
             >
               <Search className="h-5 w-5" />
               <span>Discover Events</span>
@@ -99,9 +120,22 @@ const StudentSidebar: React.FC = () => {
               isActive={isActive('/clubs')}
               onClick={() => navigate('/clubs')}
               tooltip="Discover Clubs"
+              className="gap-3"
             >
               <Bookmark className="h-5 w-5" />
               <span>Discover Clubs</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              isActive={isActive('/settings')}
+              onClick={() => navigate('/settings')}
+              tooltip="Settings"
+              className="gap-3"
+            >
+              <Settings className="h-5 w-5" />
+              <span>Settings</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -110,7 +144,7 @@ const StudentSidebar: React.FC = () => {
       <SidebarFooter>
         <SidebarSeparator />
         <div className="p-4">
-          <SidebarMenuButton onClick={handleSignOut} tooltip="Sign Out">
+          <SidebarMenuButton onClick={handleSignOut} tooltip="Sign Out" className="gap-3 text-destructive hover:text-destructive">
             <LogOut className="h-5 w-5" />
             <span>Sign Out</span>
           </SidebarMenuButton>

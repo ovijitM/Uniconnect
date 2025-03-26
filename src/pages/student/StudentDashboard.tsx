@@ -19,7 +19,8 @@ const StudentDashboard: React.FC = () => {
     registeredEvents, 
     joinClub, 
     leaveClub,
-    registerForEvent 
+    registerForEvent,
+    unregisterFromEvent
   } = useStudentData();
   
   // Match patterns for different routes
@@ -56,6 +57,7 @@ const StudentDashboard: React.FC = () => {
           registeredEventIds={registeredEventIds}
           isLoading={isLoading}
           registerForEvent={registerForEvent}
+          unregisterFromEvent={unregisterFromEvent}
         />
       );
     }
@@ -93,7 +95,7 @@ const StudentDashboard: React.FC = () => {
 
   return (
     <DashboardLayout sidebar={<StudentSidebar />}>
-      <div className="container">
+      <div className="container max-w-full px-0">
         {renderContent()}
       </div>
     </DashboardLayout>
