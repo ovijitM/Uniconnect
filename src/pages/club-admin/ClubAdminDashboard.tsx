@@ -7,7 +7,7 @@ import { useClubAdminDashboard } from '@/hooks/club-admin/dashboard/useClubAdmin
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import ClubAdminHeaderTabs from '@/components/dashboard/club-admin/ClubAdminHeaderTabs';
 import ClubAdminHeader from '@/components/dashboard/ClubAdminHeader';
-import { AuthRequired } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import NoClubsView from '@/components/dashboard/club-admin/dashboard/views/NoClubsView';
 
@@ -30,16 +30,14 @@ const ClubAdminDashboard: React.FC = () => {
 
   if (!user) {
     return (
-      <AuthRequired>
-        <Layout>
-          <PageTitle>Club Admin Dashboard</PageTitle>
-          <Card>
-            <CardContent className="flex justify-center items-center py-10">
-              <LoadingSpinner />
-            </CardContent>
-          </Card>
-        </Layout>
-      </AuthRequired>
+      <Layout>
+        <PageTitle>Club Admin Dashboard</PageTitle>
+        <Card>
+          <CardContent className="flex justify-center items-center py-10">
+            <LoadingSpinner />
+          </CardContent>
+        </Card>
+      </Layout>
     );
   }
 
