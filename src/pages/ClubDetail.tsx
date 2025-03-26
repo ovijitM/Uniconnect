@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 
 const ClubDetailPage: React.FC = () => {
   const params = useParams<{ clubId: string }>();
-  const clubId = params.clubId || params.id; // Try both parameter names
+  const clubId = params.clubId; // Access clubId directly, not id
   const { toast } = useToast();
   
   // Log the URL parameters to debug the issue
