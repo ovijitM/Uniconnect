@@ -26,10 +26,10 @@ export const useClubCreation = () => {
       setIsSubmitting(true);
       
       // Validate club data
-      const validationResult = validateClubData(clubData);
-      if (!validationResult.isValid) {
+      const isValid = validateClubData(clubData);
+      if (!isValid) {
         setIsSubmitting(false);
-        return { success: false, error: validationResult.errorMessage || 'Invalid club data' };
+        return { success: false, error: 'Invalid club data' };
       }
       
       // Check if the user already has a club admin relationship
