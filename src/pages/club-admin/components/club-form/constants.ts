@@ -14,3 +14,12 @@ export const clubCategories = [
   'Technology',
   'Other'
 ];
+
+export const membershipTypes = [
+  'Free',
+  'Paid - $5/semester', 
+  'Paid - $10/semester',
+  'Paid - $15/semester',
+  'Paid - $20/semester',
+  'Paid - Custom'
+];

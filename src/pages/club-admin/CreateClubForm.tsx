@@ -217,7 +217,11 @@ const CreateClubForm: React.FC = () => {
           twitter_link: formData.social.twitter || null,
           discord_link: formData.social.discord || null,
           document_url: formData.documentUrl || null,
-          document_name: formData.documentName || null
+          document_name: formData.documentName || null,
+          // Add missing fields from other tabs
+          student_count: formData.studentCount ? parseInt(formData.studentCount) : null,
+          faculty_advisor: formData.facultyAdvisor || null,
+          meeting_info: formData.meetingInfo || null
         })
         .eq('id', clubId);
 

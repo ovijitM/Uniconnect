@@ -7,11 +7,13 @@ import { Spinner } from '@/components/ui/spinner';
 interface ClubFormButtonsProps {
   isSubmitting: boolean;
   onCancel: () => void;
+  isEditing?: boolean;
 }
 
 const ClubFormButtons: React.FC<ClubFormButtonsProps> = ({
   isSubmitting,
-  onCancel
+  onCancel,
+  isEditing = false
 }) => {
   return (
     <div className="flex justify-end gap-4 mt-6">
@@ -27,10 +29,10 @@ const ClubFormButtons: React.FC<ClubFormButtonsProps> = ({
         {isSubmitting ? (
           <>
             <Spinner className="mr-2" size={16} />
-            Creating...
+            {isEditing ? 'Saving...' : 'Creating...'}
           </>
         ) : (
-          'Create Club'
+          isEditing ? 'Save Club' : 'Create Club'
         )}
       </Button>
     </div>

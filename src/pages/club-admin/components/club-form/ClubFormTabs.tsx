@@ -66,6 +66,7 @@ const ClubFormTabs: React.FC<ClubFormTabsProps> = ({
           <MembershipTab 
             formData={formData}
             handleInputChange={handleInputChange}
+            handleSelectChange={handleSelectChange}
           />
         </Card>
       </TabsContent>
