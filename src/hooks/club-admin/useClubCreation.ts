@@ -22,6 +22,17 @@ export const useClubCreation = () => {
         return false;
       }
 
+      // Check if required fields are provided
+      if (!clubFormData.name || !clubFormData.description || !clubFormData.category) {
+        console.error("Missing required basic fields");
+        toast({
+          title: 'Missing Required Fields',
+          description: 'Please fill in all required fields (name, description, category).',
+          variant: 'destructive',
+        });
+        return false;
+      }
+
       // Check if university is provided
       if (!clubFormData.university) {
         console.error("No university provided");
@@ -82,36 +93,6 @@ export const useClubCreation = () => {
             variant: 'destructive',
           });
         }
-        return false;
-      }
-
-      // Add the current user as an admin of the club
-      try {
-        // Check if we need to manually add the user as club admin
-        // The RPC function already does this, so only do it for direct inserts
-        if (!clubData.created_with_rpc) {
-          console.log("Adding user as club admin:", userId, "for club:", clubData.id);
-          const { error } = await supabase
-            .from('club_admins')
-            .insert({
-              club_id: clubData.id,
-              user_id: userId
-            });
-            
-          if (error) {
-            console.error("Error adding club admin:", error);
-            throw error;
-          }
-        }
-      } catch (error: any) {
-        console.error('Error adding club admin:', error);
-        // If we fail to add admin, we should delete the club to avoid orphaned clubs
-        await supabase.from('clubs').delete().eq('id', clubData.id);
-        toast({
-          title: 'Error',
-          description: error.message || 'Failed to add you as admin. Please try again.',
-          variant: 'destructive',
-        });
         return false;
       }
 

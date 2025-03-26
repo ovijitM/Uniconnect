@@ -28,7 +28,7 @@ export const insertClubData = async (
   try {
     // First, try to use the security definer function
     if (userId) {
-      console.log("Using security definer function to create club");
+      console.log("Using security definer function to create club with userId:", userId);
       const { data, error } = await supabase.rpc('insert_club', {
         name: clubFormData.name,
         description: clubFormData.description,
@@ -165,6 +165,23 @@ export const insertClubData = async (
     }
     
     console.log("Successfully created club data:", data);
+    
+    // Now add the user as club admin
+    if (userId) {
+      console.log("Adding user as club admin manually:", userId, "for club:", data.id);
+      const { error: adminError } = await supabase
+        .from('club_admins')
+        .insert({
+          club_id: data.id,
+          user_id: userId
+        });
+        
+      if (adminError) {
+        console.error("Error adding club admin:", adminError);
+        // Don't throw here, as the club was created successfully
+      }
+    }
+    
     return { ...data, created_with_rpc: false };
   } catch (error: any) {
     console.error("Error in insertClubData:", error);
