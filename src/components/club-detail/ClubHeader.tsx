@@ -30,29 +30,42 @@ const ClubHeader: React.FC<ClubHeaderProps> = ({ club, isAdmin, isClubAdmin }) =
   return (
     <div className="flex flex-col sm:flex-row items-center gap-6 mb-8">
       <div className="w-32 h-32 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
-        {currentSrc && (
+        {currentSrc ? (
           <img 
             src={currentSrc} 
             alt={club.name} 
             className="object-contain w-full h-full p-2"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = 'https://via.placeholder.com/150?text=Club+Logo';
+            }}
           />
+        ) : (
+          <div className="text-gray-400 flex items-center justify-center h-full w-full">
+            <Users size={40} />
+          </div>
         )}
       </div>
       <div className="flex-1">
-        <div className="mb-2 flex items-center gap-2">
+        <div className="mb-2 flex items-center gap-2 flex-wrap">
           <Badge variant="outline" className="capitalize">
-            {club.category}
+            {club.category || 'General'}
           </Badge>
           {getStatusBadge(club.status)}
           {club.establishedYear && (
             <Badge variant="outline">Est. {club.establishedYear}</Badge>
+          )}
+          {club.university && (
+            <Badge variant="secondary" className="text-xs">
+              {club.university}
+            </Badge>
           )}
         </div>
         <h1 className="text-3xl font-semibold mb-1">{club.name}</h1>
         {club.tagline && (
           <p className="text-lg text-muted-foreground mb-4 italic">{club.tagline}</p>
         )}
-        <div className="flex items-center text-muted-foreground gap-4">
+        <div className="flex items-center text-muted-foreground gap-4 flex-wrap">
           <div className="flex items-center">
             <Users className="w-4 h-4 mr-2" />
             {club.memberCount} members
@@ -73,8 +86,8 @@ const ClubHeader: React.FC<ClubHeaderProps> = ({ club, isAdmin, isClubAdmin }) =
               </Button>
             </a>
           )}
-          {club.presidentContact && (
-            <a href={`mailto:${club.presidentContact}`}>
+          {(club.presidentChairContact || club.presidentContact) && (
+            <a href={`mailto:${club.presidentChairContact || club.presidentContact}`}>
               <Button variant="outline" size="sm" className="gap-1">
                 <Mail className="w-3 h-3" />
                 Contact

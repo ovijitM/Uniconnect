@@ -1,3 +1,4 @@
+
 // Event form data type
 export interface EventFormData {
   title: string;
@@ -83,7 +84,7 @@ export interface ClubFormData {
   budgetInfo: string;
   meetingInfo: string;
   additionalNotes: string;
-  // Keeping these for backward compatibility
+  // Legacy fields kept for backward compatibility
   presidentName?: string;
   presidentContact?: string;
   executiveMembers?: string;

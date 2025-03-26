@@ -31,6 +31,7 @@ export const useHomePageData = () => {
           }
         }
         
+        // Fetch approved clubs with all relevant fields
         const { data: clubsData, error: clubsError } = await supabase
           .from('clubs')
           .select('*')
@@ -38,6 +39,7 @@ export const useHomePageData = () => {
         
         if (clubsError) throw clubsError;
         
+        // For each club, fetch its member count and prepare the data
         const clubsWithCounts = await Promise.all(
           clubsData.map(async (club) => {
             const { count, error: countError } = await supabase
@@ -75,32 +77,36 @@ export const useHomePageData = () => {
               facebookLink: club.facebook_link,
               instagramLink: club.instagram_link,
               twitterLink: club.twitter_link,
-              discordLink: club.discord_link
+              discordLink: club.discord_link,
+              university: club.university,
+              universityId: club.university_id
             };
           })
         );
         
+        // Fetch events, considering visibility settings based on user's university
         let eventsQuery = supabase
           .from('events')
-          .select('*, clubs!events_club_id_fkey(*)');
+          .select('*, clubs(*)')
+          .eq('clubs.status', 'approved');
         
+        // Handle visibility based on user's university
         if (user && userUniversity) {
-          // Fixed OR clause syntax
-          eventsQuery = eventsQuery
-            .eq('clubs.status', 'approved')
-            .or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${JSON.stringify(userUniversity)})`);
+          eventsQuery = eventsQuery.or(
+            `visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${JSON.stringify(userUniversity)})`
+          );
         } else {
-          eventsQuery = eventsQuery
-            .eq('clubs.status', 'approved')
-            .eq('visibility', 'public');
+          eventsQuery = eventsQuery.eq('visibility', 'public');
         }
         
         const { data: eventsData, error: eventsError } = await eventsQuery.order('date');
         
         if (eventsError) throw eventsError;
         
+        // Process each event and its relationship with clubs
         const eventsWithDetails = await Promise.all(
           eventsData.map(async (event) => {
+            // Get participant count
             const { count: participantsCount } = await supabase
               .from('event_participants')
               .select('*', { count: 'exact', head: true })
@@ -108,6 +114,7 @@ export const useHomePageData = () => {
             
             const clubData = event.clubs;
             
+            // Get member count for the organizing club
             const { count: memberCount } = await supabase
               .from('club_members')
               .select('*', { count: 'exact', head: true })
@@ -179,7 +186,9 @@ export const useHomePageData = () => {
                 facebookLink: clubData.facebook_link,
                 instagramLink: clubData.instagram_link,
                 twitterLink: clubData.twitter_link,
-                discordLink: clubData.discord_link
+                discordLink: clubData.discord_link,
+                university: clubData.university,
+                universityId: clubData.university_id
               }
             };
           })
@@ -188,6 +197,7 @@ export const useHomePageData = () => {
         setClubs(clubsWithCounts);
         setEvents(eventsWithDetails);
         
+        // Set the first upcoming event as the featured event
         const upcomingEvents = eventsWithDetails.filter(event => event.status === 'upcoming');
         if (upcomingEvents.length > 0) {
           setFeaturedEvent(upcomingEvents[0]);

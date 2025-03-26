@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Club } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,37 +28,37 @@ const ClubDetailInfo: React.FC<ClubDetailInfoProps> = ({ club }) => {
         
         <TabsContent value="activities" className="mt-6">
           <ActivitiesSection 
-            regularEvents={club.regularEvents}
-            signatureEvents={club.signatureEvents}
-            communityEngagement={club.communityEngagement}
+            regularEvents={club.regularEvents || []}
+            signatureEvents={club.signatureEvents || []}
+            communityEngagement={club.communityEngagement || ''}
           />
         </TabsContent>
         
         <TabsContent value="membership" className="mt-6">
           <MembershipSection 
-            whoCanJoin={club.whoCanJoin}
-            membershipFee={club.membershipFee}
-            howToJoin={club.howToJoin}
+            whoCanJoin={club.whoCanJoin || ''}
+            membershipFee={club.membershipFee || 'Free'}
+            howToJoin={club.howToJoin || ''}
           />
         </TabsContent>
         
         <TabsContent value="leadership" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <LeadershipSection 
-              presidentChairName={club.presidentChairName}
-              presidentChairContact={club.presidentChairContact}
-              executiveMembersRoles={club.executiveMembersRoles}
-              facultyAdvisors={club.facultyAdvisors}
-              primaryFacultyAdvisor={club.primaryFacultyAdvisor}
+              presidentChairName={club.presidentChairName || club.presidentName || ''}
+              presidentChairContact={club.presidentChairContact || club.presidentContact || ''}
+              executiveMembersRoles={club.executiveMembersRoles || {}}
+              facultyAdvisors={club.facultyAdvisors || []}
+              primaryFacultyAdvisor={club.primaryFacultyAdvisor || ''}
             />
             
             <ContactSection 
-              phoneNumber={club.phoneNumber}
-              website={club.website}
-              facebookLink={club.facebookLink}
-              instagramLink={club.instagramLink}
-              twitterLink={club.twitterLink}
-              discordLink={club.discordLink}
+              phoneNumber={club.phoneNumber || ''}
+              website={club.website || ''}
+              facebookLink={club.facebookLink || ''}
+              instagramLink={club.instagramLink || ''}
+              twitterLink={club.twitterLink || ''}
+              discordLink={club.discordLink || ''}
             />
           </div>
         </TabsContent>

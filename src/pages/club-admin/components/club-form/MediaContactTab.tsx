@@ -31,7 +31,7 @@ const MediaContactTab: React.FC<MediaContactTabProps> = ({
             <Input
               id="contactEmail"
               name="contactEmail"
-              value={formData.contactEmail}
+              value={formData.contactEmail || ''}
               onChange={handleInputChange}
               placeholder="Official email address for inquiries"
             />
@@ -42,7 +42,7 @@ const MediaContactTab: React.FC<MediaContactTabProps> = ({
             <Input
               id="phoneNumber"
               name="phoneNumber"
-              value={formData.phoneNumber}
+              value={formData.phoneNumber || ''}
               onChange={handleInputChange}
               placeholder="Phone number for contacting the club"
             />
@@ -57,6 +57,7 @@ const MediaContactTab: React.FC<MediaContactTabProps> = ({
             buttonText="Upload Club Logo"
             helperText="Upload your club logo (max 5MB, JPG, PNG, or GIF)"
             uploadType="logo"
+            currentFile={formData.logoUrl}
           />
         </div>
         
@@ -68,6 +69,7 @@ const MediaContactTab: React.FC<MediaContactTabProps> = ({
             buttonText="Upload Club Document"
             helperText="Upload club documents like constitution or bylaws (max 10MB, PDF preferred)"
             uploadType="document"
+            currentFile={formData.documentUrl}
           />
         </div>
         
@@ -75,66 +77,66 @@ const MediaContactTab: React.FC<MediaContactTabProps> = ({
           <Label>Social Media</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="social.website">Website</Label>
+              <Label htmlFor="website">Website</Label>
               <Input
-                id="social.website"
-                name="social.website"
-                value={formData.social.website}
+                id="website"
+                name="website"
+                value={formData.website || ''}
                 onChange={handleInputChange}
                 placeholder="https://your-club-website.com"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="social.instagram">Instagram</Label>
+              <Label htmlFor="instagramLink">Instagram</Label>
               <Input
-                id="social.instagram"
-                name="social.instagram"
-                value={formData.social.instagram}
+                id="instagramLink"
+                name="instagramLink"
+                value={formData.instagramLink || ''}
                 onChange={handleInputChange}
                 placeholder="https://instagram.com/yourclub"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="social.facebook">Facebook</Label>
+              <Label htmlFor="facebookLink">Facebook</Label>
               <Input
-                id="social.facebook"
-                name="social.facebook"
-                value={formData.social.facebook}
+                id="facebookLink"
+                name="facebookLink"
+                value={formData.facebookLink || ''}
                 onChange={handleInputChange}
                 placeholder="https://facebook.com/yourclub"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="social.twitter">Twitter</Label>
+              <Label htmlFor="twitterLink">Twitter</Label>
               <Input
-                id="social.twitter"
-                name="social.twitter"
-                value={formData.social.twitter}
+                id="twitterLink"
+                name="twitterLink"
+                value={formData.twitterLink || ''}
                 onChange={handleInputChange}
                 placeholder="https://twitter.com/yourclub"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="social.linkedin">LinkedIn</Label>
+              <Label htmlFor="socialMediaLinks.linkedin">LinkedIn</Label>
               <Input
-                id="social.linkedin"
-                name="social.linkedin"
-                value={formData.social.linkedin}
+                id="socialMediaLinks.linkedin"
+                name="socialMediaLinks.linkedin"
+                value={formData.socialMediaLinks?.linkedin || ''}
                 onChange={handleInputChange}
                 placeholder="https://linkedin.com/company/yourclub"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="social.discord">Discord</Label>
+              <Label htmlFor="discordLink">Discord</Label>
               <Input
-                id="social.discord"
-                name="social.discord"
-                value={formData.social.discord}
+                id="discordLink"
+                name="discordLink"
+                value={formData.discordLink || ''}
                 onChange={handleInputChange}
                 placeholder="https://discord.gg/yourclub"
               />
