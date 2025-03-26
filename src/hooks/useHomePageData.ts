@@ -83,10 +83,10 @@ export const useHomePageData = () => {
           .select('*, clubs!events_club_id_fkey(*)');
         
         if (user && userUniversity) {
-          // Fixed OR clause for visibility and university filtering
+          // Fixed OR clause syntax
           eventsQuery = eventsQuery
             .eq('clubs.status', 'approved')
-            .or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq."${userUniversity}")`);
+            .or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${JSON.stringify(userUniversity)})`);
         } else {
           eventsQuery = eventsQuery
             .eq('clubs.status', 'approved')
