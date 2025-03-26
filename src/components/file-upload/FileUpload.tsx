@@ -16,6 +16,7 @@ interface FileUploadProps {
   uploadType?: 'logo' | 'document';
   bucket?: string;
   maxSize?: number; // Alias for maxFileSize to support both props
+  currentFile?: string; // Added this prop to display already uploaded files
 }
 
 export const FileUpload: React.FC<FileUploadProps> = ({
@@ -26,7 +27,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   buttonText,
   helperText,
   uploadType = 'logo',
-  bucket = 'club_documents'
+  bucket = 'club_documents',
+  currentFile
 }) => {
   // Use maxSize as fallback for maxFileSize for backward compatibility
   const fileMaxSize = maxFileSize || maxSize || 5;
@@ -120,6 +122,15 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
   return (
     <div className="space-y-4">
+      {currentFile && (
+        <div className="flex items-center justify-between p-2 border rounded-md">
+          <span className="text-sm truncate max-w-[200px]">
+            {currentFile.split('/').pop() || "Current file"}
+          </span>
+          <div className="text-xs text-muted-foreground">Already uploaded</div>
+        </div>
+      )}
+      
       <div className="flex items-center gap-4">
         <input
           type="file"
