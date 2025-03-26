@@ -11,6 +11,7 @@ import Signup from '@/pages/Signup';
 import NotFound from '@/pages/NotFound';
 import Settings from '@/pages/Settings';
 import Universities from '@/pages/Universities';
+import ClubCreation from '@/pages/ClubCreation';
 
 // Auth routes
 import RequireAuth from '@/components/auth/RequireAuth';
@@ -35,6 +36,7 @@ function App() {
         <Route path="/index" element={<Index />} />
         <Route path="/clubs" element={<Clubs />} />
         <Route path="/clubs/:id" element={<ClubDetail />} />
+        <Route path="/create-club" element={<ClubCreation />} />
         <Route path="/events" element={<Events />} />
         <Route path="/events/:id" element={<EventDetail />} />
         <Route path="/universities" element={<Universities />} />
