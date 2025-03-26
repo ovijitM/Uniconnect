@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useMatch } from 'react-router-dom';
 import { useAdminData } from '@/hooks/admin';
@@ -99,7 +98,15 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleClubStatusChange = () => {
-    fetchAdminData();
+    console.log("Club status changed, refreshing admin data...");
+    fetchAdminData().catch(error => {
+      console.error("Error refreshing admin data:", error);
+      toast({
+        title: 'Error',
+        description: 'Failed to refresh dashboard data.',
+        variant: 'destructive',
+      });
+    });
   };
 
   // Render content based on current route

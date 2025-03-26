@@ -586,6 +586,18 @@ export type Database = {
         }
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      insert_club: {
+        Args: {
+          name: string
+          description: string
+          category: string
+          university: string
+          university_id: string
+          logo_url: string
+          club_admin_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       event_status: "upcoming" | "ongoing" | "past"

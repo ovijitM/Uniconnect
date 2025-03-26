@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import UsersTable from './UsersTable';
@@ -65,13 +64,11 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
       </TabsContent>
       
       <TabsContent value="clubs">
-        <ClubsTableContent 
+        <ClubsTable 
           clubs={clubs} 
           isLoading={isLoading}
-          processingId={null}
-          onApprove={(id) => onReviewItem(id, 'club')}
-          onReject={(id) => onReviewItem(id, 'club')}
-          onView={onViewClub}
+          onViewClub={onViewClub}
+          onClubStatusChange={onClubStatusChange}
         />
       </TabsContent>
 
