@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import DashboardLayout from '@/components/dashboard/shared/DashboardLayout';
 import AdminSidebar from '@/components/dashboard/admin/AdminSidebar';
 import { ClubsTableContent } from '@/components/admin/clubs-table';
@@ -9,7 +9,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import ClubsTable from '@/components/admin/ClubsTable';
 
 const ClubsPage: React.FC = () => {
   const { user } = useAuth();
@@ -49,11 +48,6 @@ const ClubsPage: React.FC = () => {
     navigate('/admin-dashboard/clubs/create');
   };
 
-  const handleClubStatusChange = () => {
-    console.log("Club status changed, refreshing clubs data...");
-    fetchAdminData();
-  };
-
   return (
     <DashboardLayout sidebar={<AdminSidebar />}>
       <div className="container p-6">
@@ -64,12 +58,13 @@ const ClubsPage: React.FC = () => {
             Create New Club
           </Button>
         </div>
-        
-        <ClubsTable 
+        <ClubsTableContent 
           clubs={clubs} 
           isLoading={isLoading}
-          onViewClub={handleViewClub}
-          onClubStatusChange={handleClubStatusChange}
+          processingId={null}
+          onApprove={handleReview}
+          onReject={handleReview}
+          onView={handleViewClub}
         />
       </div>
     </DashboardLayout>

@@ -59,7 +59,7 @@ const EventsPage: React.FC = () => {
           `);
           
         if (user && userUniversity) {
-          eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
+          eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${JSON.stringify(userUniversity)})`);
         } else {
           eventsQuery = eventsQuery.eq('visibility', 'public');
         }

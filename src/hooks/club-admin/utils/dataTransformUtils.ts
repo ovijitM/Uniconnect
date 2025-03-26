@@ -31,3 +31,26 @@ export const parseExecutiveMembers = (value: string | undefined | null): Record<
   
   return Object.keys(members).length > 0 ? members : null;
 };
+
+/**
+ * Log structured data for debugging purposes
+ */
+export const logFormData = (formData: any, label: string = 'Form Data') => {
+  console.log(`${label}:`, JSON.stringify(formData, null, 2));
+};
+
+/**
+ * Validates that required fields are present
+ */
+export const validateRequiredFields = (formData: any, requiredFields: string[]): boolean => {
+  let isValid = true;
+  
+  requiredFields.forEach(field => {
+    if (!formData[field] || formData[field].trim() === '') {
+      console.error(`Missing required field: ${field}`);
+      isValid = false;
+    }
+  });
+  
+  return isValid;
+};

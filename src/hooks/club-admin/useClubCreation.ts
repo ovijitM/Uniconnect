@@ -22,6 +22,17 @@ export const useClubCreation = () => {
         return false;
       }
 
+      // Check if required fields are provided
+      if (!clubFormData.name || !clubFormData.description || !clubFormData.category) {
+        console.error("Missing required basic fields");
+        toast({
+          title: 'Missing Required Fields',
+          description: 'Please fill in all required fields (name, description, category).',
+          variant: 'destructive',
+        });
+        return false;
+      }
+
       // Check if university is provided
       if (!clubFormData.university) {
         console.error("No university provided");
@@ -33,12 +44,25 @@ export const useClubCreation = () => {
         return false;
       }
 
+      // Check if logo is uploaded
+      if (!clubFormData.logoUrl) {
+        console.error("No logo URL provided");
+        toast({
+          title: 'Missing Logo',
+          description: 'Please upload a logo for your club.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+
       // Find or create university
       let universityId;
       try {
-        universityId = await findOrCreateUniversity(clubFormData.university, clubFormData.universityId);
+        // Use the provided universityId if available, otherwise find or create
+        universityId = clubFormData.universityId || await findOrCreateUniversity(clubFormData.university);
         console.log("Creating club with university:", clubFormData.university, "and universityId:", universityId);
       } catch (error: any) {
+        console.error("Error processing university:", error);
         toast({
           title: 'Database Error',
           description: error.message || 'Failed to process university information. Please try again.',
@@ -47,13 +71,33 @@ export const useClubCreation = () => {
         return false;
       }
 
-      // Insert club data
-      let clubData;
+      // Insert club data with explicit error handling
       try {
-        clubData = await insertClubData(clubFormData, universityId);
+        const clubData = await insertClubData(clubFormData, universityId, userId);
+        
+        if (!clubData || !clubData.id) {
+          console.error('Error: No club data returned after insertion');
+          toast({
+            title: 'Error Creating Club',
+            description: 'No club data was returned after creation. Please try again.',
+            variant: 'destructive',
+          });
+          return false;
+        }
+        
         console.log('Club created successfully:', clubData);
+        
+        toast({
+          title: 'Success',
+          description: 'Club created successfully! It will be visible after admin approval.',
+          variant: 'default',
+        });
+        
+        return true;
       } catch (error: any) {
         console.error('Error creating club:', error);
+        
+        // Provide more detailed error message for better debugging
         toast({
           title: 'Error Creating Club',
           description: error.message || 'Failed to create club. Please try again.',
@@ -61,36 +105,6 @@ export const useClubCreation = () => {
         });
         return false;
       }
-
-      // Add the current user as an admin of the club
-      try {
-        const { error } = await supabase
-          .from('club_admins')
-          .insert({
-            club_id: clubData.id,
-            user_id: userId
-          });
-          
-        if (error) throw error;
-      } catch (error: any) {
-        console.error('Error adding club admin:', error);
-        // If we fail to add admin, we should delete the club to avoid orphaned clubs
-        await supabase.from('clubs').delete().eq('id', clubData.id);
-        toast({
-          title: 'Error',
-          description: error.message || 'Failed to add you as admin. Please try again.',
-          variant: 'destructive',
-        });
-        return false;
-      }
-
-      toast({
-        title: 'Success',
-        description: 'Club created successfully! It will be visible after admin approval.',
-        variant: 'default',
-      });
-      
-      return true;
     } catch (error: any) {
       console.error('Error creating club:', error);
       toast({

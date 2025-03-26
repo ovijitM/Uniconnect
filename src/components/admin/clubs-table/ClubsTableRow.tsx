@@ -32,8 +32,6 @@ const ClubsTableRow: React.FC<ClubsTableRowProps> = ({
   onReject,
   onView
 }) => {
-  const isProcessing = processingId === club.id;
-  
   return (
     <TableRow key={club.id}>
       <TableCell className="font-medium">{club.name}</TableCell>
@@ -63,7 +61,7 @@ const ClubsTableRow: React.FC<ClubsTableRowProps> = ({
                 variant="outline" 
                 size="sm"
                 onClick={() => onApprove(club.id)}
-                disabled={isProcessing}
+                disabled={processingId === club.id}
                 className="bg-green-100 hover:bg-green-200"
               >
                 <Check className="h-4 w-4 mr-1" /> Approve
@@ -72,7 +70,7 @@ const ClubsTableRow: React.FC<ClubsTableRowProps> = ({
                 variant="outline" 
                 size="sm"
                 onClick={() => onReject(club.id)}
-                disabled={isProcessing}
+                disabled={processingId === club.id}
                 className="bg-red-100 hover:bg-red-200"
               >
                 <X className="h-4 w-4 mr-1" /> Reject

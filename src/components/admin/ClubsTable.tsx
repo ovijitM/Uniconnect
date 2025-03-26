@@ -37,26 +37,19 @@ const ClubsTable: React.FC<ClubsTableProps> = ({
   const handleApproveClub = async (clubId: string) => {
     try {
       setProcessingId(clubId);
-      console.log("Approving club with ID:", clubId);
-      
       const { error } = await supabase
         .from('clubs')
         .update({ status: 'approved' })
         .eq('id', clubId);
 
-      if (error) {
-        console.error('Error approving club:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
         title: 'Club Approved',
         description: 'The club has been approved successfully.',
       });
 
-      if (onClubStatusChange) {
-        onClubStatusChange();
-      }
+      if (onClubStatusChange) onClubStatusChange();
     } catch (error) {
       console.error('Error approving club:', error);
       toast({

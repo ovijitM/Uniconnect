@@ -2,13 +2,16 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
+import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
 
 interface ClubDialogFooterProps {
   activeTab: string;
   onBack: () => void;
   onNext: () => void;
   onSubmit: () => void;
-  buttonText: string;
+  buttonText?: string;
+  isSubmitting?: boolean;
 }
 
 const ClubDialogFooter: React.FC<ClubDialogFooterProps> = ({
@@ -16,35 +19,54 @@ const ClubDialogFooter: React.FC<ClubDialogFooterProps> = ({
   onBack,
   onNext,
   onSubmit,
-  buttonText
+  buttonText = "Create Club",
+  isSubmitting = false
 }) => {
-  const handleSubmit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    console.log("Submit button clicked! Calling onSubmit handler");
-    onSubmit();
-  };
-
   return (
-    <DialogFooter className="mt-6 flex justify-between">
-      {activeTab !== 'basic' && (
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={onBack}
-        >
-          Back
-        </Button>
-      )}
+    <DialogFooter className="flex justify-between items-center border-t pt-4 mt-2">
+      <div>
+        {activeTab !== 'basic' && (
+          <Button 
+            variant="outline" 
+            onClick={onBack} 
+            disabled={isSubmitting}
+            className="gap-1"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back
+          </Button>
+        )}
+      </div>
       
       <div>
         {activeTab !== 'documents' ? (
-          <Button type="button" onClick={onNext}>Next</Button>
+          <Button 
+            variant="default" 
+            onClick={onNext} 
+            disabled={isSubmitting}
+            className="gap-1"
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         ) : (
           <Button 
-            type="button" 
-            onClick={handleSubmit}
+            variant="default" 
+            onClick={onSubmit} 
+            disabled={isSubmitting}
+            className="gap-2 min-w-28"
           >
-            {buttonText}
+            {isSubmitting ? (
+              <>
+                <Spinner className="h-4 w-4" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                {buttonText}
+              </>
+            )}
           </Button>
         )}
       </div>
