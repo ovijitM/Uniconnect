@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import CreateEventDialog from './CreateEventDialog';
-import { EventFormData, ClubFormData } from '@/hooks/club-admin/types';
+import { EventFormData } from '@/hooks/club-admin/types';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 
@@ -15,10 +15,10 @@ interface ClubAdminHeaderProps {
   onEventInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onCreateEvent: () => void;
   onEventFileUpload?: (url: string, fileName: string) => void;
-  // Optional props for ClubDialog
+  // Added these optional props for ClubDialog
   isClubDialogOpen?: boolean;
   setIsClubDialogOpen?: (open: boolean) => void;
-  clubFormData?: ClubFormData;
+  clubFormData?: any;
   onClubInputChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onClubFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
   hasExistingClub?: boolean;
@@ -33,7 +33,7 @@ const ClubAdminHeader: React.FC<ClubAdminHeaderProps> = ({
   onEventInputChange,
   onCreateEvent,
   onEventFileUpload,
-  // We don't need to use these props in this component, just having them in the interface fixes the type errors
+  // We don't need to use these props in this component right now
   isClubDialogOpen,
   setIsClubDialogOpen,
   clubFormData,

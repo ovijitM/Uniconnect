@@ -1,15 +1,16 @@
 
+// Event form data type
 export interface EventFormData {
   title: string;
   description: string;
   date: string;
   location: string;
   category: string;
-  maxParticipants: string;
-  clubId: string;
-  imageUrl: string;
-  tagline: string;
   eventType: string;
+  maxParticipants: string;
+  imageUrl: string;
+  clubId: string;
+  tagline: string;
   registrationDeadline: string;
   onlinePlatform: string;
   eligibility: string;
@@ -17,96 +18,50 @@ export interface EventFormData {
   registrationLink: string;
   entryFee: string;
   theme: string;
-  subTracks: string;
+  subTracks: string[];
   prizePool: string;
-  prizeCategories: string;
-  additionalPerks: string;
-  judgingCriteria: string;
-  judges: string;
-  schedule: string;
-  deliverables: string;
+  prizeCategories: string[];
+  additionalPerks: string[];
+  judgingCriteria: string[];
+  judges: string[];
+  schedule: Record<string, any>;
+  deliverables: string[];
   submissionPlatform: string;
-  mentors: string;
-  sponsors: string;
+  mentors: string[];
+  sponsors: string[];
   contactEmail: string;
   communityLink: string;
   eventWebsite: string;
   eventHashtag: string;
-  howToRegister: string;
-  visibility: 'public' | 'university_only';
 }
 
+// Club form data type
 export interface ClubFormData {
   name: string;
   description: string;
   category: string;
-  logoUrl: string;
   university: string;
-  contactEmail: string;
-  contactPhone: string;
-  address: string;
-  socialMediaLinks: {
-    website: string;
-    instagram: string;
-    facebook: string;
-    twitter: string;
-    linkedin: string;
-    discord: string;
-  };
+  logoUrl: string;
+  tagline: string;
+  establishedYear: string;
+  affiliation: string;
+  whyJoin: string;
+  regularEvents: string[];
+  signatureEvents: string[];
+  communityEngagement: string;
+  whoCanJoin: string;
+  membershipFee: string;
+  howToJoin: string;
+  presidentName: string;
+  presidentContact: string;
   executiveMembers: string;
-  achievements: string;
-  documents: {
-    constitution: string;
-    codeOfConduct: string;
-    other: string;
-  };
-  missionStatement: string;
-  visionStatement: string;
-  values: string;
-  foundingDate: string;
-  clubType: string;
-  studentCount: string;
-  facultyAdvisor: string;
-  budgetInfo: string;
-  meetingInfo: string;
-  additionalNotes: string;
-  // Additional properties needed by clubDataUtils.ts
-  tagline?: string;
-  establishedYear?: string;
-  affiliation?: string;
-  whyJoin?: string;
-  regularEvents?: string;
-  signatureEvents?: string;
-  communityEngagement?: string;
-  whoCanJoin?: string;
-  membershipFee?: string;
-  howToJoin?: string;
-  presidentName?: string;
-  presidentContact?: string;
-  advisors?: string;
-  phoneNumber?: string;
-  website?: string;
-  facebookLink?: string;
-  instagramLink?: string;
-  twitterLink?: string;
-  discordLink?: string;
-  documentUrl?: string;
-  documentName?: string;
-}
-
-export interface ClubAdminDataType {
-  adminClubs: any[];
-  clubEvents: any[];
-  clubMembers: any[];
-  isLoading: boolean;
-  selectedEventId: string | null;
-  selectedEventTitle: string;
-  errorMessage: string | null;
-}
-
-export interface EventCollaborator {
-  id: string;
-  name: string;
-  logo_url?: string;
-  university?: string;
+  advisors: string[];
+  phoneNumber: string;
+  website: string;
+  facebookLink: string;
+  instagramLink: string;
+  twitterLink: string;
+  discordLink: string;
+  documentUrl: string;
+  documentName: string;
 }

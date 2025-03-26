@@ -3,12 +3,11 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { ClubFormData } from '@/hooks/club-admin/types';
 
 interface NoClubsViewProps {
   isDialogOpen?: boolean;
   setIsDialogOpen?: (open: boolean) => void;
-  clubFormData?: ClubFormData;
+  clubFormData?: any;
   handleClubInputChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleCreateClub?: () => void;
 }
