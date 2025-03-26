@@ -75,28 +75,33 @@ export const insertClubData = async (
         // Log the update data for debugging
         logFormData(updateData, "Club Update Data");
         
-        const { data: updatedData, error: updateError } = await supabase
+        const { error: updateError } = await supabase
           .from('clubs')
           .update(updateData)
-          .eq('id', data)
-          .select();
+          .eq('id', data);
         
         if (updateError) {
           console.error("Error updating club with additional fields:", updateError);
+          throw new Error(`Failed to update club: ${updateError.message}`);
         } else {
-          console.log("Successfully updated club with additional fields:", updatedData);
+          console.log("Successfully updated club with additional fields");
         }
         
-        // Get the club data to return
+        // Get the club data to return - avoid using .single() which causes errors if no data is returned
         const { data: clubData, error: getError } = await supabase
           .from('clubs')
           .select('*')
           .eq('id', data)
-          .single();
+          .maybeSingle();
           
         if (getError) {
           console.error("Error fetching created club:", getError);
           throw new Error(`Failed to fetch club data: ${getError.message}`);
+        }
+        
+        if (!clubData) {
+          console.error("No club data found after creation");
+          throw new Error('No club data found after creation');
         }
         
         console.log("Final club data:", clubData);
@@ -146,20 +151,21 @@ export const insertClubData = async (
     const { data, error } = await supabase
       .from('clubs')
       .insert(insertData)
-      .select();
+      .select()
+      .maybeSingle(); // Use maybeSingle() instead of single() to avoid errors
     
     if (error) {
       console.error("Database error creating club:", error);
       throw new Error(`Failed to create club: ${error.message}`);
     }
     
-    if (!data || data.length === 0) {
+    if (!data) {
       console.error("No club data returned after creation");
       throw new Error('No club data returned after creation');
     }
     
-    console.log("Successfully created club data:", data[0]);
-    return { ...data[0], created_with_rpc: false };
+    console.log("Successfully created club data:", data);
+    return { ...data, created_with_rpc: false };
   } catch (error: any) {
     console.error("Error in insertClubData:", error);
     throw error;

@@ -33,6 +33,17 @@ export const useClubCreation = () => {
         return false;
       }
 
+      // Check if logo is uploaded
+      if (!clubFormData.logoUrl) {
+        console.error("No logo URL provided");
+        toast({
+          title: 'Missing Logo',
+          description: 'Please upload a logo for your club.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+
       // Find or create university
       let universityId;
       try {
@@ -56,11 +67,21 @@ export const useClubCreation = () => {
         console.log('Club created successfully:', clubData);
       } catch (error: any) {
         console.error('Error creating club:', error);
-        toast({
-          title: 'Error Creating Club',
-          description: error.message || 'Failed to create club. Please try again.',
-          variant: 'destructive',
-        });
+        
+        // Provide more detailed error message for better debugging
+        if (error.message.includes('JSON object requested, multiple (or no) rows returned')) {
+          toast({
+            title: 'Error Creating Club',
+            description: 'Database error: Could not create club due to an issue with the returned data. Please try again later.',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Error Creating Club',
+            description: error.message || 'Failed to create club. Please try again.',
+            variant: 'destructive',
+          });
+        }
         return false;
       }
 

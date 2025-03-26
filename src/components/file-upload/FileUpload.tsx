@@ -1,178 +1,176 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, X, File, Check } from 'lucide-react';
+import { Upload, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface FileUploadProps {
-  onUploadComplete?: (url: string, fileName: string) => void;
-  onFileUpload?: (url: string, fileName: string) => void;
-  maxFileSize?: number; // in MB
+  onUploadComplete: (url: string, fileName: string, type?: 'logo' | 'document') => void;
   acceptedFileTypes?: string[];
+  maxFileSize?: number;
   buttonText?: string;
-  className?: string;
-  defaultValue?: string;
-  uploadType?: 'logo' | 'document';
   helperText?: string;
+  uploadType?: 'logo' | 'document';
+  disabled?: boolean;
+  maxSize?: number; // Added this prop to fix the type error
 }
 
-export const FileUpload: React.FC<FileUploadProps> = ({
-  onUploadComplete,
-  onFileUpload,
-  maxFileSize = 5, // Default max size 5MB
-  acceptedFileTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
-  buttonText = 'Upload Document',
-  className,
-  defaultValue,
+export const FileUpload: React.FC<FileUploadProps> = ({ 
+  onUploadComplete, 
+  acceptedFileTypes = ["image/jpeg", "image/png", "application/pdf"], 
+  maxFileSize = 5, // Default max file size in MB
+  maxSize = 5, // Added to handle the prop passed from DocumentManager
+  buttonText = "Upload File", 
+  helperText = "Upload a file (Max 5MB)",
   uploadType = 'document',
-  helperText
+  disabled = false
 }) => {
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<string | null>(defaultValue || null);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
   const { toast } = useToast();
+  
+  // Use the maxSize prop if provided, otherwise fall back to maxFileSize
+  const effectiveMaxSize = maxSize || maxFileSize;
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    
+    if (!file) {
+      return;
+    }
+    
+    // Check file type
+    if (acceptedFileTypes.length > 0 && !acceptedFileTypes.includes(file.type)) {
+      setUploadError(`Invalid file type. Accepted types: ${acceptedFileTypes.join(', ')}`);
+      toast({
+        title: "Invalid file type",
+        description: `Please upload one of the following file types: ${acceptedFileTypes.join(', ')}`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Check file size
-    if (file.size > maxFileSize * 1024 * 1024) {
+    if (file.size > effectiveMaxSize * 1024 * 1024) {
+      setUploadError(`File size exceeds the limit of ${effectiveMaxSize}MB`);
       toast({
-        title: 'File too large',
-        description: `Max file size is ${maxFileSize}MB`,
-        variant: 'destructive',
+        title: "File too large",
+        description: `The file exceeds the maximum size of ${effectiveMaxSize}MB`,
+        variant: "destructive",
       });
       return;
     }
-
-    // Check file type (for documents)
-    if (uploadType === 'document' && allowedTypes.length && !allowedTypes.includes(file.type)) {
-      toast({
-        title: 'Unsupported file type',
-        description: `Please upload one of the following: ${allowedTypes.join(', ')}`,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // For logo uploads, only allow image types
-    if (uploadType === 'logo' && !file.type.startsWith('image/')) {
-      toast({
-        title: 'Unsupported file type',
-        description: 'Please upload an image file (PNG, JPG, etc.)',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+    
     setIsUploading(true);
-    setFileName(file.name);
-
+    setUploadError(null);
+    setUploadProgress(0);
+    setUploadSuccess(false);
+    
     try {
-      // Create a temporary URL for the file
-      const fileUrl = URL.createObjectURL(file);
+      // Generate a unique file name to prevent overwrites
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `${uploadType === 'logo' ? 'logos' : 'documents'}/${fileName}`;
       
-      // Store temporary URL for preview
-      setUploadedFile(fileUrl);
+      // Upload file to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('club-files')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
       
-      // Call either onUploadComplete or onFileUpload callback
-      if (onUploadComplete) {
-        onUploadComplete(fileUrl, file.name);
+      if (error) {
+        throw error;
       }
       
-      if (onFileUpload) {
-        onFileUpload(fileUrl, file.name);
-      }
+      // Get public URL for the uploaded file
+      const { data: { publicUrl } } = supabase.storage
+        .from('club-files')
+        .getPublicUrl(filePath);
       
+      // Set success state
+      setUploadSuccess(true);
+      setUploadProgress(100);
+      
+      // Call the callback with the public URL and original file name
+      onUploadComplete(publicUrl, file.name, uploadType);
+      
+      // Show success toast
       toast({
-        title: 'File processed',
-        description: 'Your file has been processed successfully.',
+        title: "File uploaded successfully",
+        description: `Your file ${file.name} has been uploaded.`,
+        variant: "default",
       });
-    } catch (error) {
-      console.error('Error processing file:', error);
+      
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      setUploadError(error.message || 'Failed to upload file');
+      
       toast({
-        title: 'Processing failed',
-        description: error instanceof Error ? error.message : 'Something went wrong',
-        variant: 'destructive',
+        title: "Upload failed",
+        description: error.message || 'There was a problem uploading your file.',
+        variant: "destructive",
       });
     } finally {
       setIsUploading(false);
     }
+    
+    // Reset file input
+    e.target.value = '';
   };
-
-  const handleRemove = () => {
-    if (uploadedFile && uploadedFile.startsWith('blob:')) {
-      URL.revokeObjectURL(uploadedFile);
-    }
-    
-    setUploadedFile(null);
-    setFileName(null);
-    
-    // Call either callback with empty values to indicate removal
-    if (onUploadComplete) {
-      onUploadComplete('', '');
-    }
-    
-    if (onFileUpload) {
-      onFileUpload('', '');
-    }
-  };
-
-  // Determine which file types to accept based on uploadType
-  const allowedTypes = uploadType === 'logo' 
-    ? ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'] 
-    : acceptedFileTypes;
-
+  
   return (
-    <div className={cn("space-y-4", className)}>
-      {!uploadedFile ? (
-        <div className="flex items-center justify-center w-full">
-          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600">
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <Upload className="w-8 h-8 mb-3 text-gray-500 dark:text-gray-400" />
-              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                <span className="font-semibold">Click to upload</span> or drag and drop
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {helperText || `Max size: ${maxFileSize}MB`}
-              </p>
-            </div>
-            <input 
-              type="file" 
-              className="hidden" 
-              onChange={handleFileChange}
-              disabled={isUploading}
-              accept={uploadType === 'logo' ? 'image/*' : allowedTypes.join(',')}
-            />
-          </label>
-        </div>
-      ) : (
-        <div className="flex items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <div className="flex items-center flex-1 space-x-3">
-            <File className="w-8 h-8 text-blue-500" />
-            <div className="flex-1 truncate">
-              <p className="font-medium text-sm truncate">{fileName || 'File'}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {uploadedFile.substring(0, 50)}...
-              </p>
-            </div>
-          </div>
-          <Button variant="ghost" size="icon" onClick={handleRemove}>
-            <X className="w-4 h-4" />
+    <div className="w-full">
+      <div className="flex flex-col gap-2">
+        <label className="relative cursor-pointer">
+          <Button 
+            type="button"
+            variant="outline" 
+            className="w-full" 
+            disabled={isUploading || disabled}
+          >
+            {isUploading ? (
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                <span>Uploading ({uploadProgress}%)...</span>
+              </div>
+            ) : uploadSuccess ? (
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>File uploaded</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                <span>{buttonText}</span>
+              </div>
+            )}
           </Button>
-        </div>
-      )}
-      
-      {isUploading && (
-        <div className="flex items-center justify-center space-x-2">
-          <div className="animate-spin">
-            <Upload className="w-4 h-4" />
+          <input
+            type="file"
+            className="sr-only"
+            onChange={handleFileChange}
+            accept={acceptedFileTypes.join(',')}
+            disabled={isUploading || disabled}
+          />
+        </label>
+        
+        {helperText && !uploadError && !uploadSuccess && (
+          <p className="text-xs text-muted-foreground">{helperText}</p>
+        )}
+        
+        {uploadError && (
+          <div className="flex items-center gap-2 text-xs text-destructive">
+            <AlertCircle className="h-3 w-3" />
+            <span>{uploadError}</span>
           </div>
-          <p className="text-sm">Processing...</p>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
