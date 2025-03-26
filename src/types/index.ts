@@ -11,21 +11,35 @@ export interface Club {
   university?: string;
   universityId?: string;
   
-  // New fields
+  // Basic fields
   tagline?: string;
   establishedYear?: number;
   affiliation?: string;
+  
+  // About fields
   whyJoin?: string;
   regularEvents?: string[];
   signatureEvents?: string[];
   communityEngagement?: string;
+  
+  // Membership fields
   whoCanJoin?: string;
   membershipFee?: string;
   howToJoin?: string;
-  presidentName?: string;
-  presidentContact?: string;
-  executiveMembers?: any; // Using any for JSONB type
-  advisors?: string[];
+  
+  // Leadership fields - updated with new fields
+  presidentName?: string; // Legacy field
+  presidentContact?: string; // Legacy field
+  presidentChairName?: string; // New field
+  presidentChairContact?: string; // New field
+  executiveMembers?: any; // Legacy field
+  executiveMembersRoles?: any; // New field
+  advisors?: string[]; // Legacy field
+  facultyAdvisors?: string[]; // New field
+  primaryFacultyAdvisor?: string; // New field
+  facultyAdvisor?: string; // Legacy field
+  
+  // Contact fields
   phoneNumber?: string;
   website?: string;
   facebookLink?: string;

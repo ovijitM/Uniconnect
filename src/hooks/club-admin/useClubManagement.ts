@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { Club } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { parseExecutiveMembersRoles } from './utils/dataTransformUtils';
 
 export const useClubManagement = (onRefresh: () => void) => {
   const { toast } = useToast();
@@ -36,6 +36,13 @@ export const useClubManagement = (onRefresh: () => void) => {
     discordLink: '',
     university: '',
     universityId: '',
+    
+    // Add new leadership fields
+    presidentChairName: '',
+    presidentChairContact: '',
+    executiveMembersRoles: '',
+    facultyAdvisors: '',
+    primaryFacultyAdvisor: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -68,6 +75,13 @@ export const useClubManagement = (onRefresh: () => void) => {
       discordLink: club.discordLink || '',
       university: club.university || '',
       universityId: club.universityId || '',
+      
+      // Map new leadership fields
+      presidentChairName: club.presidentChairName || '',
+      presidentChairContact: club.presidentChairContact || '',
+      executiveMembersRoles: club.executiveMembersRoles ? JSON.stringify(club.executiveMembersRoles) : '',
+      facultyAdvisors: club.facultyAdvisors ? club.facultyAdvisors.join(', ') : '',
+      primaryFacultyAdvisor: club.primaryFacultyAdvisor || '',
     });
     setIsEditDialogOpen(true);
   };
@@ -129,15 +143,19 @@ export const useClubManagement = (onRefresh: () => void) => {
       const signatureEvents = editFormData.signatureEvents ? editFormData.signatureEvents.split(',').map(e => e.trim()) : [];
       const advisors = editFormData.advisors ? editFormData.advisors.split(',').map(e => e.trim()) : [];
       
-      // Handle executive members - ensure it's valid JSON
-      let executiveMembers = {};
-      if (editFormData.executiveMembers) {
+      // Transform array and JSON fields
+      const facultyAdvisors = editFormData.facultyAdvisors ? 
+        editFormData.facultyAdvisors.split(',').map(e => e.trim()) : [];
+      
+      // Handle executive members roles - ensure it's valid JSON
+      let executiveMembersRoles = {};
+      if (editFormData.executiveMembersRoles) {
         try {
-          executiveMembers = JSON.parse(editFormData.executiveMembers);
+          executiveMembersRoles = parseExecutiveMembersRoles(editFormData.executiveMembersRoles) || {};
         } catch (error) {
-          console.error('Error parsing executive members:', error);
-          // If parsing fails, store as is
-          executiveMembers = {};
+          console.error('Error parsing executive members roles:', error);
+          // If parsing fails, store as empty object
+          executiveMembersRoles = {};
         }
       }
 
@@ -170,7 +188,14 @@ export const useClubManagement = (onRefresh: () => void) => {
           discord_link: editFormData.discordLink || null,
           university: editFormData.university || null,
           university_id: universityId || null,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          
+          // Add new leadership fields
+          president_chair_name: editFormData.presidentChairName || null,
+          president_chair_contact: editFormData.presidentChairContact || null,
+          executive_members_roles: executiveMembersRoles,
+          faculty_advisors: facultyAdvisors,
+          primary_faculty_advisor: editFormData.primaryFacultyAdvisor || null,
         })
         .eq('id', selectedClub.id);
       

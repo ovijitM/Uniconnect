@@ -49,6 +49,36 @@ export const parseExecutiveMembers = (value: string | undefined | null): Record<
 };
 
 /**
+ * Parses the executive members roles string into a structured JSON object
+ * Format expected: "Name 1 - Position 1, Name 2 - Position 2"
+ */
+export const parseExecutiveMembersRoles = (value: string | undefined | null): Record<string, string> | null => {
+  if (!value) return null;
+  
+  try {
+    const members: Record<string, string> = {};
+    
+    const memberEntries = value.split(',').map(entry => entry.trim()).filter(entry => entry.length > 0);
+    
+    memberEntries.forEach(entry => {
+      const parts = entry.split('-').map(part => part.trim());
+      if (parts.length >= 2) {
+        const name = parts[0];
+        const position = parts[1];
+        if (name && position) {
+          members[position] = name;
+        }
+      }
+    });
+    
+    return Object.keys(members).length > 0 ? members : null;
+  } catch (error) {
+    console.error("Error parsing executive members roles:", error);
+    return null;
+  }
+};
+
+/**
  * Log structured data for debugging purposes
  */
 export const logFormData = (formData: any, label: string = 'Form Data') => {

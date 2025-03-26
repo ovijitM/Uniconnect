@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Club } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -45,10 +44,11 @@ const ClubDetailInfo: React.FC<ClubDetailInfoProps> = ({ club }) => {
         <TabsContent value="leadership" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <LeadershipSection 
-              presidentName={club.presidentName}
-              presidentContact={club.presidentContact}
-              executiveMembers={club.executiveMembers}
-              advisors={club.advisors}
+              presidentChairName={club.presidentChairName}
+              presidentChairContact={club.presidentChairContact}
+              executiveMembersRoles={club.executiveMembersRoles}
+              facultyAdvisors={club.facultyAdvisors}
+              primaryFacultyAdvisor={club.primaryFacultyAdvisor}
             />
             
             <ContactSection 

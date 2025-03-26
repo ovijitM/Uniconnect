@@ -183,7 +183,9 @@ export type Database = {
           document_url: string | null
           established_year: number | null
           executive_members: Json | null
+          executive_members_roles: Json | null
           facebook_link: string | null
+          faculty_advisors: string[] | null
           how_to_join: string | null
           id: string
           instagram_link: string | null
@@ -191,8 +193,11 @@ export type Database = {
           membership_fee: string | null
           name: string
           phone_number: string | null
+          president_chair_contact: string | null
+          president_chair_name: string | null
           president_contact: string | null
           president_name: string | null
+          primary_faculty_advisor: string | null
           regular_events: string[] | null
           rejection_reason: string | null
           signature_events: string[] | null
@@ -218,7 +223,9 @@ export type Database = {
           document_url?: string | null
           established_year?: number | null
           executive_members?: Json | null
+          executive_members_roles?: Json | null
           facebook_link?: string | null
+          faculty_advisors?: string[] | null
           how_to_join?: string | null
           id?: string
           instagram_link?: string | null
@@ -226,8 +233,11 @@ export type Database = {
           membership_fee?: string | null
           name: string
           phone_number?: string | null
+          president_chair_contact?: string | null
+          president_chair_name?: string | null
           president_contact?: string | null
           president_name?: string | null
+          primary_faculty_advisor?: string | null
           regular_events?: string[] | null
           rejection_reason?: string | null
           signature_events?: string[] | null
@@ -253,7 +263,9 @@ export type Database = {
           document_url?: string | null
           established_year?: number | null
           executive_members?: Json | null
+          executive_members_roles?: Json | null
           facebook_link?: string | null
+          faculty_advisors?: string[] | null
           how_to_join?: string | null
           id?: string
           instagram_link?: string | null
@@ -261,8 +273,11 @@ export type Database = {
           membership_fee?: string | null
           name?: string
           phone_number?: string | null
+          president_chair_contact?: string | null
+          president_chair_name?: string | null
           president_contact?: string | null
           president_name?: string | null
+          primary_faculty_advisor?: string | null
           regular_events?: string[] | null
           rejection_reason?: string | null
           signature_events?: string[] | null

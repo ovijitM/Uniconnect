@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -6,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
 import { ClubFormTabs, ClubFormButtons, clubCategories, clubFormFieldNames } from './components/club-form';
+import { parseExecutiveMembersRoles } from '@/hooks/club-admin/utils/dataTransformUtils';
 
 const CreateClubForm: React.FC = () => {
   const navigate = useNavigate();
@@ -53,7 +53,12 @@ const CreateClubForm: React.FC = () => {
     studentCount: '',
     facultyAdvisor: '',
     meetingInfo: '',
-    additionalNotes: ''
+    additionalNotes: '',
+    presidentChairName: '',
+    presidentChairContact: '',
+    executiveMembersRoles: '',
+    facultyAdvisors: '',
+    primaryFacultyAdvisor: ''
   });
 
   // Fetch universities when the component mounts
@@ -220,7 +225,16 @@ const CreateClubForm: React.FC = () => {
           document_name: formData.documentName || null,
           student_count: formData.studentCount ? parseInt(formData.studentCount) : null,
           faculty_advisor: formData.facultyAdvisor || null,
-          meeting_info: formData.meetingInfo || null
+          meeting_info: formData.meetingInfo || null,
+          president_chair_name: formData.presidentChairName || null,
+          president_chair_contact: formData.presidentChairContact || null,
+          executive_members_roles: formData.executiveMembersRoles 
+            ? parseExecutiveMembersRoles(formData.executiveMembersRoles) 
+            : null,
+          faculty_advisors: formData.facultyAdvisors 
+            ? formData.facultyAdvisors.split(',').map(a => a.trim()) 
+            : null,
+          primary_faculty_advisor: formData.primaryFacultyAdvisor || null,
         })
         .eq('id', clubId);
 

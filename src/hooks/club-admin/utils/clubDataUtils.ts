@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ClubFormData } from '../types';
-import { parseArrayField, parseExecutiveMembers } from './dataTransformUtils';
+import { parseArrayField, parseExecutiveMembers, parseExecutiveMembersRoles } from './dataTransformUtils';
 
 export const insertClubData = async (
   formData: ClubFormData,
@@ -35,8 +35,12 @@ export const insertClubData = async (
       how_to_join: formData.howToJoin || null,
       president_name: formData.presidentName || null,
       president_contact: formData.presidentContact || null,
+      president_chair_name: formData.presidentChairName || null,
+      president_chair_contact: formData.presidentChairContact || null,
       executive_members: parseExecutiveMembers(formData.executiveMembers),
-      advisors: parseArrayField(formData.advisors),
+      executive_members_roles: parseExecutiveMembersRoles(formData.executiveMembersRoles),
+      faculty_advisors: parseArrayField(formData.facultyAdvisors),
+      primary_faculty_advisor: formData.primaryFacultyAdvisor || null,
       phone_number: formData.phoneNumber || null,
       website: formData.website || null,
       facebook_link: formData.facebookLink || null,
@@ -97,8 +101,12 @@ export const insertClubData = async (
         how_to_join: clubData.how_to_join,
         president_name: clubData.president_name,
         president_contact: clubData.president_contact,
+        president_chair_name: clubData.president_chair_name,
+        president_chair_contact: clubData.president_chair_contact,
         executive_members: clubData.executive_members,
-        advisors: clubData.advisors,
+        executive_members_roles: clubData.executive_members_roles,
+        faculty_advisors: clubData.faculty_advisors,
+        primary_faculty_advisor: clubData.primary_faculty_advisor,
         phone_number: clubData.phone_number,
         website: clubData.website,
         facebook_link: clubData.facebook_link,

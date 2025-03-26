@@ -4,20 +4,24 @@ import { User, Users } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface LeadershipSectionProps {
-  presidentName?: string;
-  presidentContact?: string;
-  executiveMembers?: any;
-  advisors?: string[];
+  presidentChairName?: string;
+  presidentChairContact?: string;
+  executiveMembersRoles?: any;
+  facultyAdvisors?: string[];
+  primaryFacultyAdvisor?: string;
 }
 
 const LeadershipSection: React.FC<LeadershipSectionProps> = ({
-  presidentName,
-  presidentContact,
-  executiveMembers,
-  advisors
+  presidentChairName,
+  presidentChairContact,
+  executiveMembersRoles,
+  facultyAdvisors,
+  primaryFacultyAdvisor
 }) => {
-  const hasExecutiveMembers = executiveMembers && Object.keys(executiveMembers).length > 0;
-  const hasContent = presidentName || hasExecutiveMembers || (advisors && advisors.length > 0);
+  const hasExecutiveMembers = executiveMembersRoles && Object.keys(executiveMembersRoles).length > 0;
+  const hasContent = presidentChairName || hasExecutiveMembers || 
+                     (facultyAdvisors && facultyAdvisors.length > 0) || 
+                     primaryFacultyAdvisor;
   
   if (!hasContent) return null;
   
@@ -25,18 +29,18 @@ const LeadershipSection: React.FC<LeadershipSectionProps> = ({
     <div>
       <h3 className="text-lg font-medium mb-3">Leadership & Team</h3>
       
-      {presidentName && (
+      {presidentChairName && (
         <div className="mb-4 flex items-start">
           <Avatar className="h-8 w-8 mr-3 mt-0.5">
             <AvatarFallback className="bg-primary/10 text-primary">
-              {presidentName.charAt(0)}
+              {presidentChairName.charAt(0)}
             </AvatarFallback>
           </Avatar>
           <div>
-            <h4 className="font-medium text-sm">{presidentName}</h4>
-            <p className="text-sm text-muted-foreground">President/Founder</p>
-            {presidentContact && (
-              <p className="text-xs text-muted-foreground mt-1">{presidentContact}</p>
+            <h4 className="font-medium text-sm">{presidentChairName}</h4>
+            <p className="text-sm text-muted-foreground">President/Chair</p>
+            {presidentChairContact && (
+              <p className="text-xs text-muted-foreground mt-1">{presidentChairContact}</p>
             )}
           </div>
         </div>
@@ -49,7 +53,7 @@ const LeadershipSection: React.FC<LeadershipSectionProps> = ({
             Executive Members
           </h4>
           <div className="grid grid-cols-1 gap-2 pl-1.5">
-            {Object.entries(executiveMembers).map(([role, name], index) => (
+            {Object.entries(executiveMembersRoles).map(([role, name], index) => (
               <div key={index} className="text-sm flex items-center">
                 <span className="font-medium min-w-24 text-muted-foreground">{role}:</span>
                 <span>{String(name)}</span>
@@ -59,18 +63,30 @@ const LeadershipSection: React.FC<LeadershipSectionProps> = ({
         </div>
       )}
       
-      {advisors && advisors.length > 0 && (
+      {facultyAdvisors && facultyAdvisors.length > 0 && (
         <div className="mb-4">
           <h4 className="font-medium text-sm mb-2 flex items-center">
             <User className="h-4 w-4 mr-1.5" />
-            Advisors/Mentors
+            Faculty Advisors
           </h4>
           <div className="flex flex-wrap gap-2">
-            {advisors.map((advisor, index) => (
+            {facultyAdvisors.map((advisor, index) => (
               <span key={index} className="text-sm bg-secondary px-2 py-0.5 rounded-full">
                 {advisor}
               </span>
             ))}
+          </div>
+        </div>
+      )}
+      
+      {primaryFacultyAdvisor && (
+        <div className="mb-4">
+          <h4 className="font-medium text-sm mb-2 flex items-center">
+            <User className="h-4 w-4 mr-1.5" />
+            Primary Faculty Advisor
+          </h4>
+          <div className="pl-1.5">
+            <span className="text-sm">{primaryFacultyAdvisor}</span>
           </div>
         </div>
       )}

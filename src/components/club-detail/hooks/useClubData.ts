@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Club, Event, EventStatus } from '@/types';
@@ -60,7 +59,12 @@ export const useClubData = () => {
             facebook_link,
             instagram_link,
             twitter_link,
-            discord_link
+            discord_link,
+            president_chair_name,
+            president_chair_contact,
+            executive_members_roles,
+            faculty_advisors,
+            primary_faculty_advisor
           `)
           .eq('id', clubId)
           .single();
@@ -243,12 +247,19 @@ export const useClubData = () => {
           presidentContact: clubData.president_contact,
           executiveMembers: clubData.executive_members,
           advisors: clubData.advisors,
-          phoneNumber: clubData.phone_number,
+          phone_number: clubData.phone_number,
           website: clubData.website,
           facebookLink: clubData.facebook_link,
           instagramLink: clubData.instagram_link,
           twitterLink: clubData.twitter_link,
-          discordLink: clubData.discord_link
+          discordLink: clubData.discord_link,
+          
+          // Map new leadership fields
+          presidentChairName: clubData.president_chair_name,
+          presidentChairContact: clubData.president_chair_contact,
+          executiveMembersRoles: clubData.executive_members_roles,
+          facultyAdvisors: clubData.faculty_advisors,
+          primaryFacultyAdvisor: clubData.primary_faculty_advisor
         };
         
         // Format the events data with all the new fields and ensure status is of correct type
