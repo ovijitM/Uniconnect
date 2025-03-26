@@ -130,15 +130,28 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
           )}
         </div>
         
-        <div className="space-y-2">
-          <Label htmlFor="affiliation">Affiliation</Label>
-          <Input
-            id="affiliation"
-            name="affiliation"
-            value={formData.affiliation}
-            onChange={handleInputChange}
-            placeholder="Any department or organization your club is affiliated with"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="affiliation">Affiliation</Label>
+            <Input
+              id="affiliation"
+              name="affiliation"
+              value={formData.affiliation}
+              onChange={handleInputChange}
+              placeholder="Any department or organization your club is affiliated with"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="facultyAdvisor">Faculty Advisor</Label>
+            <Input
+              id="facultyAdvisor"
+              name="facultyAdvisor"
+              value={formData.facultyAdvisor}
+              onChange={handleInputChange}
+              placeholder="Name of the faculty advisor"
+            />
+          </div>
         </div>
       </CardContent>
     </>

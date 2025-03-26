@@ -3,7 +3,6 @@ import React from 'react';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { FileUpload } from '@/components/file-upload/FileUpload';
 
 interface MediaContactTabProps {
@@ -23,68 +22,18 @@ const MediaContactTab: React.FC<MediaContactTabProps> = ({
     <>
       <CardHeader>
         <CardTitle>Media & Contact Information</CardTitle>
-        <CardDescription>Upload media and add contact details</CardDescription>
+        <CardDescription>Add your club's media assets and contact details</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label>Club Logo</Label>
-          <FileUpload
-            onUploadComplete={handleLogoUpload}
-            acceptedFileTypes={["image/jpeg", "image/png", "image/gif"]}
-            maxFileSize={2}
-            buttonText="Upload Logo"
-            helperText="Upload your club logo (Max 2MB, JPEG, PNG, or GIF)"
-            uploadType="logo"
-            bucket="club_logos"
-          />
-          {formData.logoUrl && (
-            <div className="mt-2">
-              <p className="text-sm text-muted-foreground mb-2">Preview:</p>
-              <img 
-                src={formData.logoUrl} 
-                alt="Club Logo Preview" 
-                className="w-24 h-24 object-contain border rounded-md" 
-              />
-            </div>
-          )}
-        </div>
-        
-        <div className="space-y-2">
-          <Label>Club Documents</Label>
-          <FileUpload
-            onUploadComplete={handleDocumentUpload}
-            acceptedFileTypes={["application/pdf"]}
-            maxFileSize={5}
-            buttonText="Upload Document"
-            helperText="Upload club constitution or other important documents (Max 5MB, PDF only)"
-            uploadType="document"
-            bucket="club_documents"
-          />
-          {formData.documentUrl && (
-            <div className="mt-2 flex items-center space-x-2">
-              <p className="text-sm font-medium">Uploaded: </p>
-              <a 
-                href={formData.documentUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:underline"
-              >
-                {formData.documentName}
-              </a>
-            </div>
-          )}
-        </div>
-
+      <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="contactEmail">Contact Email</Label>
             <Input
               id="contactEmail"
               name="contactEmail"
-              type="email"
               value={formData.contactEmail}
               onChange={handleInputChange}
-              placeholder="club@example.com"
+              placeholder="Official email address for inquiries"
             />
           </div>
           
@@ -95,13 +44,35 @@ const MediaContactTab: React.FC<MediaContactTabProps> = ({
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleInputChange}
-              placeholder="(123) 456-7890"
+              placeholder="Phone number for contacting the club"
             />
           </div>
         </div>
-
-        <div>
-          <Label className="mb-2 block">Social Media Links</Label>
+        
+        <div className="space-y-2">
+          <Label>Club Logo</Label>
+          <FileUpload 
+            folder="club-logos"
+            onUploadComplete={handleLogoUpload}
+            accept="image/*"
+            maxSize={5}
+            currentFile={formData.logoUrl}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label>Club Documents (Constitution, Bylaws, etc.)</Label>
+          <FileUpload 
+            folder="club-documents"
+            onUploadComplete={handleDocumentUpload}
+            accept=".pdf,.doc,.docx"
+            maxSize={10}
+            currentFile={formData.documentUrl}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label>Social Media</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="social.website">Website</Label>
@@ -110,7 +81,7 @@ const MediaContactTab: React.FC<MediaContactTabProps> = ({
                 name="social.website"
                 value={formData.social.website}
                 onChange={handleInputChange}
-                placeholder="https://yourclub.com"
+                placeholder="https://your-club-website.com"
               />
             </div>
             
@@ -169,18 +140,6 @@ const MediaContactTab: React.FC<MediaContactTabProps> = ({
               />
             </div>
           </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="additionalNotes">Additional Notes</Label>
-          <Textarea
-            id="additionalNotes"
-            name="additionalNotes"
-            value={formData.additionalNotes}
-            onChange={handleInputChange}
-            placeholder="Any other information you'd like to share about your club"
-            rows={3}
-          />
         </div>
       </CardContent>
     </>
