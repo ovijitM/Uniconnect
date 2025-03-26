@@ -43,8 +43,6 @@ export const useClubCreation = () => {
           category: clubFormData.category,
           logo_url: clubFormData.logoUrl,
           status: 'pending',
-          // University field
-          university: clubFormData.university,
           // New fields
           tagline: clubFormData.tagline || null,
           established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,

@@ -1,180 +1,202 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Home, Users, Calendar, School } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import UserProfile from '@/components/UserProfile';
-import { useAuth } from '@/contexts/AuthContext';
-import ThemeToggle from '@/components/ThemeToggle';
+import { motion } from 'framer-motion';
+import { Menu, X, Calendar, Users, Home, LogIn, UserPlus, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import Logo from '@/components/ui/logo';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import UserProfile from './UserProfile';
+import { Toggle } from '@/components/ui/toggle';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const Navbar: React.FC = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user } = useAuth();
   const location = useLocation();
-  
-  // Close the mobile menu on location change
+  const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+
   useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location]);
-  
-  // Close the mobile menu when window size changes
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setIsMobileMenuOpen(false);
-      }
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
     };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  
-  // Close mobile menu when clicked outside
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (isMobileMenuOpen && !target.closest('.mobile-menu-container')) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-    
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [isMobileMenuOpen]);
-  
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
-  
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-  
+    // Close mobile menu when route changes
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  const navItems = [
+    { name: 'Home', path: '/', icon: Home },
+    { name: 'Events', path: '/events', icon: Calendar },
+    { name: 'Clubs', path: '/clubs', icon: Users },
+  ];
+
   return (
-    <nav className="sticky top-0 z-40 w-full backdrop-blur-lg bg-background/80 border-b">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center">
-          <Logo />
-          
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center space-x-1 ml-6">
-            <NavLink to="/" isActive={isActive('/')}>
-              <Home className="h-4 w-4 mr-1" />
-              Home
-            </NavLink>
-            <NavLink to="/clubs" isActive={isActive('/clubs')}>
-              <Users className="h-4 w-4 mr-1" />
-              Clubs
-            </NavLink>
-            <NavLink to="/events" isActive={isActive('/events')}>
-              <Calendar className="h-4 w-4 mr-1" />
-              Events
-            </NavLink>
-            <NavLink to="/universities" isActive={isActive('/universities')}>
-              <School className="h-4 w-4 mr-1" />
-              Universities
-            </NavLink>
+    <header 
+      className={`sticky top-0 z-40 w-full transition-all duration-300 ${
+        isScrolled ? 'glass-panel py-3 dark:bg-gray-900/80' : 'bg-transparent py-5 dark:bg-transparent'
+      }`}
+    >
+      <div className="container mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link to="/" className="flex items-center space-x-2">
+          <span className="text-xl font-semibold">UniEvents</span>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center space-x-1">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link key={item.path} to={item.path}>
+                <Button 
+                  variant={isActive ? "secondary" : "ghost"} 
+                  className={`relative px-4 py-2 text-sm transition-all duration-300 ${
+                    isActive ? 'font-medium' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <item.icon className="w-4 h-4 mr-2" />
+                  {item.name}
+                  {isActive && (
+                    <motion.div 
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" 
+                      layoutId="navbar-indicator"
+                    />
+                  )}
+                </Button>
+              </Link>
+            );
+          })}
+
+          {/* Theme toggle */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Toggle 
+                className="ml-2" 
+                pressed={theme === "dark"} 
+                onPressedChange={toggleTheme}
+                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </Toggle>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Authentication buttons or user profile */}
+          <div className="ml-4 flex items-center space-x-2">
+            {user ? (
+              <UserProfile />
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm" className="hidden sm:flex">
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button size="sm" className="hidden sm:flex">
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Sign Up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <ThemeToggle />
-          
-          {/* User Profile or Login Button */}
-          {user ? (
-            <UserProfile />
-          ) : (
-            <div className="hidden md:block">
-              <Button asChild size="sm">
-                <Link to="/login">Login</Link>
-              </Button>
-            </div>
-          )}
-          
-          {/* Mobile Menu Toggle */}
-          <Button
-            variant="ghost"
-            className="block md:hidden"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle menu"
+        </nav>
+
+        {/* Mobile Menu Button */}
+        <div className="md:hidden flex items-center space-x-2">
+          {/* Theme toggle for mobile */}
+          <Toggle 
+            pressed={theme === "dark"} 
+            onPressedChange={toggleTheme}
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
-            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {theme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </Toggle>
+          
+          {user && <UserProfile />}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="ml-2"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </Button>
         </div>
       </div>
-      
-      {/* Mobile Menu */}
+
+      {/* Mobile Navigation */}
       {isMobileMenuOpen && (
-        <div className="md:hidden mobile-menu-container">
-          <div className="container py-2 pb-4 flex flex-col space-y-2">
-            <MobileNavLink to="/" isActive={isActive('/')}>
-              <Home className="h-4 w-4 mr-2" />
-              Home
-            </MobileNavLink>
-            <MobileNavLink to="/clubs" isActive={isActive('/clubs')}>
-              <Users className="h-4 w-4 mr-2" />
-              Clubs
-            </MobileNavLink>
-            <MobileNavLink to="/events" isActive={isActive('/events')}>
-              <Calendar className="h-4 w-4 mr-2" />
-              Events
-            </MobileNavLink>
-            <MobileNavLink to="/universities" isActive={isActive('/universities')}>
-              <School className="h-4 w-4 mr-2" />
-              Universities
-            </MobileNavLink>
+        <motion.div 
+          className="md:hidden glass-panel px-4 pb-4 dark:bg-gray-900/90"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <nav className="flex flex-col space-y-2">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link key={item.path} to={item.path}>
+                  <Button 
+                    variant={isActive ? "secondary" : "ghost"} 
+                    className={`w-full justify-start ${
+                      isActive ? 'font-medium' : 'text-muted-foreground'
+                    }`}
+                  >
+                    <item.icon className="w-4 h-4 mr-2" />
+                    {item.name}
+                  </Button>
+                </Link>
+              );
+            })}
             
+            {/* Authentication buttons for mobile */}
             {!user && (
-              <div className="pt-2">
-                <Button asChild className="w-full">
-                  <Link to="/login">Login</Link>
-                </Button>
-              </div>
+              <>
+                <Link to="/login">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start"
+                  >
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button 
+                    className="w-full justify-start"
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Sign Up
+                  </Button>
+                </Link>
+              </>
             )}
-          </div>
-        </div>
+          </nav>
+        </motion.div>
       )}
-    </nav>
-  );
-};
-
-interface NavLinkProps {
-  to: string;
-  isActive: boolean;
-  children: React.ReactNode;
-}
-
-const NavLink: React.FC<NavLinkProps> = ({ to, isActive, children }) => {
-  return (
-    <Link
-      to={to}
-      className={cn(
-        "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-        isActive
-          ? "bg-accent text-accent-foreground"
-          : "hover:bg-accent hover:text-accent-foreground"
-      )}
-    >
-      {children}
-    </Link>
-  );
-};
-
-const MobileNavLink: React.FC<NavLinkProps> = ({ to, isActive, children }) => {
-  return (
-    <Link
-      to={to}
-      className={cn(
-        "flex items-center px-3 py-3 text-sm font-medium rounded-md transition-colors",
-        isActive
-          ? "bg-accent text-accent-foreground"
-          : "hover:bg-accent hover:text-accent-foreground"
-      )}
-    >
-      {children}
-    </Link>
+    </header>
   );
 };
 

@@ -1,12 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
-import { Label } from '@/components/ui/label';
+import React from 'react';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { School } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface BasicInfoTabProps {
   formData: {
@@ -14,121 +10,85 @@ interface BasicInfoTabProps {
     description: string;
     category: string;
     tagline?: string;
-    university?: string;
+    logoUrl?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
 const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) => {
-  const [universities, setUniversities] = useState<{ id: string, name: string }[]>([]);
-  const [isLoadingUniversities, setIsLoadingUniversities] = useState(false);
-  const { user } = useAuth();
-  
-  useEffect(() => {
-    const fetchUniversities = async () => {
-      setIsLoadingUniversities(true);
-      try {
-        const { data, error } = await supabase
-          .from('universities')
-          .select('id, name')
-          .order('name');
-        
-        if (error) throw error;
-        setUniversities(data || []);
-      } catch (error) {
-        console.error('Error fetching universities:', error);
-      } finally {
-        setIsLoadingUniversities(false);
-      }
-    };
-
-    fetchUniversities();
-  }, []);
-
-  const handleUniversityChange = (value: string) => {
-    const event = {
-      target: {
-        name: 'university',
-        value
-      }
-    } as React.ChangeEvent<HTMLInputElement>;
-    
-    onInputChange(event);
-  };
-
   return (
-    <div className="space-y-4 py-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Club Name *</Label>
+    <div className="space-y-4">
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="name" className="text-right">
+          Name *
+        </Label>
         <Input
           id="name"
           name="name"
-          placeholder="e.g., Computer Science Club"
           value={formData.name}
           onChange={onInputChange}
+          className="col-span-3"
           required
         />
       </div>
       
-      <div className="space-y-2">
-        <Label htmlFor="tagline">Tagline</Label>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="tagline" className="text-right">
+          Tagline
+        </Label>
         <Input
           id="tagline"
           name="tagline"
-          placeholder="A short catchy phrase for your club"
           value={formData.tagline}
           onChange={onInputChange}
+          className="col-span-3"
+          placeholder="A short catchy phrase for your club"
         />
       </div>
       
-      <div className="space-y-2">
-        <Label htmlFor="category">Category *</Label>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="category" className="text-right">
+          Category *
+        </Label>
         <Input
           id="category"
           name="category"
-          placeholder="e.g., Academic, Sports, Arts"
           value={formData.category}
           onChange={onInputChange}
+          className="col-span-3"
+          placeholder="e.g., Technology, Sports, Arts, Academic"
           required
         />
       </div>
       
-      <div className="space-y-2">
-        <Label htmlFor="university">University *</Label>
-        <Select 
-          value={formData.university || (user?.university || '')} 
-          onValueChange={handleUniversityChange}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select university" />
-          </SelectTrigger>
-          <SelectContent>
-            {isLoadingUniversities ? (
-              <SelectItem value="loading" disabled>Loading universities...</SelectItem>
-            ) : (
-              universities.map((uni) => (
-                <SelectItem key={uni.id} value={uni.name}>
-                  {uni.name}
-                </SelectItem>
-              ))
-            )}
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-muted-foreground mt-1">
-          This associates your club with a specific university
-        </p>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="description">Description *</Label>
+      <div className="grid grid-cols-4 items-start gap-4">
+        <Label htmlFor="description" className="text-right mt-3">
+          Description *
+        </Label>
         <Textarea
           id="description"
           name="description"
-          placeholder="Describe your club and its purpose"
           value={formData.description}
           onChange={onInputChange}
+          className="col-span-3"
+          rows={5}
+          placeholder="Detailed description of the club"
           required
-          rows={4}
+        />
+      </div>
+      
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="logoUrl" className="text-right">
+          Logo/Profile Image URL *
+        </Label>
+        <Input
+          id="logoUrl"
+          name="logoUrl"
+          value={formData.logoUrl}
+          onChange={onInputChange}
+          className="col-span-3"
+          placeholder="URL to your club logo or profile image"
+          required
         />
       </div>
     </div>

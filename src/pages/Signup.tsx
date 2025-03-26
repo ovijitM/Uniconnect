@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
@@ -8,65 +8,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Layout from '@/components/Layout';
 import { UserRole } from '@/types/auth';
-import { Mail, KeyRound, User, UserPlus, GraduationCap, Users, Shield, School } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Mail, KeyRound, User, UserPlus, GraduationCap, Users, Shield } from 'lucide-react';
 
 const Signup: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [university, setUniversity] = useState('');
-  const [universities, setUniversities] = useState<{ id: string, name: string }[]>([]);
-  const [customUniversity, setCustomUniversity] = useState('');
-  const [showCustomUniversity, setShowCustomUniversity] = useState(false);
   const [role, setRole] = useState<UserRole>('student');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoadingUniversities, setIsLoadingUniversities] = useState(false);
   const { signup } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchUniversities = async () => {
-      setIsLoadingUniversities(true);
-      try {
-        const { data, error } = await supabase
-          .from('universities')
-          .select('id, name')
-          .order('name');
-        
-        if (error) throw error;
-        setUniversities(data || []);
-      } catch (error) {
-        console.error('Error fetching universities:', error);
-      } finally {
-        setIsLoadingUniversities(false);
-      }
-    };
-
-    fetchUniversities();
-  }, []);
-
-  const handleUniversityChange = (value: string) => {
-    if (value === 'other') {
-      setShowCustomUniversity(true);
-      setUniversity('');
-    } else {
-      setShowCustomUniversity(false);
-      setUniversity(value);
-      setCustomUniversity('');
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const universityName = showCustomUniversity ? customUniversity : university;
-    
-    if (!name || !email || !password || !role || !universityName) {
+    if (!name || !email || !password || !role) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -77,21 +36,7 @@ const Signup: React.FC = () => {
     
     try {
       setIsSubmitting(true);
-      
-      // If using a custom university, add it to the database
-      if (showCustomUniversity && customUniversity) {
-        const { error: universityError } = await supabase
-          .from('universities')
-          .insert({
-            name: customUniversity
-          });
-        
-        if (universityError && !universityError.message.includes('unique constraint')) {
-          throw universityError;
-        }
-      }
-      
-      const user = await signup(email, password, name, role, universityName);
+      const user = await signup(email, password, name, role);
       toast({
         title: "Success",
         description: "Your account has been created successfully",
@@ -176,49 +121,6 @@ const Signup: React.FC = () => {
                 />
               </div>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="university">University</Label>
-              <div className="relative">
-                <School className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Select onValueChange={handleUniversityChange}>
-                  <SelectTrigger className="w-full pl-10">
-                    <SelectValue placeholder="Select your university" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {isLoadingUniversities ? (
-                      <SelectItem value="loading" disabled>Loading universities...</SelectItem>
-                    ) : (
-                      <>
-                        {universities.map((uni) => (
-                          <SelectItem key={uni.id} value={uni.name}>
-                            {uni.name}
-                          </SelectItem>
-                        ))}
-                        <SelectItem value="other">Other (specify)</SelectItem>
-                      </>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            {showCustomUniversity && (
-              <div className="space-y-2">
-                <Label htmlFor="customUniversity">Specify University</Label>
-                <div className="relative">
-                  <School className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    id="customUniversity"
-                    type="text"
-                    placeholder="Enter your university name"
-                    value={customUniversity}
-                    onChange={(e) => setCustomUniversity(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-            )}
             
             <div className="space-y-2">
               <Label>Account Type</Label>

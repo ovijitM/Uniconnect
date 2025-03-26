@@ -9,7 +9,6 @@ export interface Club {
   rejectionReason?: string;
   memberCount: number;
   events: Event[];
-  university?: string;
   
   // New fields
   tagline?: string;
@@ -97,14 +96,5 @@ export interface Collaboration {
 export interface EventCollaborator {
   eventId: string;
   clubId: string;
-  createdAt: string;
-}
-
-// New interface for University
-export interface University {
-  id: string;
-  name: string;
-  logoUrl?: string;
-  description?: string;
   createdAt: string;
 }

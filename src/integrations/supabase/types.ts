@@ -197,7 +197,6 @@ export type Database = {
           status: string
           tagline: string | null
           twitter_link: string | null
-          university: string | null
           updated_at: string
           website: string | null
           who_can_join: string | null
@@ -229,7 +228,6 @@ export type Database = {
           status?: string
           tagline?: string | null
           twitter_link?: string | null
-          university?: string | null
           updated_at?: string
           website?: string | null
           who_can_join?: string | null
@@ -261,7 +259,6 @@ export type Database = {
           status?: string
           tagline?: string | null
           twitter_link?: string | null
-          university?: string | null
           updated_at?: string
           website?: string | null
           who_can_join?: string | null
@@ -505,7 +502,6 @@ export type Database = {
           name: string
           profile_image: string | null
           role: Database["public"]["Enums"]["user_role"]
-          university: string | null
           updated_at: string
         }
         Insert: {
@@ -515,7 +511,6 @@ export type Database = {
           name: string
           profile_image?: string | null
           role?: Database["public"]["Enums"]["user_role"]
-          university?: string | null
           updated_at?: string
         }
         Update: {
@@ -525,32 +520,7 @@ export type Database = {
           name?: string
           profile_image?: string | null
           role?: Database["public"]["Enums"]["user_role"]
-          university?: string | null
           updated_at?: string
-        }
-        Relationships: []
-      }
-      universities: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          logo_url: string | null
-          name: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          logo_url?: string | null
-          name: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          logo_url?: string | null
-          name?: string
         }
         Relationships: []
       }
