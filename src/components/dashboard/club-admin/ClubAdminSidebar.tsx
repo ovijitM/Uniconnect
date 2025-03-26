@@ -30,7 +30,6 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { useClubForm } from '@/hooks/club-admin/useClubForm';
 
 const ClubAdminSidebar: React.FC = () => {
   const location = useLocation();
@@ -39,20 +38,6 @@ const ClubAdminSidebar: React.FC = () => {
   const { toast } = useToast();
   const { logout, user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // Initialize club form hooks for the sidebar create button
-  const { 
-    setIsClubDialogOpen,
-    handleCreateClubClick,
-    isLoadingProfile,
-    profileError
-  } = useClubForm(user?.id, () => {
-    toast({
-      title: 'Success',
-      description: 'Club created successfully.',
-    });
-    navigate('/club-admin-dashboard/clubs');
-  });
 
   const menuItems = [
     {
@@ -185,8 +170,7 @@ const ClubAdminSidebar: React.FC = () => {
               variant="default" 
               size="sm" 
               className="w-full justify-start"
-              onClick={handleCreateClubClick}
-              disabled={isLoadingProfile}
+              onClick={() => navigate('/club-admin-dashboard/create-club')}
             >
               <PlusCircle className="mr-2 h-4 w-4" />
               Create Club
