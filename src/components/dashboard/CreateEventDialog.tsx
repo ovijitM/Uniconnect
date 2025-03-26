@@ -4,50 +4,18 @@ import { Button } from '@/components/ui/button';
 import { DialogTrigger } from '@/components/ui/dialog';
 import { PlusCircle } from 'lucide-react';
 import EventDialogWrapper from './event-dialog/EventDialogWrapper';
+import { EventFormData } from '@/hooks/club-admin/types';
 
 interface CreateEventDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  formData: {
-    title: string;
-    description: string;
-    date: string;
-    location: string;
-    category: string;
-    maxParticipants: string;
-    clubId: string;
-    imageUrl?: string;
-    tagline: string; // Changed from optional to required
-    eventType?: string;
-    registrationDeadline?: string;
-    onlinePlatform?: string;
-    eligibility?: string;
-    teamSize?: string;
-    registrationLink?: string;
-    entryFee?: string;
-    theme?: string;
-    subTracks?: string;
-    prizePool?: string;
-    prizeCategories?: string;
-    additionalPerks?: string;
-    judgingCriteria?: string;
-    judges?: string;
-    deliverables?: string;
-    submissionPlatform?: string;
-    mentors?: string;
-    sponsors?: string;
-    contactEmail?: string;
-    communityLink?: string;
-    eventWebsite?: string;
-    eventHashtag?: string;
-    visibility: 'public' | 'university_only'; // Required field
-  };
+  formData: EventFormData;
   clubs: any[];
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onSubmit: () => void;
   buttonText?: string;
   trigger?: React.ReactNode;
-  onFileUpload?: (url: string, fileName: string) => void; // Added this prop
+  onFileUpload?: (url: string, fileName: string) => void;
 }
 
 const CreateEventDialog: React.FC<CreateEventDialogProps> = ({
@@ -59,7 +27,7 @@ const CreateEventDialog: React.FC<CreateEventDialogProps> = ({
   onSubmit,
   buttonText = "Create New Event",
   trigger,
-  onFileUpload // Added the prop here
+  onFileUpload
 }) => {
   const defaultTrigger = (
     <Button>
@@ -78,7 +46,7 @@ const CreateEventDialog: React.FC<CreateEventDialogProps> = ({
       onSubmit={onSubmit}
       buttonText="Create Event"
       trigger={trigger || defaultTrigger}
-      onFileUpload={onFileUpload} // Pass the prop to EventDialogWrapper
+      onFileUpload={onFileUpload}
     />
   );
 };

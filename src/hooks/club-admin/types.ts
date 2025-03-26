@@ -18,21 +18,22 @@ export interface EventFormData {
   registrationLink: string;
   entryFee: string;
   theme: string;
-  subTracks: string[];
+  subTracks: string[] | string;
   prizePool: string;
-  prizeCategories: string[];
-  additionalPerks: string[];
-  judgingCriteria: string[];
-  judges: string[];
-  schedule: Record<string, any>;
-  deliverables: string[];
+  prizeCategories: string[] | string;
+  additionalPerks: string[] | string;
+  judgingCriteria: string[] | string;
+  judges: string[] | string;
+  schedule: Record<string, any> | string;
+  deliverables: string[] | string;
   submissionPlatform: string;
-  mentors: string[];
-  sponsors: string[];
+  mentors: string[] | string;
+  sponsors: string[] | string;
   contactEmail: string;
   communityLink: string;
   eventWebsite: string;
   eventHashtag: string;
+  visibility: 'public' | 'university_only';
 }
 
 // Club form data type
@@ -46,8 +47,8 @@ export interface ClubFormData {
   establishedYear: string;
   affiliation: string;
   whyJoin: string;
-  regularEvents: string[];
-  signatureEvents: string[];
+  regularEvents: string[] | string;
+  signatureEvents: string[] | string;
   communityEngagement: string;
   whoCanJoin: string;
   membershipFee: string;
@@ -55,7 +56,7 @@ export interface ClubFormData {
   presidentName: string;
   presidentContact: string;
   executiveMembers: string;
-  advisors: string[];
+  advisors: string[] | string;
   phoneNumber: string;
   website: string;
   facebookLink: string;
@@ -64,4 +65,21 @@ export interface ClubFormData {
   discordLink: string;
   documentUrl: string;
   documentName: string;
+  // Additional fields from other components
+  contactEmail: string;
+  contactPhone: string;
+  address: string;
+  socialMediaLinks: Record<string, string>;
+  achievements: string;
+  documents: Record<string, string>;
+  missionStatement: string;
+  visionStatement: string;
+  values: string;
+  foundingDate: string;
+  clubType: string;
+  studentCount: string;
+  facultyAdvisor: string;
+  budgetInfo: string;
+  meetingInfo: string;
+  additionalNotes: string;
 }

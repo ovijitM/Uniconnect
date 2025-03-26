@@ -16,16 +16,16 @@ interface DetailsTabProps {
     tagline?: string;
     eventType?: string;
     theme?: string;
-    subTracks?: string;
+    subTracks?: string[] | string;
     prizePool?: string;
-    prizeCategories?: string;
-    additionalPerks?: string;
-    judgingCriteria?: string;
-    judges?: string;
-    deliverables?: string;
+    prizeCategories?: string[] | string;
+    additionalPerks?: string[] | string;
+    judgingCriteria?: string[] | string;
+    judges?: string[] | string;
+    deliverables?: string[] | string;
     submissionPlatform?: string;
-    mentors?: string;
-    sponsors?: string;
+    mentors?: string[] | string;
+    sponsors?: string[] | string;
     contactEmail?: string;
     communityLink?: string;
     eventWebsite?: string;
@@ -77,7 +77,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
         <Textarea
           id="subTracks"
           name="subTracks"
-          value={formData.subTracks || ''}
+          value={typeof formData.subTracks === 'string' ? formData.subTracks : (formData.subTracks || []).join(',')}
           onChange={onInputChange}
           placeholder="Separate with commas"
           rows={2}
@@ -101,7 +101,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
           <Textarea
             id="prizeCategories"
             name="prizeCategories"
-            value={formData.prizeCategories || ''}
+            value={typeof formData.prizeCategories === 'string' ? formData.prizeCategories : (formData.prizeCategories || []).join(',')}
             onChange={onInputChange}
             placeholder="Separate with commas"
             rows={2}
@@ -114,7 +114,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
         <Textarea
           id="additionalPerks"
           name="additionalPerks"
-          value={formData.additionalPerks || ''}
+          value={typeof formData.additionalPerks === 'string' ? formData.additionalPerks : (formData.additionalPerks || []).join(',')}
           onChange={onInputChange}
           placeholder="Separate with commas"
           rows={2}
@@ -127,7 +127,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
           <Textarea
             id="judgingCriteria"
             name="judgingCriteria"
-            value={formData.judgingCriteria || ''}
+            value={typeof formData.judgingCriteria === 'string' ? formData.judgingCriteria : (formData.judgingCriteria || []).join(',')}
             onChange={onInputChange}
             placeholder="Separate with commas"
             rows={2}
@@ -139,7 +139,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
           <Textarea
             id="judges"
             name="judges"
-            value={formData.judges || ''}
+            value={typeof formData.judges === 'string' ? formData.judges : (formData.judges || []).join(',')}
             onChange={onInputChange}
             placeholder="Separate with commas"
             rows={2}
@@ -152,7 +152,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
         <Textarea
           id="deliverables"
           name="deliverables"
-          value={formData.deliverables || ''}
+          value={typeof formData.deliverables === 'string' ? formData.deliverables : (formData.deliverables || []).join(',')}
           onChange={onInputChange}
           placeholder="Separate with commas"
           rows={2}
@@ -166,6 +166,9 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
           onUploadComplete={handleFileUpload}
           buttonText="Upload Event Document"
           uploadType="document"
+          bucket="event_documents"
+          acceptedFileTypes={["application/pdf", "application/msword", "text/plain"]}
+          maxFileSize={5}
         />
       </div>
     </div>

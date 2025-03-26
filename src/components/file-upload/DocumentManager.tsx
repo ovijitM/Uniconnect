@@ -91,8 +91,10 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
       <CardContent className="space-y-6">
         <FileUpload 
           onUploadComplete={handleFileUpload}
-          maxSize={10}
+          maxFileSize={10}
           buttonText="Upload New Document"
+          acceptedFileTypes={["application/pdf", "application/msword", "text/plain"]}
+          bucket="club_documents"
         />
 
         <div className="mt-8">

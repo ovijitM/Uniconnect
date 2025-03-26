@@ -1,7 +1,10 @@
 
 import { ClubFormData } from './types';
+import { useToast } from '@/hooks/use-toast';
 
 export const useClubValidation = () => {
+  const { toast } = useToast();
+  
   const validateClubForm = (formData: ClubFormData): { isValid: boolean; errors: Record<string, string> } => {
     const errors: Record<string, string> = {};
     
@@ -51,6 +54,22 @@ export const useClubValidation = () => {
     };
   };
   
+  const validateClubData = (formData: ClubFormData): boolean => {
+    const { isValid, errors } = validateClubForm(formData);
+    
+    if (!isValid) {
+      // Display the first error message
+      const firstError = Object.values(errors)[0];
+      toast({
+        title: 'Validation Error',
+        description: firstError,
+        variant: 'destructive',
+      });
+    }
+    
+    return isValid;
+  };
+  
   const isValidUrl = (url: string): boolean => {
     try {
       // If the URL doesn't have a protocol, add https://
@@ -63,6 +82,7 @@ export const useClubValidation = () => {
   };
   
   return {
-    validateClubForm
+    validateClubForm,
+    validateClubData
   };
 };

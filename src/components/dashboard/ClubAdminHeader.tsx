@@ -15,7 +15,7 @@ interface ClubAdminHeaderProps {
   onEventInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onCreateEvent: () => void;
   onEventFileUpload?: (url: string, fileName: string) => void;
-  // Added these optional props for ClubDialog
+  // Optional props for ClubDialog
   isClubDialogOpen?: boolean;
   setIsClubDialogOpen?: (open: boolean) => void;
   clubFormData?: any;
@@ -65,7 +65,10 @@ const ClubAdminHeader: React.FC<ClubAdminHeaderProps> = ({
         <CreateEventDialog
           isOpen={isEventDialogOpen}
           onOpenChange={setIsEventDialogOpen}
-          formData={eventFormData}
+          formData={{
+            ...eventFormData,
+            visibility: eventFormData.visibility || 'public'
+          }}
           clubs={clubs}
           onInputChange={onEventInputChange}
           onSubmit={onCreateEvent}

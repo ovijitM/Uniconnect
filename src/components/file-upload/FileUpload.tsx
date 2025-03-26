@@ -9,23 +9,27 @@ import { useToast } from '@/hooks/use-toast';
 
 interface FileUploadProps {
   onUploadComplete: (url: string, fileName: string, type?: 'logo' | 'document') => void;
-  acceptedFileTypes: string[];
-  maxFileSize: number; // in MB
+  acceptedFileTypes?: string[];
+  maxFileSize?: number; // in MB
   buttonText: string;
   helperText?: string;
   uploadType?: 'logo' | 'document';
-  bucket: string;
+  bucket?: string;
+  maxSize?: number; // Alias for maxFileSize to support both props
 }
 
 export const FileUpload: React.FC<FileUploadProps> = ({
   onUploadComplete,
-  acceptedFileTypes,
+  acceptedFileTypes = ["image/jpeg", "image/png", "image/gif", "application/pdf"],
   maxFileSize,
+  maxSize, // Added support for both naming conventions
   buttonText,
   helperText,
   uploadType = 'logo',
-  bucket
+  bucket = 'club_documents'
 }) => {
+  // Use maxSize as fallback for maxFileSize for backward compatibility
+  const fileMaxSize = maxFileSize || maxSize || 5;
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
@@ -43,15 +47,15 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     }
     
     // Validate file type
-    if (!acceptedFileTypes.includes(file.type)) {
+    if (acceptedFileTypes.length > 0 && !acceptedFileTypes.includes(file.type)) {
       setError(`Invalid file type. Accepted types: ${acceptedFileTypes.join(', ')}`);
       setSelectedFile(null);
       return;
     }
     
     // Validate file size
-    if (file.size > maxFileSize * 1024 * 1024) {
-      setError(`File too large. Maximum size: ${maxFileSize}MB`);
+    if (file.size > fileMaxSize * 1024 * 1024) {
+      setError(`File too large. Maximum size: ${fileMaxSize}MB`);
       setSelectedFile(null);
       return;
     }
@@ -77,10 +81,6 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         .upload(filePath, selectedFile, {
           cacheControl: '3600',
           upsert: false,
-          onUploadProgress: (progress) => {
-            const percent = Math.round((progress.loaded / progress.total) * 100);
-            setUploadProgress(percent);
-          }
         });
       
       if (error) throw error;

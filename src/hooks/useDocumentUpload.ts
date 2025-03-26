@@ -28,11 +28,7 @@ export const useDocumentUpload = (bucket: string) => {
         .from(bucket)
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false,
-          onUploadProgress: (progress) => {
-            const percent = Math.round((progress.loaded / progress.total) * 100);
-            setProgress(percent);
-          }
+          upsert: false
         });
       
       if (error) throw error;
