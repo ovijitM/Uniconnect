@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
-import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save, Loader2 } from 'lucide-react';
 
 interface ClubDialogFooterProps {
   activeTab: string;
@@ -58,7 +58,7 @@ const ClubDialogFooter: React.FC<ClubDialogFooterProps> = ({
           >
             {isSubmitting ? (
               <>
-                <Spinner className="h-4 w-4" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 Submitting...
               </>
             ) : (

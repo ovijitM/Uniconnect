@@ -54,7 +54,10 @@ const ClubAdminDashboard: React.FC = () => {
   };
 
   return (
-    <DashboardLayout sidebar={<ClubAdminSidebar />}>
+    <DashboardLayout 
+      sidebar={<ClubAdminSidebar />}
+      isLoading={isLoadingProfile}
+    >
       <div className="space-y-6">
         <ClubAdminDashboardActions
           profileError={profileError}
