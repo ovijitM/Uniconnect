@@ -8,7 +8,10 @@ export const useClubCreation = () => {
 
   const createClub = async (clubFormData: ClubFormData, userId: string | undefined): Promise<boolean> => {
     try {
+      console.log("Starting createClub function with user ID:", userId);
+      
       if (!userId) {
+        console.error("No user ID provided");
         toast({
           title: 'Authentication Error',
           description: 'You must be logged in to create a club.',
@@ -19,6 +22,7 @@ export const useClubCreation = () => {
 
       // Check if university is provided
       if (!clubFormData.university) {
+        console.error("No university provided");
         toast({
           title: 'Missing University',
           description: 'A university affiliation is required to create a club.',

@@ -25,13 +25,19 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
 
   const handleCreateClub = async () => {
     try {
-      if (isSubmitting) return; // Prevent multiple submissions
+      if (isSubmitting) {
+        console.log("Already submitting, blocking duplicate submission");
+        return;
+      }
+      
+      console.log("Starting club creation process...");
       setIsSubmitting(true);
 
       console.log('Validating club data:', clubFormData);
       
       // Check if university is provided
       if (!clubFormData.university) {
+        console.error("Missing university in form data");
         toast({
           title: "Missing University",
           description: "You must have a university affiliation to create a club. Please update your profile.",
@@ -44,6 +50,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       // Validate the form data
       const validationResult = validateClubData(clubFormData);
       if (!validationResult.isValid) {
+        console.error("Validation failed:", validationResult.errorMessage);
         toast({
           title: "Validation Error",
           description: validationResult.errorMessage || "Please check the form for errors.",
@@ -55,6 +62,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
 
       // Check if logo is uploaded
       if (!clubFormData.logoUrl) {
+        console.error("Missing logo in form data");
         toast({
           title: "Missing Logo",
           description: "Please upload a logo for your club.",
@@ -65,8 +73,11 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       }
 
       console.log('Creating club with data:', clubFormData);
+      console.log('User ID for club creation:', userId);
       
       const success = await createClub(clubFormData, userId);
+      console.log("Club creation result:", success);
+      
       if (success) {
         toast({
           title: "Club Created Successfully",
@@ -108,6 +119,13 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
         
         // Refresh data
         onSuccess();
+      } else {
+        console.error("Club creation failed without throwing an error");
+        toast({
+          title: "Error Creating Club",
+          description: "Failed to create the club. Please check your form data and try again.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error('Error in handleCreateClub:', error);

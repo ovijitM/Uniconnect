@@ -18,6 +18,12 @@ const ClubDialogFooter: React.FC<ClubDialogFooterProps> = ({
   onSubmit,
   buttonText
 }) => {
+  const handleSubmit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log("Submit button clicked! Calling onSubmit handler");
+    onSubmit();
+  };
+
   return (
     <DialogFooter className="mt-6 flex justify-between">
       {activeTab !== 'basic' && (
@@ -34,11 +40,10 @@ const ClubDialogFooter: React.FC<ClubDialogFooterProps> = ({
         {activeTab !== 'documents' ? (
           <Button type="button" onClick={onNext}>Next</Button>
         ) : (
-          <Button type="button" onClick={(e) => {
-            e.preventDefault();
-            console.log("Submit button clicked!");
-            onSubmit();
-          }}>
+          <Button 
+            type="button" 
+            onClick={handleSubmit}
+          >
             {buttonText}
           </Button>
         )}

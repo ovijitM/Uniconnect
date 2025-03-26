@@ -57,9 +57,12 @@ const ClubDialogWrapper: React.FC<ClubDialogWrapperProps> = ({
   };
 
   const handleSubmit = () => {
+    console.log("ClubDialogWrapper: handleSubmit called");
     if (validateDocuments(formData)) {
-      console.log("Form submission triggered!");
+      console.log("Form validation successful, triggering submission");
       onSubmit();
+    } else {
+      console.error("Form validation failed");
     }
   };
 
