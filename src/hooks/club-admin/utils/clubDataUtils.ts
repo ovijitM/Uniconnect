@@ -29,7 +29,7 @@ export const insertClubData = async (
     // First, try to use the security definer function
     if (userId) {
       console.log("Using security definer function to create club with userId:", userId);
-      const { data, error } = await supabase.rpc('insert_club', {
+      const { data: clubId, error: insertError } = await supabase.rpc('insert_club', {
         name: clubFormData.name,
         description: clubFormData.description,
         category: clubFormData.category,
@@ -39,20 +39,19 @@ export const insertClubData = async (
         club_admin_id: userId
       });
       
-      if (error) {
-        console.error("Error using security definer function:", error);
-        throw new Error(`Failed to create club: ${error.message}`);
+      if (insertError) {
+        console.error("Error using security definer function:", insertError);
+        throw new Error(`Failed to create club: ${insertError.message}`);
       }
       
-      if (!data) {
+      if (!clubId) {
         console.error("No club ID returned from security definer function");
         throw new Error('No club ID returned from club creation');
       }
       
-      console.log("Successfully created club with security definer function, club ID:", data);
+      console.log("Successfully created club with security definer function, club ID:", clubId);
       
-      // If the RPC worked, we still need to update the club with additional fields
-      // that weren't included in the function parameters
+      // Update the club with additional fields
       const updateData = {
         tagline: clubFormData.tagline || null,
         established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
@@ -84,7 +83,7 @@ export const insertClubData = async (
       const { error: updateError } = await supabase
         .from('clubs')
         .update(updateData)
-        .eq('id', data);
+        .eq('id', clubId);
       
       if (updateError) {
         console.error("Error updating club with additional fields:", updateError);
@@ -93,11 +92,11 @@ export const insertClubData = async (
       
       console.log("Successfully updated club with additional fields");
       
-      // Get the club data to return
+      // Get the club data to return - use maybeSingle() instead of single()
       const { data: clubData, error: getError } = await supabase
         .from('clubs')
         .select('*')
-        .eq('id', data)
+        .eq('id', clubId)
         .maybeSingle();
           
       if (getError) {
@@ -105,9 +104,20 @@ export const insertClubData = async (
         throw new Error(`Failed to fetch club data: ${getError.message}`);
       }
       
+      // Check if we got the club data back
       if (!clubData) {
-        console.error("No club data found after creation");
-        throw new Error('No club data found after creation');
+        console.error("No club data found after querying by ID:", clubId);
+        // Instead of throwing, return the basic club data we know
+        return {
+          id: clubId,
+          name: clubFormData.name,
+          description: clubFormData.description,
+          category: clubFormData.category,
+          university: clubFormData.university,
+          university_id: universityId,
+          logo_url: clubFormData.logoUrl,
+          status: 'pending'
+        };
       }
       
       console.log("Final club data:", clubData);
