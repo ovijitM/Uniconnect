@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { ClubFormData } from '@/hooks/club-admin/types';
@@ -19,6 +20,19 @@ const NoClubsView: React.FC<NoClubsViewProps> = ({
   handleClubInputChange,
   handleCreateClub
 }) => {
+  const navigate = useNavigate();
+  
+  const handleCreateClubClick = () => {
+    if (handleCreateClub) {
+      handleCreateClub();
+    } else if (setIsDialogOpen) {
+      setIsDialogOpen(true);
+    } else {
+      // Navigate to the club creation form if no callback is provided
+      navigate('/club-admin-dashboard/create-club');
+    }
+  };
+  
   return (
     <div className="bg-white rounded-lg shadow p-8 max-w-3xl mx-auto">
       <div className="flex flex-col items-center text-center space-y-6">
@@ -34,7 +48,7 @@ const NoClubsView: React.FC<NoClubsViewProps> = ({
         </div>
         
         <Button 
-          onClick={() => setIsDialogOpen && setIsDialogOpen(true)} 
+          onClick={handleCreateClubClick} 
           className="px-6"
         >
           <PlusCircle className="mr-2 h-4 w-4" />
