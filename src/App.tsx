@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from '@/pages/Home';
 import Clubs from '@/pages/Clubs';
@@ -15,14 +16,11 @@ import RequireAuth from '@/components/auth/RequireAuth';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import UsersPage from '@/pages/admin/UsersPage';
 import ClubsPage from '@/pages/admin/ClubsPage';
-import CreateClubPage from '@/pages/admin/CreateClubPage';
 import UniversitiesPage from '@/pages/admin/UniversitiesPage';
 import AlertsPage from '@/pages/admin/AlertsPage';
 import ActivityPage from '@/pages/admin/ActivityPage';
 import SettingsPage from '@/pages/admin/SettingsPage';
 import ClubAdminDashboard from '@/pages/club-admin/ClubAdminDashboard';
-import ClubCreatePage from '@/pages/club-admin/CreateClubPage';
-import ClubCreationPage from '@/pages/club-admin/ClubCreationPage';
 import StudentDashboard from '@/pages/student/StudentDashboard';
 
 // Context providers
@@ -63,11 +61,6 @@ function App() {
                 <ClubsPage />
               </RequireAuth>
             } />
-            <Route path="/admin-dashboard/clubs/create" element={
-              <RequireAuth allowedRoles={['admin']}>
-                <CreateClubPage />
-              </RequireAuth>
-            } />
             <Route path="/admin-dashboard/universities" element={
               <RequireAuth allowedRoles={['admin']}>
                 <UniversitiesPage />
@@ -89,20 +82,10 @@ function App() {
               </RequireAuth>
             } />
             
-            {/* Club admin routes - keeping only profile and club-related routes */}
+            {/* Club admin routes */}
             <Route path="/club-admin-dashboard/*" element={
               <RequireAuth allowedRoles={['club_admin']}>
                 <ClubAdminDashboard />
-              </RequireAuth>
-            } />
-            <Route path="/club-admin-dashboard/create-club" element={
-              <RequireAuth allowedRoles={['club_admin']}>
-                <ClubCreatePage />
-              </RequireAuth>
-            } />
-            <Route path="/club-admin-dashboard/create-club-new" element={
-              <RequireAuth allowedRoles={['club_admin']}>
-                <ClubCreationPage />
               </RequireAuth>
             } />
             
