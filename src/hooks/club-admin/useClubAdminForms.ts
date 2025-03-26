@@ -62,6 +62,7 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
     additionalPerks: '',
     judgingCriteria: '',
     judges: '',
+    schedule: '', // Added missing schedule field
     deliverables: '',
     submissionPlatform: '',
     mentors: '',
@@ -195,6 +196,7 @@ export const useClubAdminForms = (userId?: string, onRefresh?: () => Promise<voi
       additionalPerks: '',
       judgingCriteria: '',
       judges: '',
+      schedule: '', // Added missing schedule field
       deliverables: '',
       submissionPlatform: '',
       mentors: '',

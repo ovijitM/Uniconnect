@@ -53,7 +53,7 @@ export const useClubEvents = () => {
       const eventsWithAttendance = eventsData.filter(event => 
         event.event_participants && 
         event.event_participants[0] && 
-        typeof event.event_participants[0].count === 'number'
+        typeof event.event_participants[0]?.count === 'number'
       );
       
       if (eventsWithAttendance.length > 0) {

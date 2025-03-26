@@ -77,6 +77,7 @@ export const useClubData = () => {
             image_url,
             category,
             status,
+            visibility,
             max_participants,
             event_participants(count),
             event_type,
@@ -192,7 +193,7 @@ export const useClubData = () => {
           organizer: formattedClub,
           category: event.category,
           status: (event.status || 'upcoming') as EventStatus, // Cast to EventStatus
-          participants: event.event_participants[0]?.count || 0,
+          participants: event.event_participants?.[0]?.count || 0, // Fixed access to count
           maxParticipants: event.max_participants || undefined,
           
           // New fields

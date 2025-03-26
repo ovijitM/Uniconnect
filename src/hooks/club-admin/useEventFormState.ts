@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { EventFormData } from './types';
 
@@ -29,7 +28,7 @@ export const useEventFormState = () => {
     additionalPerks: '',
     judgingCriteria: '',
     judges: '',
-    schedule: '', // Added missing schedule field
+    schedule: '', // Added missing schedule field with proper initialization
     deliverables: '',
     submissionPlatform: '',
     mentors: '',

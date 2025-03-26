@@ -55,7 +55,7 @@ export interface EventFormData {
   additionalPerks: string;
   judgingCriteria: string;
   judges: string;
-  schedule: string; // Adding the missing schedule property
+  schedule: string; // Added this required field
   deliverables: string;
   submissionPlatform: string;
   mentors: string;
