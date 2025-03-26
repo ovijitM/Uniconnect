@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, ExternalLink, LogOut } from 'lucide-react';
+import { Users, ExternalLink, LogOut, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -9,14 +9,15 @@ import { useToast } from '@/hooks/use-toast';
 interface StudentClubsProps {
   clubs: any[];
   isLoading: boolean;
-  onLeaveClub?: (clubId: string) => void;
+  onLeaveClub?: (clubId: string) => Promise<void>;
 }
 
 const StudentClubs: React.FC<StudentClubsProps> = ({ clubs, isLoading, onLeaveClub }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [leavingClubId, setLeavingClubId] = useState<string | null>(null);
   
-  const handleLeaveClub = (clubId: string, clubName: string) => {
+  const handleLeaveClub = async (clubId: string, clubName: string) => {
     if (!onLeaveClub) {
       toast({
         title: "Action not available",
@@ -28,7 +29,24 @@ const StudentClubs: React.FC<StudentClubsProps> = ({ clubs, isLoading, onLeaveCl
     
     // Confirm before leaving
     if (window.confirm(`Are you sure you want to leave ${clubName}?`)) {
-      onLeaveClub(clubId);
+      setLeavingClubId(clubId);
+      try {
+        await onLeaveClub(clubId);
+        toast({
+          title: "Success",
+          description: `You have left ${clubName}`,
+          variant: "default",
+        });
+      } catch (error: any) {
+        console.error('Error leaving club:', error);
+        toast({
+          title: "Failed to leave club",
+          description: error.message || "Please try again later",
+          variant: "destructive",
+        });
+      } finally {
+        setLeavingClubId(null);
+      }
     }
   };
   
@@ -65,8 +83,13 @@ const StudentClubs: React.FC<StudentClubsProps> = ({ clubs, isLoading, onLeaveCl
                       size="sm"
                       className="text-destructive hover:bg-destructive/10"
                       onClick={() => handleLeaveClub(club.id, club.name)}
+                      disabled={leavingClubId === club.id}
                     >
-                      <LogOut className="h-4 w-4" />
+                      {leavingClubId === club.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <LogOut className="h-4 w-4" />
+                      )}
                     </Button>
                   )}
                   <Button 

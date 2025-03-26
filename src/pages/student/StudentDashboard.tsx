@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, useMatch } from 'react-router-dom';
@@ -21,6 +22,7 @@ const StudentDashboard: React.FC = () => {
     joinedClubs, 
     registeredEvents, 
     joinClub, 
+    leaveClub,
     registerForEvent 
   } = useStudentData();
   
@@ -40,6 +42,12 @@ const StudentDashboard: React.FC = () => {
   const handleJoinClub = async (clubId: string): Promise<void> => {
     if (!joinClub) return Promise.resolve();
     return joinClub(clubId);
+  };
+
+  // Create a wrapper function for leaveClub
+  const handleLeaveClub = async (clubId: string): Promise<void> => {
+    if (!leaveClub) return Promise.resolve();
+    return leaveClub(clubId);
   };
 
   // Render different content based on the current route
@@ -80,6 +88,7 @@ const StudentDashboard: React.FC = () => {
               <StudentClubs 
                 clubs={joinedClubs}
                 isLoading={isLoading}
+                onLeaveClub={handleLeaveClub}
               />
             </div>
             <div>
@@ -185,6 +194,7 @@ const StudentDashboard: React.FC = () => {
           <StudentClubs 
             clubs={joinedClubs}
             isLoading={isLoading}
+            onLeaveClub={handleLeaveClub}
           />
         </div>
 
