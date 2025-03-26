@@ -11,6 +11,7 @@ interface BasicInfoTabProps {
   formData: any;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleSelectChange: (value: string, name: string) => void;
+  handleLogoUpload: (url: string, fileName: string) => void;
   universities: any[];
   isLoadingUniversities: boolean;
   clubCategories: string[];
@@ -20,6 +21,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
   formData,
   handleInputChange,
   handleSelectChange,
+  handleLogoUpload,
   universities,
   isLoadingUniversities,
   clubCategories

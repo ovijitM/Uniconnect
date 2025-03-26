@@ -133,6 +133,7 @@ const ClubFormTabs: React.FC<ClubFormTabsProps> = ({
           <MediaContactTab
             formData={formData}
             handleInputChange={handleInputChange}
+            handleLogoUpload={handleLogoUpload}
             handleDocumentUpload={handleDocumentUpload}
           />
           <div className="flex justify-between mt-4 px-6 pb-6">
