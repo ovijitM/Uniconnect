@@ -20,14 +20,36 @@ export const parseExecutiveMembers = (value: string | undefined | null): Record<
   
   const members: Record<string, string> = {};
   
+  // First try the format "Name 1, Position 1; Name 2, Position 2"
   const memberEntries = value.split(';').map(entry => entry.trim()).filter(entry => entry.length > 0);
   
-  memberEntries.forEach(entry => {
-    const [name, position] = entry.split(',').map(part => part.trim());
-    if (name && position) {
-      members[name] = position;
+  if (memberEntries.length > 0) {
+    memberEntries.forEach(entry => {
+      const parts = entry.split(',').map(part => part.trim());
+      if (parts.length >= 2) {
+        const name = parts[0];
+        const position = parts.slice(1).join(', '); // Join with comma in case position has commas
+        if (name && position) {
+          members[name] = position;
+        }
+      }
+    });
+  }
+  
+  // If the above format didn't work, try simple JSON parse (in case it was already JSON)
+  if (Object.keys(members).length === 0) {
+    try {
+      // Check if the value looks like JSON
+      if (value.startsWith('{') && value.endsWith('}')) {
+        const parsed = JSON.parse(value);
+        if (typeof parsed === 'object' && parsed !== null) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.log("Value is not valid JSON, continuing with normal parsing");
     }
-  });
+  }
   
   return Object.keys(members).length > 0 ? members : null;
 };

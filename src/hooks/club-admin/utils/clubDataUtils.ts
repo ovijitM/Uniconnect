@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ClubFormData } from '../types';
 import { parseArrayField, parseExecutiveMembers } from './dataTransformUtils';
@@ -76,6 +75,14 @@ export const insertClubData = async (
         
         if (updateError) {
           console.error("Error updating club with additional fields:", updateError);
+          console.log("Update payload:", {
+            tagline: clubFormData.tagline,
+            established_year: clubFormData.establishedYear ? parseInt(clubFormData.establishedYear) : null,
+            affiliation: clubFormData.affiliation,
+            // ... other fields
+          });
+        } else {
+          console.log("Successfully updated club with additional fields:", updatedData);
         }
         
         // Get the club data to return
@@ -90,8 +97,14 @@ export const insertClubData = async (
           throw new Error(`Failed to fetch club data: ${getError.message}`);
         }
         
-        console.log("Final club data:", clubData);
-        return clubData;
+        // Add a flag to indicate this was created with the RPC function
+        const returnData = {
+          ...clubData,
+          created_with_rpc: true
+        };
+        
+        console.log("Final club data:", returnData);
+        return returnData;
       }
     }
 
