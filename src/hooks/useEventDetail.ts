@@ -1,5 +1,4 @@
 
-// Update the useEventDetail.ts hook to expose the error state
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,8 +14,6 @@ export const useEventDetail = (eventId: string | undefined) => {
   
   const { 
     isParticipating,
-    isRegistering,
-    isUnregistering,
     handleParticipate,
     handleUnregister
   } = useEventParticipation(eventId, event);
@@ -58,8 +55,6 @@ export const useEventDetail = (eventId: string | undefined) => {
     event,
     isLoading,
     isParticipating,
-    isRegistering,
-    isUnregistering,
     canAccess,
     handleParticipate,
     handleUnregister,

@@ -7,8 +7,7 @@ import { Event } from '@/types';
 
 export const useEventParticipation = (
   eventId: string | undefined, 
-  event: Event | null,
-  setEvent: React.Dispatch<React.SetStateAction<Event | null>>
+  event: Event | null
 ) => {
   const [isParticipating, setIsParticipating] = useState(false);
   const { toast } = useToast();
@@ -63,7 +62,6 @@ export const useEventParticipation = (
       if (error) throw error;
       
       setIsParticipating(true);
-      setEvent(prev => prev ? { ...prev, participants: prev.participants + 1 } : null);
       
       toast({
         title: "Successfully registered!",
@@ -102,7 +100,6 @@ export const useEventParticipation = (
       if (error) throw error;
       
       setIsParticipating(false);
-      setEvent(prev => prev ? { ...prev, participants: Math.max(0, prev.participants - 1) } : null);
       
       toast({
         title: "Successfully unregistered",
