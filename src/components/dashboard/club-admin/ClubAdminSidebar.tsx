@@ -12,7 +12,8 @@ import {
   LogOut,
   MenuIcon,
   X,
-  PlusCircle
+  PlusCircle,
+  UserRound
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -55,8 +56,8 @@ const ClubAdminSidebar: React.FC = () => {
 
   const menuItems = [
     {
-      icon: <LayoutDashboard className="h-4 w-4" />,
-      name: 'Overview',
+      icon: <UserRound className="h-4 w-4" />,
+      name: 'Profile',
       href: '/club-admin-dashboard',
       active: pathname === '/club-admin-dashboard',
       badge: null
@@ -91,9 +92,9 @@ const ClubAdminSidebar: React.FC = () => {
     },
     {
       icon: <Settings className="h-4 w-4" />,
-      name: 'Club Profile',
-      href: '/club-admin-dashboard/profile',
-      active: pathname.includes('/club-admin-dashboard/profile'),
+      name: 'Settings',
+      href: '/club-admin-dashboard/settings',
+      active: pathname.includes('/club-admin-dashboard/settings'),
       badge: null
     }
   ];

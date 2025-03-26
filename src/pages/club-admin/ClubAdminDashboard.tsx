@@ -1,53 +1,34 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useClubAdminDashboard } from '@/hooks/club-admin/dashboard/useClubAdminDashboard';
-import { useClubAdminRoutes } from '@/components/dashboard/club-admin/dashboard/useClubAdminRoutes';
-import ClubDialogWrapper from '@/components/dashboard/club-dialog/ClubDialogWrapper';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useStudentProfile } from '@/hooks/student/useStudentProfile';
 
 // Components
 import DashboardLayout from '@/components/dashboard/shared/DashboardLayout';
 import ClubAdminSidebar from '@/components/dashboard/club-admin/ClubAdminSidebar';
-import ClubAdminDashboardContent from '@/components/dashboard/club-admin/dashboard/ClubAdminDashboardContent';
 import ClubAdminDashboardActions from '@/components/dashboard/club-admin/dashboard/ClubAdminDashboardActions';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 
 const ClubAdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { currentView } = useClubAdminRoutes();
-  const {
-    adminClubs,
-    clubEvents,
-    clubMembers,
-    activeEventCount,
-    pastEventCount,
-    totalMembersCount,
-    averageAttendance,
-    isLoading,
-    selectedEventId,
-    selectedEventTitle,
-    isClubDialogOpen,
-    setIsClubDialogOpen,
-    clubFormData,
-    handleClubInputChange,
-    handleCreateClub,
-    handleClubFileUpload,
-    isEventDialogOpen,
-    setIsEventDialogOpen,
-    eventFormData,
-    handleEventInputChange,
-    handleCreateEvent,
-    handleEventFileUpload,
-    handleViewEvent,
-    handleEditEvent,
-    handleRefreshAfterDelete,
-    fetchClubAdminData,
-    selectEventForAttendeeManagement,
-    isLoadingProfile,
-    profileError
-  } = useClubAdminDashboard();
+  const { 
+    userUniversity, 
+    fetchUserProfile, 
+    isLoadingProfile, 
+    error: profileError 
+  } = useStudentProfile(user?.id);
+
+  // Fetch the user's profile on initial load
+  useEffect(() => {
+    if (user?.id) {
+      fetchUserProfile();
+    }
+  }, [user?.id, fetchUserProfile]);
 
   // Redirect if not logged in or not a club admin
   if (!user) return <Navigate to="/login" />;
@@ -60,54 +41,68 @@ const ClubAdminDashboard: React.FC = () => {
     return <Navigate to={`/${user.role.replace('_', '-')}-dashboard`} />;
   }
 
+  const handleRetryProfileFetch = () => {
+    fetchUserProfile();
+    toast({
+      title: "Retrying",
+      description: "Attempting to reload your profile data...",
+    });
+  };
+
   return (
     <DashboardLayout sidebar={<ClubAdminSidebar />}>
-      <div className="max-w-7xl mx-auto">
-        {/* Hidden club creation dialog that will be triggered from the sidebar */}
-        {isClubDialogOpen && (
-          <ClubDialogWrapper
-            isOpen={isClubDialogOpen}
-            onOpenChange={setIsClubDialogOpen}
-            formData={clubFormData}
-            onInputChange={handleClubInputChange}
-            onSubmit={handleCreateClub}
-            onFileUpload={handleClubFileUpload}
-            buttonText="Create Club"
-          />
-        )}
-        
-        <ClubAdminDashboardContent
-          currentView={currentView}
-          adminClubs={adminClubs}
-          clubEvents={clubEvents}
-          clubMembers={clubMembers}
-          activeEventCount={activeEventCount}
-          pastEventCount={pastEventCount}
-          totalMembersCount={totalMembersCount}
-          averageAttendance={averageAttendance}
-          isLoading={isLoading}
-          selectedEventId={selectedEventId}
-          selectedEventTitle={selectedEventTitle}
-          isClubDialogOpen={isClubDialogOpen}
-          setIsClubDialogOpen={setIsClubDialogOpen}
-          clubFormData={clubFormData}
-          handleClubInputChange={handleClubInputChange}
-          handleCreateClub={handleCreateClub}
-          handleClubFileUpload={handleClubFileUpload}
-          isEventDialogOpen={isEventDialogOpen}
-          setIsEventDialogOpen={setIsEventDialogOpen}
-          eventFormData={eventFormData}
-          handleEventInputChange={handleEventInputChange}
-          handleCreateEvent={handleCreateEvent}
-          handleEventFileUpload={handleEventFileUpload}
-          handleViewEvent={handleViewEvent}
-          handleEditEvent={handleEditEvent}
-          handleRefreshAfterDelete={handleRefreshAfterDelete}
-          fetchClubAdminData={fetchClubAdminData}
-          selectEventForAttendeeManagement={selectEventForAttendeeManagement}
-          isLoadingProfile={isLoadingProfile}
+      <div className="max-w-7xl mx-auto px-4">
+        <ClubAdminDashboardActions
           profileError={profileError}
+          isLoadingProfile={isLoadingProfile}
+          handleRetryProfileFetch={handleRetryProfileFetch}
+          userName={user.name}
         />
+        
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Personal Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={user.profileImage} alt={user.name} />
+                  <AvatarFallback className="text-2xl">
+                    {user.name?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <div className="space-y-1">
+                  <h3 className="text-xl font-semibold">{user.name}</h3>
+                  <p className="text-muted-foreground">{user.email}</p>
+                  <div className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded mt-2">
+                    Club Administrator
+                  </div>
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">University</h4>
+                  <p className="text-base">{userUniversity || 'Not specified'}</p>
+                </div>
+                
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">Account ID</h4>
+                  <p className="text-base font-mono text-xs">{user.id}</p>
+                </div>
+                
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">Account Status</h4>
+                  <p className="text-base">Active</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </DashboardLayout>
   );

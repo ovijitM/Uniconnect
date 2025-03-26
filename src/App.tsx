@@ -87,12 +87,14 @@ function App() {
               </RequireAuth>
             } />
             
-            {/* Other protected routes */}
+            {/* Club admin routes - simplified to just show profile */}
             <Route path="/club-admin-dashboard/*" element={
               <RequireAuth allowedRoles={['club_admin']}>
                 <ClubAdminDashboard />
               </RequireAuth>
             } />
+            
+            {/* Student routes */}
             <Route path="/student-dashboard/*" element={
               <RequireAuth allowedRoles={['student']}>
                 <StudentDashboard />
