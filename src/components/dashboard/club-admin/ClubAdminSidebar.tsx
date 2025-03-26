@@ -1,195 +1,145 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { 
-  LayoutDashboard,
-  Calendar, 
-  Building2, 
-  Users, 
-  ClipboardCheck, 
+  CalendarDays, 
+  ChevronDown, 
+  ChevronsUpDown, 
+  Gauge, 
+  Home, 
+  PlusCircle, 
   Settings, 
-  LogOut,
-  MenuIcon,
-  X,
-  PlusCircle,
-  UserRound
+  Users, 
+  UserCircle,
+  Building2
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Sidebar, 
-  SidebarContent, 
-  SidebarHeader, 
-  SidebarFooter,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton
-} from '@/components/ui/sidebar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
+
+interface SidebarItemProps {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  active?: boolean;
+}
+
+const SidebarItem: React.FC<SidebarItemProps> = ({
+  href,
+  icon,
+  title,
+  active,
+}) => {
+  return (
+    <Button
+      variant={active ? 'secondary' : 'ghost'}
+      className={cn(
+        'w-full justify-start',
+        active ? 'bg-muted hover:bg-muted' : 'hover:bg-transparent hover:underline'
+      )}
+      asChild
+    >
+      <Link to={href}>
+        {icon}
+        {title}
+      </Link>
+    </Button>
+  );
+};
 
 const ClubAdminSidebar: React.FC = () => {
   const location = useLocation();
   const pathname = location.pathname;
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { logout, user } = useAuth();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const menuItems = [
-    {
-      icon: <UserRound className="h-4 w-4" />,
-      name: 'Profile',
-      href: '/club-admin-dashboard',
-      active: pathname === '/club-admin-dashboard',
-      badge: null
-    },
-    {
-      icon: <Calendar className="h-4 w-4" />,
-      name: 'Events',
-      href: '/club-admin-dashboard/events',
-      active: pathname.includes('/club-admin-dashboard/events'),
-      badge: null
-    },
-    {
-      icon: <Building2 className="h-4 w-4" />,
-      name: 'Clubs',
-      href: '/club-admin-dashboard/clubs',
-      active: pathname.includes('/club-admin-dashboard/clubs'),
-      badge: null
-    },
-    {
-      icon: <Users className="h-4 w-4" />,
-      name: 'Members',
-      href: '/club-admin-dashboard/members',
-      active: pathname.includes('/club-admin-dashboard/members'),
-      badge: null
-    },
-    {
-      icon: <ClipboardCheck className="h-4 w-4" />,
-      name: 'Attendance',
-      href: '/club-admin-dashboard/attendance',
-      active: pathname.includes('/club-admin-dashboard/attendance'),
-      badge: null
-    },
-    {
-      icon: <Settings className="h-4 w-4" />,
-      name: 'Settings',
-      href: '/club-admin-dashboard/settings',
-      active: pathname.includes('/club-admin-dashboard/settings'),
-      badge: null
-    }
-  ];
-
-  const handleSignOut = async () => {
-    try {
-      await logout();
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
-      });
-      navigate('/login');
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to log out. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Close mobile menu when location changes
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location]);
 
   return (
-    <>
-      {/* Mobile menu button (only visible on small screens) */}
-      <div className="md:hidden fixed top-4 left-4 z-30">
-        <Button
-          variant="outline" 
-          size="icon" 
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="rounded-full"
-        >
-          {isMobileMenuOpen ? <X className="h-4 w-4" /> : <MenuIcon className="h-4 w-4" />}
-        </Button>
+    <div className="pb-12 w-full">
+      <div className="space-y-4 py-4">
+        <div className="px-4 py-2">
+          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
+            Club Admin Dashboard
+          </h2>
+          <div className="space-y-1">
+            <SidebarItem
+              href="/club-admin-dashboard"
+              icon={<Gauge className="mr-2 h-4 w-4" />}
+              title="Overview"
+              active={pathname === '/club-admin-dashboard'}
+            />
+            <SidebarItem
+              href="/club-admin-dashboard/clubs"
+              icon={<Building2 className="mr-2 h-4 w-4" />}
+              title="My Clubs"
+              active={pathname.includes('/clubs') && !pathname.includes('/create-club')}
+            />
+            <SidebarItem
+              href="/club-admin-dashboard/create-club"
+              icon={<PlusCircle className="mr-2 h-4 w-4" />}
+              title="Create Club"
+              active={pathname === '/club-admin-dashboard/create-club'}
+            />
+          </div>
+        </div>
+        <div className="px-4 py-2">
+          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
+            Events
+          </h2>
+          <div className="space-y-1">
+            <SidebarItem
+              href="/club-admin-dashboard/events"
+              icon={<CalendarDays className="mr-2 h-4 w-4" />}
+              title="Manage Events"
+              active={pathname.includes('/events') && !pathname.includes('/create-event')}
+            />
+            <SidebarItem
+              href="/club-admin-dashboard/create-event"
+              icon={<PlusCircle className="mr-2 h-4 w-4" />}
+              title="Create Event"
+              active={pathname === '/club-admin-dashboard/create-event'}
+            />
+          </div>
+        </div>
+        <div className="px-4 py-2">
+          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
+            Community
+          </h2>
+          <div className="space-y-1">
+            <SidebarItem
+              href="/club-admin-dashboard/members"
+              icon={<Users className="mr-2 h-4 w-4" />}
+              title="Members"
+              active={pathname.includes('/members')}
+            />
+            <SidebarItem
+              href="/club-admin-dashboard/attendance"
+              icon={<UserCircle className="mr-2 h-4 w-4" />}
+              title="Attendance"
+              active={pathname.includes('/attendance')}
+            />
+          </div>
+        </div>
+        <div className="px-4 py-2">
+          <div className="space-y-1">
+            <SidebarItem
+              href="/club-admin-dashboard/profile"
+              icon={<Settings className="mr-2 h-4 w-4" />}
+              title="Profile Settings"
+              active={pathname.includes('/profile')}
+            />
+            <SidebarItem
+              href="/"
+              icon={<Home className="mr-2 h-4 w-4" />}
+              title="Back to Home"
+              active={false}
+            />
+          </div>
+        </div>
       </div>
-      
-      {/* Shadcn Sidebar implementation */}
-      <Sidebar
-        className={cn(
-          "transition-transform duration-300 ease-in-out",
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        )}
-      >
-        <SidebarHeader>
-          <div className="flex items-center px-4 py-2">
-            <Avatar className="h-10 w-10 mr-2">
-              <AvatarImage src={user?.profileImage} alt={user?.name || 'User'} />
-              <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col">
-              <span className="font-medium">{user?.name || 'Club Admin'}</span>
-              <span className="text-xs text-muted-foreground">{user?.university || 'University'}</span>
-            </div>
-          </div>
-        </SidebarHeader>
-        
-        <SidebarContent>
-          <SidebarMenu>
-            {menuItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton 
-                  asChild 
-                  isActive={item.active}
-                >
-                  <Link to={item.href} className="flex items-center">
-                    {item.icon}
-                    <span className="ml-2">{item.name}</span>
-                    {item.badge && (
-                      <Badge variant="outline" className="ml-auto">
-                        {item.badge}
-                      </Badge>
-                    )}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-          
-          <Separator className="my-4" />
-          
-          {/* Create Club Button */}
-          <div className="px-4">
-            <Button 
-              variant="default" 
-              size="sm" 
-              className="w-full justify-start"
-              onClick={() => navigate('/club-admin-dashboard/create-club')}
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Create Club
-            </Button>
-          </div>
-        </SidebarContent>
-        
-        <SidebarFooter>
-          <Button
-            onClick={handleSignOut}
-            variant="ghost"
-            className="w-full flex items-center justify-start px-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            <span>Sign Out</span>
-          </Button>
-        </SidebarFooter>
-      </Sidebar>
-    </>
+    </div>
   );
 };
 
