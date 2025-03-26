@@ -1,10 +1,8 @@
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Upload } from 'lucide-react';
 
 interface BasicInfoTabProps {
   formData: {
@@ -13,19 +11,11 @@ interface BasicInfoTabProps {
     category: string;
     tagline?: string;
     university?: string;
-    logoUrl?: string;
   };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  onFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
 }
 
-const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ 
-  formData, 
-  onInputChange,
-  onFileUpload 
-}) => {
-  const logoInputRef = useRef<HTMLInputElement>(null);
-
+const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) => {
   return (
     <div className="space-y-4 py-4">
       <div className="space-y-2">
@@ -92,49 +82,6 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
           rows={4}
         />
       </div>
-
-      {onFileUpload && (
-        <div className="space-y-2">
-          <Label htmlFor="logo">Club Logo</Label>
-          <div className="flex items-center gap-2">
-            <Input
-              id="logo"
-              type="file"
-              accept="image/*"
-              ref={logoInputRef}
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file && onFileUpload) {
-                  // This is a placeholder - the actual upload will be handled by the parent component
-                  // through the ClubFileUpload hook, which is called in DocumentUploadTab
-                  logoInputRef.current!.value = "";
-                }
-              }}
-            />
-            <Button 
-              type="button" 
-              variant="outline"
-              onClick={() => logoInputRef.current?.click()}
-              className="w-full"
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              {formData.logoUrl ? 'Change Logo' : 'Upload Logo'}
-            </Button>
-            
-            {formData.logoUrl && (
-              <img 
-                src={formData.logoUrl} 
-                alt="Logo preview" 
-                className="h-10 w-10 object-cover rounded-md" 
-              />
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            You can also upload your club logo in the Documents tab
-          </p>
-        </div>
-      )}
     </div>
   );
 };

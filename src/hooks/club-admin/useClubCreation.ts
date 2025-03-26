@@ -33,9 +33,6 @@ export const useClubCreation = () => {
         return false;
       }
 
-      // Log all form data for debugging
-      console.log("Full club form data:", JSON.stringify(clubFormData, null, 2));
-
       // Find or create university
       let universityId;
       try {

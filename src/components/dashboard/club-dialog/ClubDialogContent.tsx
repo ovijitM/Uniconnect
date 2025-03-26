@@ -23,11 +23,7 @@ const ClubDialogContent: React.FC<ClubDialogContentProps> = ({
   return (
     <Tabs value={activeTab} className="w-full">
       <TabsContent value="basic">
-        <BasicInfoTab 
-          formData={formData} 
-          onInputChange={onInputChange} 
-          onFileUpload={onFileUpload}
-        />
+        <BasicInfoTab formData={formData} onInputChange={onInputChange} />
       </TabsContent>
       
       <TabsContent value="details">
