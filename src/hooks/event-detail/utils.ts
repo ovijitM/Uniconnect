@@ -29,10 +29,13 @@ export const formatEventData = (eventData: any, clubData: any | null): Event => 
     }
   }
   
+  // Ensure participants is a valid number
+  participants = isNaN(participants) ? 0 : participants;
+  
   // Create a default or minimal organizer object if club data is missing
   const organizer = clubData ? {
     id: clubData.id,
-    name: clubData.name,
+    name: clubData.name || 'Unknown Organization',
     description: clubData.description || 'No description available',
     logoUrl: clubData.logo_url,
     category: clubData.category || 'General',
@@ -50,6 +53,9 @@ export const formatEventData = (eventData: any, clubData: any | null): Event => 
     events: []
   };
   
+  // Log the event transformation
+  console.log(`Formatting event: ${eventData.id} (${eventData.title}) with organizer: ${organizer.name}`);
+  
   return {
     id: eventData.id || '',
     title: eventData.title || 'Untitled Event',
@@ -63,7 +69,7 @@ export const formatEventData = (eventData: any, clubData: any | null): Event => 
     participants: participants,
     maxParticipants: eventData.max_participants || undefined,
     
-    // Additional fields
+    // Additional fields with fallbacks
     visibility: eventData.visibility || 'public',
     eventType: eventData.event_type || 'in-person',
     tagline: eventData.tagline || '',

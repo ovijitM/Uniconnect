@@ -21,8 +21,22 @@ export const useEventDetail = (eventId: string | undefined) => {
   // Check if the user can access the event based on visibility restrictions
   useEffect(() => {
     async function checkEventAccess() {
-      if (!event || !user || event.visibility !== 'university_only') {
+      // Default to true for public events or when no event data yet
+      if (!event) {
         setCanAccess(true);
+        return;
+      }
+      
+      // If event visibility is public, everyone can access
+      if (event.visibility !== 'university_only') {
+        setCanAccess(true);
+        return;
+      }
+      
+      // For university_only events, check user authorization
+      if (!user) {
+        console.log('University-only event, but no user logged in');
+        setCanAccess(false);
         return;
       }
 
@@ -40,12 +54,23 @@ export const useEventDetail = (eventId: string | undefined) => {
           return;
         }
 
-        // Handle case when event.organizer might be undefined
+        if (!profileData) {
+          console.error('No profile found for user:', user.id);
+          setCanAccess(false);
+          return;
+        }
+
+        // Get the event's university from the organizer
         const organizerUniversity = event.organizer?.university || '';
+        console.log(`Checking access: User university: ${profileData.university}, Event university: ${organizerUniversity}`);
         
         // Check if the user's university matches the organizer's university
-        setCanAccess(!!profileData && profileData.university === organizerUniversity);
+        const hasAccess = profileData.university === organizerUniversity;
+        setCanAccess(hasAccess);
         
+        if (!hasAccess) {
+          console.log('Access denied: University mismatch');
+        }
       } catch (error) {
         console.error('Error checking event access:', error);
         setCanAccess(false);

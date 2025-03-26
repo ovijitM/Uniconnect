@@ -29,7 +29,7 @@ export const useEventFetch = (eventId: string | undefined) => {
           .from('events')
           .select('*, event_participants(count)')
           .eq('id', eventId)
-          .single();
+          .maybeSingle(); // Use maybeSingle instead of single to handle null results better
 
         if (eventError) {
           console.error("Error fetching event:", eventError);
@@ -43,18 +43,21 @@ export const useEventFetch = (eventId: string | undefined) => {
           throw new Error('Event not found');
         }
 
+        console.log("Event data received:", eventData);
+
         // Get the club associated with this event
         let clubData = null;
         if (eventData.club_id) {
           const { data: club, error: clubError } = await supabase
             .from('clubs')
-            .select('*')
+            .select('*, club_members(count)')
             .eq('id', eventData.club_id)
-            .single();
+            .maybeSingle();
 
           if (clubError && clubError.code !== 'PGRST116') {
             console.error("Error fetching club data:", clubError);
           } else if (club) {
+            console.log("Club data received:", club);
             clubData = club;
           }
         }
@@ -70,13 +73,16 @@ export const useEventFetch = (eventId: string | undefined) => {
               description,
               logo_url,
               category,
-              university
+              university,
+              club_members(count)
             )
           `)
           .eq('event_id', eventId);
 
         if (collaborationError) {
           console.error("Error fetching collaborators:", collaborationError);
+        } else {
+          console.log(`Found ${collaborationData?.length || 0} collaborating clubs`);
         }
 
         // Format event data with club and collaborators
@@ -87,15 +93,16 @@ export const useEventFetch = (eventId: string | undefined) => {
           formattedEvent.collaborators = collaborationData.map(item => ({
             id: item.clubs.id,
             name: item.clubs.name,
-            description: item.clubs.description,
+            description: item.clubs.description || 'No description available',
             logoUrl: item.clubs.logo_url,
-            category: item.clubs.category,
-            university: item.clubs.university,
-            memberCount: 0, // We don't have this data here
+            category: item.clubs.category || 'General',
+            university: item.clubs.university || 'Unknown University',
+            memberCount: item.clubs.club_members?.[0]?.count || 0,
             events: []
           }));
         }
 
+        console.log("Successfully formatted event:", formattedEvent.title);
         setEvent(formattedEvent);
       } catch (error) {
         console.error('Error in fetchEventData:', error);
