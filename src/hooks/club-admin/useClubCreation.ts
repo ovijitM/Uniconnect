@@ -49,10 +49,10 @@ export const useClubCreation = () => {
         return false;
       }
 
-      // Insert club data
+      // Insert club data - now passing the userId to use with the security definer function
       let clubData;
       try {
-        clubData = await insertClubData(clubFormData, universityId);
+        clubData = await insertClubData(clubFormData, universityId, userId);
         console.log('Club created successfully:', clubData);
       } catch (error: any) {
         console.error('Error creating club:', error);
@@ -66,17 +66,21 @@ export const useClubCreation = () => {
 
       // Add the current user as an admin of the club
       try {
-        console.log("Adding user as club admin:", userId, "for club:", clubData.id);
-        const { error } = await supabase
-          .from('club_admins')
-          .insert({
-            club_id: clubData.id,
-            user_id: userId
-          });
-          
-        if (error) {
-          console.error("Error adding club admin:", error);
-          throw error;
+        // Check if we need to manually add the user as club admin
+        // The RPC function already does this, so only do it for direct inserts
+        if (!clubData.created_with_rpc) {
+          console.log("Adding user as club admin:", userId, "for club:", clubData.id);
+          const { error } = await supabase
+            .from('club_admins')
+            .insert({
+              club_id: clubData.id,
+              user_id: userId
+            });
+            
+          if (error) {
+            console.error("Error adding club admin:", error);
+            throw error;
+          }
         }
       } catch (error: any) {
         console.error('Error adding club admin:', error);
