@@ -53,12 +53,12 @@ export const useClubEvents = () => {
       const eventsWithAttendance = eventsData.filter(event => 
         event.event_participants && 
         event.event_participants[0] && 
-        typeof event.event_participants[0]?.count === 'number'
+        typeof event.event_participants?.[0]?.count === 'number'
       );
       
       if (eventsWithAttendance.length > 0) {
         const totalAttendance = eventsWithAttendance.reduce(
-          (sum, event) => sum + (event.event_participants[0]?.count || 0), 
+          (sum, event) => sum + (event.event_participants?.[0]?.count || 0), 
           0
         );
         setAverageAttendance(Math.round(totalAttendance / eventsWithAttendance.length));

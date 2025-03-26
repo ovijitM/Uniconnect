@@ -95,7 +95,7 @@ const EventsPage: React.FC = () => {
               category: event.category,
               status: (event.status || 'upcoming') as EventStatus,
               visibility: (event.visibility || 'public') as 'public' | 'university_only',
-              participants: event.event_participants?.[0]?.count || 0, // Fixed access to count
+              participants: event.event_participants?.[0]?.count || 0,
               maxParticipants: event.max_participants || undefined,
               organizer: {
                 id: clubData.id,
@@ -104,7 +104,7 @@ const EventsPage: React.FC = () => {
                 logoUrl: clubData.logo_url,
                 category: clubData.category,
                 university: clubData.university,
-                memberCount: clubData.club_members?.[0]?.count || 0, // Fixed access to count
+                memberCount: clubData.club_members?.[0]?.count || 0,
                 events: []
               }
             };

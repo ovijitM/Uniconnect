@@ -139,7 +139,7 @@ export const useClubData = () => {
             logoUrl: club.logo_url,
             category: club.category,
             status: club.status,
-            memberCount: club.club_members[0]?.count || 0,
+            memberCount: club.club_members?.[0]?.count || 0,
             events: [],
             tagline: club.tagline,
             establishedYear: club.established_year
@@ -156,7 +156,7 @@ export const useClubData = () => {
           category: clubData.category,
           status: clubData.status,
           rejectionReason: clubData.rejection_reason,
-          memberCount: clubData.club_members[0]?.count || 0,
+          memberCount: clubData.club_members?.[0]?.count || 0,
           events: [],
           
           // New fields
@@ -193,7 +193,7 @@ export const useClubData = () => {
           organizer: formattedClub,
           category: event.category,
           status: (event.status || 'upcoming') as EventStatus, // Cast to EventStatus
-          participants: event.event_participants?.[0]?.count || 0, // Fixed access to count
+          participants: event.event_participants?.[0]?.count || 0,
           maxParticipants: event.max_participants || undefined,
           
           // New fields
