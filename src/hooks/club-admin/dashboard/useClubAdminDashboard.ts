@@ -73,7 +73,6 @@ export const useClubAdminDashboard = () => {
     communityLink: '',
     eventWebsite: '',
     eventHashtag: '',
-    howToRegister: '',
     visibility: 'public'
   });
 

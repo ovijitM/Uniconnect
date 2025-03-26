@@ -11,8 +11,9 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCollaborators, setSelectedCollaborators] = useState<string[]>([]);
 
-  const convertToArray = (value: string): string[] | null => {
-    if (!value || !value.trim()) return null;
+  const convertToArray = (value: string | string[] | null | undefined): string[] | null => {
+    if (!value) return null;
+    if (Array.isArray(value)) return value.filter(Boolean);
     return value.split(',').map(item => item.trim()).filter(Boolean);
   };
 
@@ -64,6 +65,18 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         return;
       }
       
+      // Parse JSON schedule if it's a string
+      let scheduleData = null;
+      if (typeof eventFormData.schedule === 'string' && eventFormData.schedule.trim()) {
+        try {
+          scheduleData = JSON.parse(eventFormData.schedule);
+        } catch (error) {
+          console.error('Error parsing schedule JSON:', error);
+        }
+      } else if (typeof eventFormData.schedule === 'object') {
+        scheduleData = eventFormData.schedule;
+      }
+      
       const { data, error } = await supabase
         .from('events')
         .insert({
@@ -100,7 +113,7 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
           community_link: eventFormData.communityLink || null,
           event_website: eventFormData.eventWebsite || null,
           event_hashtag: eventFormData.eventHashtag || null,
-          schedule: eventFormData.schedule ? JSON.parse(eventFormData.schedule) : null
+          schedule: scheduleData
         })
         .select();
       
@@ -173,7 +186,6 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         communityLink: '',
         eventWebsite: '',
         eventHashtag: '',
-        howToRegister: '',
         visibility: 'public'
       });
       setSelectedCollaborators([]);

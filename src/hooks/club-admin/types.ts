@@ -18,17 +18,17 @@ export interface EventFormData {
   registrationLink: string;
   entryFee: string;
   theme: string;
-  subTracks: string[] | string;
+  subTracks: string | string[];
   prizePool: string;
-  prizeCategories: string[] | string;
-  additionalPerks: string[] | string;
-  judgingCriteria: string[] | string;
-  judges: string[] | string;
+  prizeCategories: string | string[];
+  additionalPerks: string | string[];
+  judgingCriteria: string | string[];
+  judges: string | string[];
   schedule: Record<string, any> | string;
-  deliverables: string[] | string;
+  deliverables: string | string[];
   submissionPlatform: string;
-  mentors: string[] | string;
-  sponsors: string[] | string;
+  mentors: string | string[];
+  sponsors: string | string[];
   contactEmail: string;
   communityLink: string;
   eventWebsite: string;
@@ -65,7 +65,7 @@ export interface ClubFormData {
   discordLink: string;
   documentUrl: string;
   documentName: string;
-  // Additional fields from other components
+  // Additional fields
   contactEmail: string;
   contactPhone: string;
   address: string;

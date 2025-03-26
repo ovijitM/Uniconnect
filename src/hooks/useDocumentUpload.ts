@@ -24,6 +24,8 @@ export const useDocumentUpload = (bucket: string) => {
       const fileName = `${uuidv4()}.${fileExt}`;
       const filePath = folder ? `${folder}/${fileName}` : fileName;
       
+      // Note: Supabase storage upload doesn't support onUploadProgress
+      // We'll use a simpler approach here
       const { data, error } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
@@ -32,6 +34,9 @@ export const useDocumentUpload = (bucket: string) => {
         });
       
       if (error) throw error;
+      
+      // Set progress to complete
+      setProgress(100);
       
       // Get public URL
       const { data: urlData } = supabase.storage

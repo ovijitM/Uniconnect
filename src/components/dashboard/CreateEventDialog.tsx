@@ -36,11 +36,17 @@ const CreateEventDialog: React.FC<CreateEventDialogProps> = ({
     </Button>
   );
 
+  // Ensure all required properties are present before passing to EventDialogWrapper
+  const eventFormData = {
+    ...formData,
+    visibility: formData.visibility || 'public' as const
+  };
+
   return (
     <EventDialogWrapper
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      formData={formData}
+      formData={eventFormData}
       clubs={clubs}
       onInputChange={onInputChange}
       onSubmit={onSubmit}

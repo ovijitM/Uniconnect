@@ -54,6 +54,7 @@ export const useClubValidation = () => {
     };
   };
   
+  // Add the validateClubData function that was missing
   const validateClubData = (formData: ClubFormData): boolean => {
     const { isValid, errors } = validateClubForm(formData);
     
