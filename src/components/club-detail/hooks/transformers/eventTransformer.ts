@@ -11,6 +11,7 @@ export const transformEventData = (event: any, organizer: Club): Event => {
     throw new Error('Invalid event data provided');
   }
 
+  // Parse and validate participants count
   let participants = 0;
   if (event.event_participants && Array.isArray(event.event_participants) && event.event_participants.length > 0) {
     const countData = event.event_participants[0];
@@ -32,8 +33,10 @@ export const transformEventData = (event: any, organizer: Club): Event => {
     participants = isNaN(participants) ? 0 : participants;
   }
   
-  console.log(`Transformed event ${event.id} (${event.title}) with ${participants} participants`);
+  // Log the transformation for debugging
+  console.log(`Transformed event ${event.id} (${event.title || 'Untitled Event'}) with ${participants} participants and organizer: ${organizer?.name || 'Unknown'}`);
   
+  // Ensure all required fields have fallback values
   return {
     id: event.id,
     title: event.title || 'Untitled Event',

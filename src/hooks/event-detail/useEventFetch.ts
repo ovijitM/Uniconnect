@@ -34,13 +34,15 @@ export const useEventFetch = (eventId: string | undefined) => {
         if (eventError) {
           console.error("Error fetching event:", eventError);
           setError(eventError);
-          throw eventError;
+          setIsLoading(false);
+          return;
         }
 
         if (!eventData) {
           console.error("Event not found for ID:", eventId);
           setError(new Error('Event not found'));
-          throw new Error('Event not found');
+          setIsLoading(false);
+          return;
         }
 
         console.log("Event data received:", eventData);
@@ -54,7 +56,7 @@ export const useEventFetch = (eventId: string | undefined) => {
             .eq('id', eventData.club_id)
             .maybeSingle();
 
-          if (clubError && clubError.code !== 'PGRST116') {
+          if (clubError) {
             console.error("Error fetching club data:", clubError);
           } else if (club) {
             console.log("Club data received:", club);
@@ -90,16 +92,18 @@ export const useEventFetch = (eventId: string | undefined) => {
 
         // Add collaborators if present
         if (collaborationData && collaborationData.length > 0) {
-          formattedEvent.collaborators = collaborationData.map(item => ({
-            id: item.clubs.id,
-            name: item.clubs.name,
-            description: item.clubs.description || 'No description available',
-            logoUrl: item.clubs.logo_url,
-            category: item.clubs.category || 'General',
-            university: item.clubs.university || 'Unknown University',
-            memberCount: item.clubs.club_members?.[0]?.count || 0,
-            events: []
-          }));
+          formattedEvent.collaborators = collaborationData
+            .filter(item => item.clubs) // Filter out any null clubs
+            .map(item => ({
+              id: item.clubs.id,
+              name: item.clubs.name,
+              description: item.clubs.description || 'No description available',
+              logoUrl: item.clubs.logo_url,
+              category: item.clubs.category || 'General',
+              university: item.clubs.university || 'Unknown University',
+              memberCount: item.clubs.club_members?.[0]?.count || 0,
+              events: []
+            }));
         }
 
         console.log("Successfully formatted event:", formattedEvent.title);

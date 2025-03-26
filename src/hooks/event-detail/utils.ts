@@ -34,10 +34,10 @@ export const formatEventData = (eventData: any, clubData: any | null): Event => 
   
   // Create a default or minimal organizer object if club data is missing
   const organizer = clubData ? {
-    id: clubData.id,
+    id: clubData.id || 'unknown',
     name: clubData.name || 'Unknown Organization',
     description: clubData.description || 'No description available',
-    logoUrl: clubData.logo_url,
+    logoUrl: clubData.logo_url || null,
     category: clubData.category || 'General',
     university: clubData.university || 'Unknown University',
     memberCount: clubData.club_members?.[0]?.count || 0,
@@ -54,7 +54,7 @@ export const formatEventData = (eventData: any, clubData: any | null): Event => 
   };
   
   // Log the event transformation
-  console.log(`Formatting event: ${eventData.id} (${eventData.title}) with organizer: ${organizer.name}`);
+  console.log(`Formatting event: ${eventData.id} (${eventData.title || 'Untitled Event'}) with organizer: ${organizer.name}`);
   
   return {
     id: eventData.id || '',

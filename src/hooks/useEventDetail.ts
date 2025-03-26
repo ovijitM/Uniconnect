@@ -54,8 +54,8 @@ export const useEventDetail = (eventId: string | undefined) => {
           return;
         }
 
-        if (!profileData) {
-          console.error('No profile found for user:', user.id);
+        if (!profileData || !profileData.university) {
+          console.error('No profile or university found for user:', user.id);
           setCanAccess(false);
           return;
         }
