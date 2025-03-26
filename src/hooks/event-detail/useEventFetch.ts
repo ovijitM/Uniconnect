@@ -17,7 +17,7 @@ export const useEventFetch = (eventId: string | undefined) => {
       try {
         setIsLoading(true);
         
-        // Fetch event details
+        // Fetch event details with all fields
         const { data: eventData, error: eventError } = await supabase
           .from('events')
           .select(`
@@ -59,11 +59,16 @@ export const useEventFetch = (eventId: string | undefined) => {
             event_hashtag
           `)
           .eq('id', eventId)
-          .single();
+          .maybeSingle();
         
         if (eventError) throw eventError;
+        if (!eventData) {
+          setEvent(null);
+          setIsLoading(false);
+          return;
+        }
         
-        // Fetch club details using explicit foreign key reference
+        // Fetch club details using club_id
         const { data: clubData, error: clubError } = await supabase
           .from('clubs')
           .select(`
@@ -76,11 +81,16 @@ export const useEventFetch = (eventId: string | undefined) => {
             club_members(count)
           `)
           .eq('id', eventData.club_id)
-          .single();
+          .maybeSingle();
         
         if (clubError) throw clubError;
+        if (!clubData) {
+          setEvent(null);
+          setIsLoading(false);
+          return;
+        }
 
-        // Fetch collaborating clubs using explicit foreign key reference 
+        // Fetch collaborating clubs
         const { data: collaboratorsData, error: collaboratorsError } = await supabase
           .from('event_collaborators')
           .select(`
@@ -107,17 +117,13 @@ export const useEventFetch = (eventId: string | undefined) => {
             // Handle different possible formats of club_members count
             let memberCount = 0;
             
-            // Type guard to handle various possible shapes of the count data
             if (Array.isArray(item.club.club_members)) {
-              // If it's an array, it might contain an object with count property
               if (item.club.club_members.length > 0 && typeof item.club.club_members[0] === 'object') {
                 memberCount = item.club.club_members[0]?.count || 0;
               } else {
-                // If it's an array but not of objects, use the length
                 memberCount = item.club.club_members.length;
               }
             } else if (typeof item.club.club_members === 'object') {
-              // Direct object with count property
               memberCount = (item.club.club_members as any)?.count || 0;
             }
               

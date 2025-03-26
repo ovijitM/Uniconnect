@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { parseISO, format } from 'date-fns';
 import { Calendar, Clock, MapPin, Users, Globe, Tag, Bookmark, DollarSign, Award, Link2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
@@ -30,25 +31,28 @@ const EventInfo: React.FC<EventInfoProps> = ({
   teamSize,
   eligibility
 }) => {
-  const formattedDate = new Date(date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-
-  const formattedTime = new Date(date).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  // Format the date safely
+  let formattedDate = '';
+  let formattedTime = '';
+  
+  try {
+    const parsedDate = parseISO(date);
+    formattedDate = format(parsedDate, 'EEEE, MMMM d, yyyy');
+    formattedTime = format(parsedDate, 'h:mm a');
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    formattedDate = 'Date not available';
+    formattedTime = 'Time not available';
+  }
 
   const formatDeadline = (deadline?: string) => {
     if (!deadline) return null;
-    return new Date(deadline).toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
+    try {
+      return format(parseISO(deadline), 'MMMM d, yyyy');
+    } catch (error) {
+      console.error('Error formatting deadline:', error);
+      return 'Deadline not available';
+    }
   };
   
   const formattedEventType = eventType ? (
@@ -123,7 +127,7 @@ const EventInfo: React.FC<EventInfoProps> = ({
                 href={registrationLink.startsWith('http') ? registrationLink : `https://${registrationLink}`} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+                className="text-blue-600 hover:underline dark:text-blue-400"
               >
                 Register Here
               </a>

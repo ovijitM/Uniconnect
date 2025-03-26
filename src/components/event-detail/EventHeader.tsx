@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { CalendarIcon, MapPinIcon, UsersIcon, TagIcon, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -29,16 +29,24 @@ const EventHeader: React.FC<EventHeaderProps> = ({
   organizerName,
   organizerUniversity
 }) => {
-  const formattedDate = format(new Date(date), 'EEEE, MMMM d, yyyy h:mm a');
+  // Safely parse the date, handle invalid dates gracefully
+  let formattedDate = '';
+  try {
+    const parsedDate = parseISO(date);
+    formattedDate = format(parsedDate, 'EEEE, MMMM d, yyyy h:mm a');
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    formattedDate = 'Date not available';
+  }
 
   return (
     <div className="mb-8">
       <div className="flex flex-wrap gap-2 mb-3">
         <Badge variant="outline" className="capitalize">
-          {category}
+          {category || 'Uncategorized'}
         </Badge>
         {visibility === 'university_only' && (
-          <Badge variant="outline" className="flex items-center gap-1 bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-800 dark:text-yellow-300">
+          <Badge variant="outline" className="flex items-center gap-1 bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
             <Lock className="h-3 w-3" />
             <span>{organizerUniversity || 'University'} Only</span>
           </Badge>

@@ -40,7 +40,7 @@ const EventDetailPage: React.FC = () => {
     );
   }
 
-  // Fix the type error: Check if user exists and if the event visibility is restricted
+  // Check if user exists and if the event visibility is restricted
   const isUniversityRestricted = event.visibility === 'university_only' && !canAccess && user !== null;
 
   return (
@@ -87,6 +87,11 @@ const EventDetailPage: React.FC = () => {
               organizer={event.organizer}
             />
           )}
+          
+          <div className="glass-panel rounded-xl p-6 my-6">
+            <h2 className="text-2xl font-semibold mb-4">About This Event</h2>
+            <p className="text-muted-foreground whitespace-pre-line">{event.description}</p>
+          </div>
           
           <EventThemeAndPrizes
             theme={event.theme}
