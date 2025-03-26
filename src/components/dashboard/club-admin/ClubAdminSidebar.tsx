@@ -32,7 +32,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const content = (
     <>
       {icon}
-      {title}
+      <span className="ml-2">{title}</span>
     </>
   );
 
@@ -40,8 +40,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     <Button
       variant={active ? 'secondary' : 'ghost'}
       className={cn(
-        'w-full justify-start',
-        active ? 'bg-muted hover:bg-muted' : 'hover:bg-transparent hover:underline',
+        'w-full justify-start text-sm h-10 font-medium',
+        active ? 'bg-secondary/80 text-secondary-foreground' : 'text-muted-foreground hover:text-foreground',
         disabled && 'opacity-50 cursor-not-allowed hover:bg-transparent hover:no-underline'
       )}
       disabled={disabled}
@@ -63,45 +63,48 @@ const ClubAdminSidebar: React.FC = () => {
   const pathname = location.pathname;
 
   return (
-    <div className="pb-12 w-full">
+    <div className="pb-12 w-64 border-r border-border/40 h-full bg-background/95">
       <div className="space-y-4 py-4">
         <div className="px-4 py-2">
-          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
+          <h2 className="mb-4 px-2 text-lg font-semibold tracking-tight">
             Club Admin Dashboard
           </h2>
           <div className="space-y-1">
             <SidebarItem
               href="/club-admin-dashboard"
-              icon={<Gauge className="mr-2 h-4 w-4" />}
+              icon={<Gauge className="h-4 w-4" />}
               title="Overview"
               active={pathname === '/club-admin-dashboard'}
             />
             <SidebarItem
-              icon={<Building2 className="mr-2 h-4 w-4" />}
+              href="/club-admin-dashboard/clubs"
+              icon={<Building2 className="h-4 w-4" />}
               title="My Clubs"
               active={pathname.includes('/clubs') && !pathname.includes('/create-club')}
-              disabled={true}
             />
             <SidebarItem
               href="/club-admin-dashboard/create-club-new"
-              icon={<PlusCircle className="mr-2 h-4 w-4" />}
+              icon={<PlusCircle className="h-4 w-4" />}
               title="Create Club"
               active={pathname === '/club-admin-dashboard/create-club-new'}
             />
             <SidebarItem
-              icon={<Calendar className="mr-2 h-4 w-4" />}
+              href="/club-admin-dashboard/events"
+              icon={<Calendar className="h-4 w-4" />}
               title="Events"
-              disabled={true}
+              active={pathname.includes('/events')}
             />
             <SidebarItem
-              icon={<Users className="mr-2 h-4 w-4" />}
+              href="/club-admin-dashboard/members"
+              icon={<Users className="h-4 w-4" />}
               title="Members"
-              disabled={true}
+              active={pathname.includes('/members')}
             />
             <SidebarItem
-              icon={<UserCheck className="mr-2 h-4 w-4" />}
+              href="/club-admin-dashboard/attendance"
+              icon={<UserCheck className="h-4 w-4" />}
               title="Attendance"
-              disabled={true}
+              active={pathname.includes('/attendance')}
             />
           </div>
         </div>
@@ -109,13 +112,13 @@ const ClubAdminSidebar: React.FC = () => {
           <div className="space-y-1">
             <SidebarItem
               href="/club-admin-dashboard/profile"
-              icon={<Settings className="mr-2 h-4 w-4" />}
+              icon={<Settings className="h-4 w-4" />}
               title="Profile Settings"
               active={pathname.includes('/profile')}
             />
             <SidebarItem
               href="/"
-              icon={<Home className="mr-2 h-4 w-4" />}
+              icon={<Home className="h-4 w-4" />}
               title="Back to Home"
               active={false}
             />

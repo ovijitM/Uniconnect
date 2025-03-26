@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
+import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
 
 interface ClubDialogFooterProps {
   activeTab: string;
@@ -22,35 +23,53 @@ const ClubDialogFooter: React.FC<ClubDialogFooterProps> = ({
   isSubmitting = false
 }) => {
   return (
-    <DialogFooter className="flex justify-between items-center">
-      {activeTab !== 'basic' && (
-        <Button variant="outline" onClick={onBack} disabled={isSubmitting}>
-          Back
-        </Button>
-      )}
+    <DialogFooter className="flex justify-between items-center border-t pt-4 mt-2">
+      <div>
+        {activeTab !== 'basic' && (
+          <Button 
+            variant="outline" 
+            onClick={onBack} 
+            disabled={isSubmitting}
+            className="gap-1"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back
+          </Button>
+        )}
+      </div>
       
-      <div></div> {/* Spacer */}
-      
-      {activeTab !== 'documents' ? (
-        <Button variant="default" onClick={onNext} disabled={isSubmitting}>
-          Next
-        </Button>
-      ) : (
-        <Button 
-          variant="default" 
-          onClick={onSubmit} 
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
-              <Spinner className="mr-2 h-4 w-4" />
-              Submitting...
-            </>
-          ) : (
-            buttonText
-          )}
-        </Button>
-      )}
+      <div>
+        {activeTab !== 'documents' ? (
+          <Button 
+            variant="default" 
+            onClick={onNext} 
+            disabled={isSubmitting}
+            className="gap-1"
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button 
+            variant="default" 
+            onClick={onSubmit} 
+            disabled={isSubmitting}
+            className="gap-2 min-w-28"
+          >
+            {isSubmitting ? (
+              <>
+                <Spinner className="h-4 w-4" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                {buttonText}
+              </>
+            )}
+          </Button>
+        )}
+      </div>
     </DialogFooter>
   );
 };
