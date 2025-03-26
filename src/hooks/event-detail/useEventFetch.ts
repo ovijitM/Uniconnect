@@ -16,6 +16,7 @@ export const useEventFetch = (eventId: string | undefined) => {
       
       try {
         setIsLoading(true);
+        console.log('Fetching event data for ID:', eventId);
         
         // Fetch event details with all fields
         const { data: eventData, error: eventError } = await supabase
@@ -31,7 +32,6 @@ export const useEventFetch = (eventId: string | undefined) => {
             status,
             visibility,
             max_participants,
-            club_id,
             event_participants(count),
             event_type,
             tagline,
@@ -56,17 +56,25 @@ export const useEventFetch = (eventId: string | undefined) => {
             contact_email,
             community_link,
             event_website,
-            event_hashtag
+            event_hashtag,
+            club_id
           `)
           .eq('id', eventId)
           .maybeSingle();
         
-        if (eventError) throw eventError;
+        if (eventError) {
+          console.error('Error fetching event data:', eventError);
+          throw eventError;
+        }
+        
         if (!eventData) {
+          console.log('No event data found for ID:', eventId);
           setEvent(null);
           setIsLoading(false);
           return;
         }
+        
+        console.log('Event data fetched:', eventData);
         
         // Fetch club details using club_id
         const { data: clubData, error: clubError } = await supabase
@@ -83,9 +91,16 @@ export const useEventFetch = (eventId: string | undefined) => {
           .eq('id', eventData.club_id)
           .maybeSingle();
         
-        if (clubError) throw clubError;
+        if (clubError) {
+          console.error('Error fetching club data:', clubError);
+          throw clubError;
+        }
+        
         if (!clubData) {
-          setEvent(null);
+          console.error('No club data found for club_id:', eventData.club_id);
+          // We can still proceed with the event data but without club info
+          const partialEvent = formatEventData(eventData, null);
+          setEvent(partialEvent);
           setIsLoading(false);
           return;
         }
@@ -106,25 +121,33 @@ export const useEventFetch = (eventId: string | undefined) => {
           `)
           .eq('event_id', eventId);
         
-        if (collaboratorsError) throw collaboratorsError;
+        if (collaboratorsError) {
+          console.error('Error fetching collaborators:', collaboratorsError);
+          // We can still proceed without collaborators
+        }
         
         // Format the event data using the utility function
         const formattedEvent = formatEventData(eventData, clubData);
         
-        // Add collaborators to the event
+        // Add collaborators to the event if any
         if (collaboratorsData && collaboratorsData.length > 0) {
           formattedEvent.collaborators = collaboratorsData.map(item => {
             // Handle different possible formats of club_members count
             let memberCount = 0;
             
-            if (Array.isArray(item.club.club_members)) {
-              if (item.club.club_members.length > 0 && typeof item.club.club_members[0] === 'object') {
-                memberCount = item.club.club_members[0]?.count || 0;
-              } else {
-                memberCount = item.club.club_members.length;
+            if (item.club.club_members) {
+              if (Array.isArray(item.club.club_members)) {
+                if (item.club.club_members.length > 0) {
+                  const countData = item.club.club_members[0];
+                  if (typeof countData === 'object' && countData !== null) {
+                    memberCount = countData.count || 0;
+                  } else if (typeof countData === 'number') {
+                    memberCount = countData;
+                  }
+                }
+              } else if (typeof item.club.club_members === 'object') {
+                memberCount = (item.club.club_members as any)?.count || 0;
               }
-            } else if (typeof item.club.club_members === 'object') {
-              memberCount = (item.club.club_members as any)?.count || 0;
             }
               
             return {
@@ -141,7 +164,7 @@ export const useEventFetch = (eventId: string | undefined) => {
         
         setEvent(formattedEvent);
       } catch (error) {
-        console.error('Error fetching event data:', error);
+        console.error('Error in fetchEventData:', error);
         toast({
           title: 'Error fetching event',
           description: 'Failed to load event details. Please try again later.',

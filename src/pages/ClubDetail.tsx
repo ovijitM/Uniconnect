@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -17,6 +16,9 @@ import CollaborationRequestDialog from '@/components/club-detail/CollaborationRe
 import { Separator } from '@/components/ui/separator';
 import { useCollaborations } from '@/hooks/club-admin/useCollaborations';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const ClubDetailPage: React.FC = () => {
   const { clubId } = useParams<{ clubId: string }>();
@@ -34,17 +36,6 @@ const ClubDetailPage: React.FC = () => {
     handleJoinClub,
     error
   } = useClubDetail();
-
-  useEffect(() => {
-    if (error) {
-      console.error("Error loading club detail:", error);
-      toast({
-        title: 'Error loading club',
-        description: 'There was an error loading the club details. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  }, [error, toast]);
 
   const {
     incomingRequests,
@@ -64,8 +55,43 @@ const ClubDetailPage: React.FC = () => {
     error 
   });
 
+  const handleRetry = () => {
+    // Force page refresh
+    window.location.reload();
+  };
+
   if (isLoading) {
     return <ClubDetailSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="mb-6">
+          <Link to="/clubs" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Clubs
+          </Link>
+        </div>
+        
+        <Alert variant="destructive" className="my-8">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error loading club</AlertTitle>
+          <AlertDescription className="mt-2">
+            There was an error loading the club details. Please try again.
+          </AlertDescription>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="mt-4"
+            onClick={handleRetry}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Try again
+          </Button>
+        </Alert>
+      </Layout>
+    );
   }
 
   if (!club) {

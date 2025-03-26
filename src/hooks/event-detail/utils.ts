@@ -1,7 +1,49 @@
 
 import { Event } from '@/types';
 
-export const formatEventData = (eventData: any, clubData: any): Event => {
+export const formatEventData = (eventData: any, clubData: any | null): Event => {
+  // Extract participant count from event_participants
+  let participants = 0;
+  if (eventData.event_participants) {
+    if (Array.isArray(eventData.event_participants) && eventData.event_participants.length > 0) {
+      const countData = eventData.event_participants[0];
+      
+      // Handle different count formats
+      if (typeof countData === 'number') {
+        participants = countData;
+      } else if (typeof countData === 'string') {
+        participants = parseInt(countData, 10) || 0;
+      } else if (countData && typeof countData === 'object') {
+        const rawCount = countData.count;
+        if (typeof rawCount === 'number') {
+          participants = rawCount;
+        } else if (typeof rawCount === 'string') {
+          participants = parseInt(rawCount, 10) || 0;
+        }
+      }
+    }
+  }
+  
+  // Create a default or minimal organizer object if club data is missing
+  const organizer = clubData ? {
+    id: clubData.id,
+    name: clubData.name,
+    description: clubData.description,
+    logoUrl: clubData.logo_url,
+    category: clubData.category,
+    university: clubData.university,
+    memberCount: clubData.club_members?.[0]?.count || 0,
+    events: []
+  } : {
+    id: eventData.club_id || 'unknown',
+    name: 'Unknown Organizer',
+    description: 'Information not available',
+    logoUrl: null,
+    category: 'Unknown',
+    memberCount: 0,
+    events: []
+  };
+  
   return {
     id: eventData.id,
     title: eventData.title,
@@ -9,11 +51,14 @@ export const formatEventData = (eventData: any, clubData: any): Event => {
     date: eventData.date,
     location: eventData.location,
     imageUrl: eventData.image_url,
+    organizer: organizer,
     category: eventData.category,
-    status: eventData.status,
-    visibility: eventData.visibility as 'public' | 'university_only',
-    participants: eventData.event_participants?.[0]?.count || 0,
+    status: eventData.status || 'upcoming',
+    participants: participants,
     maxParticipants: eventData.max_participants || undefined,
+    
+    // Additional fields
+    visibility: eventData.visibility || 'public',
     eventType: eventData.event_type,
     tagline: eventData.tagline,
     registrationDeadline: eventData.registration_deadline,
@@ -37,16 +82,6 @@ export const formatEventData = (eventData: any, clubData: any): Event => {
     contactEmail: eventData.contact_email,
     communityLink: eventData.community_link,
     eventWebsite: eventData.event_website,
-    eventHashtag: eventData.event_hashtag,
-    organizer: {
-      id: clubData.id,
-      name: clubData.name,
-      description: clubData.description,
-      logoUrl: clubData.logo_url,
-      category: clubData.category,
-      university: clubData.university,
-      memberCount: clubData.club_members?.[0]?.count || 0,
-      events: []
-    }
+    eventHashtag: eventData.event_hashtag
   };
 };

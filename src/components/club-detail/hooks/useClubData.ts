@@ -62,10 +62,11 @@ export const useClubData = () => {
             facebook_link,
             instagram_link,
             twitter_link,
-            discord_link
+            discord_link,
+            university
           `)
           .eq('id', clubId)
-          .single();
+          .maybeSingle();
         
         if (clubError) {
           console.error('Error fetching club data:', clubError);
@@ -132,7 +133,7 @@ export const useClubData = () => {
         
         console.log(`Fetched ${eventsData?.length || 0} events for club`);
         
-        // Fetch related clubs (same category) with all fields
+        // Fetch related clubs (same category)
         console.log("Fetching related clubs with category:", clubData.category);
         const { data: relatedData, error: relatedError } = await supabase
           .from('clubs')
@@ -145,7 +146,8 @@ export const useClubData = () => {
             status,
             club_members(count),
             tagline,
-            established_year
+            established_year,
+            university
           `)
           .eq('category', clubData.category)
           .eq('status', 'approved')
@@ -188,7 +190,8 @@ export const useClubData = () => {
               memberCount: memberCount,
               events: [],
               tagline: club.tagline,
-              establishedYear: club.established_year
+              establishedYear: club.established_year,
+              university: club.university
             };
           });
           setRelatedClubs(formattedRelatedClubs);
@@ -248,6 +251,7 @@ export const useClubData = () => {
             instagramLink: clubData.instagram_link,
             twitterLink: clubData.twitter_link,
             discordLink: clubData.discord_link,
+            university: clubData.university,
             
             // Leadership fields using the consolidated columns
             presidentChairName: clubData.president_chair_name || '',
@@ -334,8 +338,8 @@ export const useClubData = () => {
         console.error('Error in fetchClubData:', error);
         setError(error instanceof Error ? error : new Error(String(error)));
         toast({
-          title: 'Error fetching club data',
-          description: 'Failed to load club details. Please try again later.',
+          title: 'Error loading club',
+          description: 'There was an error loading the club details. Please try again.',
           variant: 'destructive',
         });
       } finally {
