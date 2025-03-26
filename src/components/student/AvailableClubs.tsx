@@ -19,7 +19,7 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
   isLoading, 
   onJoinClub 
 }) => {
-  // Filter out clubs that the student has already joined is now done at the parent component
+  // The filtering is now done in the parent component
   const availableClubs = clubs;
   
   // Add local state to track which club is being joined
@@ -31,6 +31,11 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
     setJoiningClubId(clubId);
     try {
       await onJoinClub(clubId);
+      toast({
+        title: "Success",
+        description: "You have successfully joined the club",
+        variant: "default",
+      });
     } catch (error: any) {
       console.error('Error in handleJoinClub:', error);
       toast({

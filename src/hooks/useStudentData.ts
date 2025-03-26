@@ -19,8 +19,8 @@ export const useStudentData = () => {
     clubs, 
     joinedClubs, 
     fetchClubs, 
-    joinClub, 
-    leaveClub,
+    joinClub: joinClubAction, 
+    leaveClub: leaveClubAction,
     isLoadingClubs
   } = useStudentClubs(user?.id, fetchData);
   
@@ -43,6 +43,20 @@ export const useStudentData = () => {
       setIsLoading(false);
     }
   }
+  
+  // Wrapper for joinClub to ensure state is refreshed
+  const joinClub = async (clubId: string) => {
+    await joinClubAction(clubId);
+    // Refresh the data after joining a club
+    await fetchClubs(userUniversity);
+  };
+  
+  // Wrapper for leaveClub to ensure state is refreshed
+  const leaveClub = async (clubId: string) => {
+    await leaveClubAction(clubId);
+    // Refresh the data after leaving a club
+    await fetchClubs(userUniversity);
+  };
 
   useEffect(() => {
     if (user) {

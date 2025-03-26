@@ -26,14 +26,22 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       
       const clubIds = membershipData?.map(item => item.club_id) || [];
       
-      // Fetch detailed club information
-      let { data: clubsData, error: clubsError } = await supabase
+      // Fetch detailed club information for joined clubs
+      let joinedClubsQuery = supabase
         .from('clubs')
-        .select('*')
-        .in('id', clubIds.length ? clubIds : ['00000000-0000-0000-0000-000000000000']); // Use a dummy ID if no clubs
+        .select('*');
+        
+      if (clubIds.length > 0) {
+        joinedClubsQuery = joinedClubsQuery.in('id', clubIds);
+      } else {
+        // If no clubs joined, use a dummy ID to return empty result
+        joinedClubsQuery = joinedClubsQuery.in('id', ['00000000-0000-0000-0000-000000000000']);
+      }
+      
+      let { data: joinedClubsData, error: joinedClubsError } = await joinedClubsQuery;
           
-      if (clubsError) throw clubsError;
-      setJoinedClubs(clubsData || []);
+      if (joinedClubsError) throw joinedClubsError;
+      setJoinedClubs(joinedClubsData || []);
       
       // Fetch all available clubs
       let clubsQuery = supabase
@@ -121,12 +129,6 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
         }
         return;
       }
-      
-      toast({
-        title: 'Success',
-        description: 'Successfully joined the club',
-        variant: 'default',
-      });
       
       // Update the local state
       const club = clubs.find(c => c.id === clubId);
