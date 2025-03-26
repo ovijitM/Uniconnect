@@ -87,18 +87,11 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
   if (adminClubs.length === 0 && !isLoading && currentView !== 'profile') {
     return (
       <NoClubsView 
-        handleCreateClubClick={handleCreateClubClick}
-        isClubDialogOpen={isClubDialogOpen}
-        setIsClubDialogOpen={setIsClubDialogOpen}
+        isDialogOpen={isClubDialogOpen}
+        setIsDialogOpen={setIsClubDialogOpen}
         clubFormData={clubFormData}
         handleClubInputChange={handleClubInputChange}
         handleCreateClub={handleCreateClub}
-        handleClubFileUpload={handleClubFileUpload}
-        isLoadingProfile={isLoadingProfile || false}
-        profileError={profileError}
-        handleRetryProfileFetch={handleRetryProfileFetch}
-        hasExistingClub={hasExistingClub}
-        isCheckingClubs={isCheckingClubs}
       />
     );
   }
@@ -109,30 +102,25 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
         isClubDialogOpen={isClubDialogOpen}
         setIsClubDialogOpen={setIsClubDialogOpen}
         clubFormData={clubFormData}
-        handleClubInputChange={handleClubInputChange}
-        handleCreateClub={handleCreateClub}
+        onClubInputChange={handleClubInputChange}
+        onCreateClub={handleCreateClub}
         isEventDialogOpen={isEventDialogOpen}
         setIsEventDialogOpen={setIsEventDialogOpen}
         eventFormData={eventFormData}
         clubs={adminClubs}
-        handleEventInputChange={handleEventInputChange}
-        handleCreateEvent={handleCreateEvent}
-        handleClubFileUpload={handleClubFileUpload}
-        handleEventFileUpload={handleEventFileUpload}
+        onEventInputChange={handleEventInputChange}
+        onCreateEvent={handleCreateEvent}
+        onClubFileUpload={handleClubFileUpload}
+        onEventFileUpload={handleEventFileUpload}
         hasExistingClub={hasExistingClub}
       />
 
       {currentView === 'overview' && (
         <QuickViewSection
-          statsData={{
-            activeEventCount,
-            pastEventCount,
-            totalMembersCount,
-            averageAttendance
-          }}
-          isLoading={isLoading}
+          events={clubEvents.slice(0, 5)}
           clubs={adminClubs}
-          recentEvents={clubEvents.slice(0, 5)}
+          isLoading={isLoading}
+          onEditEvent={handleEditEvent}
           onViewEvent={handleViewEvent}
         />
       )}
@@ -143,8 +131,9 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
           isLoading={isLoading}
           onViewEvent={handleViewEvent}
           onEditEvent={handleEditEvent}
-          handleRefreshAfterDelete={handleRefreshAfterDelete}
-          handleCreateEventClick={() => setIsEventDialogOpen(true)}
+          onCreateEvent={() => setIsEventDialogOpen(true)}
+          onDeleteEvent={handleRefreshAfterDelete}
+          onManageAttendees={selectEventForAttendeeManagement}
         />
       )}
 
@@ -152,7 +141,7 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
         <ClubsSection
           clubs={adminClubs}
           isLoading={isLoading}
-          handleRefreshData={fetchClubAdminData}
+          onRefresh={fetchClubAdminData}
         />
       )}
 
@@ -160,7 +149,6 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
         <MembersSection
           members={clubMembers}
           isLoading={isLoading}
-          handleRefreshData={fetchClubAdminData}
         />
       )}
 
@@ -168,15 +156,13 @@ const ClubAdminDashboardContent: React.FC<ClubAdminDashboardContentProps> = ({
         <AttendeeSection
           eventId={selectedEventId}
           eventTitle={selectedEventTitle || 'Event'}
-          handleSelectEvent={selectEventForAttendeeManagement}
-          events={clubEvents}
         />
       )}
 
       {currentView === 'profile' && (
         <ClubProfileSettings 
           club={adminClubs[0]} 
-          handleRefreshData={fetchClubAdminData} 
+          onRefresh={fetchClubAdminData} 
           isLoading={isLoading} 
         />
       )}
