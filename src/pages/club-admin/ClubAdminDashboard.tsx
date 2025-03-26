@@ -5,6 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useStudentProfile } from '@/hooks/student/useStudentProfile';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // Components
 import DashboardLayout from '@/components/dashboard/shared/DashboardLayout';
@@ -12,6 +15,8 @@ import ClubAdminSidebar from '@/components/dashboard/club-admin/ClubAdminSidebar
 import ClubAdminDashboardActions from '@/components/dashboard/club-admin/dashboard/ClubAdminDashboardActions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 
 const ClubAdminDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -59,7 +64,40 @@ const ClubAdminDashboard: React.FC = () => {
           userName={user.name}
         />
         
-        <div className="mt-6">
+        <div className="mt-6 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Welcome to Your Club Admin Dashboard</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-muted-foreground">
+                This dashboard allows you to manage your university clubs. Currently, you can access your profile settings and create new clubs.
+              </p>
+              
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertTitle>Get Started</AlertTitle>
+                <AlertDescription>
+                  Start by creating a new club or updating your profile information.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button asChild>
+                  <Link to="/club-admin-dashboard/create-club-new">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Create New Club
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link to="/club-admin-dashboard/profile">
+                    Update Profile
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Personal Information</CardTitle>

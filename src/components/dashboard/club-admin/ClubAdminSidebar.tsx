@@ -7,15 +7,19 @@ import {
   Home, 
   PlusCircle, 
   Settings,
+  Users,
+  Calendar,
+  UserCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 interface SidebarItemProps {
-  href: string;
+  href?: string;
   icon: React.ReactNode;
   title: string;
   active?: boolean;
+  disabled?: boolean;
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
@@ -23,20 +27,33 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   icon,
   title,
   active,
+  disabled
 }) => {
+  const content = (
+    <>
+      {icon}
+      {title}
+    </>
+  );
+
   return (
     <Button
       variant={active ? 'secondary' : 'ghost'}
       className={cn(
         'w-full justify-start',
-        active ? 'bg-muted hover:bg-muted' : 'hover:bg-transparent hover:underline'
+        active ? 'bg-muted hover:bg-muted' : 'hover:bg-transparent hover:underline',
+        disabled && 'opacity-50 cursor-not-allowed hover:bg-transparent hover:no-underline'
       )}
-      asChild
+      disabled={disabled}
+      asChild={!disabled && !!href}
     >
-      <Link to={href}>
-        {icon}
-        {title}
-      </Link>
+      {!disabled && href ? (
+        <Link to={href}>
+          {content}
+        </Link>
+      ) : (
+        <div>{content}</div>
+      )}
     </Button>
   );
 };
@@ -60,22 +77,31 @@ const ClubAdminSidebar: React.FC = () => {
               active={pathname === '/club-admin-dashboard'}
             />
             <SidebarItem
-              href="/club-admin-dashboard/clubs"
               icon={<Building2 className="mr-2 h-4 w-4" />}
               title="My Clubs"
               active={pathname.includes('/clubs') && !pathname.includes('/create-club')}
-            />
-            <SidebarItem
-              href="/club-admin-dashboard/create-club"
-              icon={<PlusCircle className="mr-2 h-4 w-4" />}
-              title="Create Club (Dialog)"
-              active={pathname === '/club-admin-dashboard/create-club'}
+              disabled={true}
             />
             <SidebarItem
               href="/club-admin-dashboard/create-club-new"
               icon={<PlusCircle className="mr-2 h-4 w-4" />}
-              title="Create Club (Full Form)"
+              title="Create Club"
               active={pathname === '/club-admin-dashboard/create-club-new'}
+            />
+            <SidebarItem
+              icon={<Calendar className="mr-2 h-4 w-4" />}
+              title="Events"
+              disabled={true}
+            />
+            <SidebarItem
+              icon={<Users className="mr-2 h-4 w-4" />}
+              title="Members"
+              disabled={true}
+            />
+            <SidebarItem
+              icon={<UserCheck className="mr-2 h-4 w-4" />}
+              title="Attendance"
+              disabled={true}
             />
           </div>
         </div>
