@@ -50,29 +50,42 @@ export const insertClubData = async (
     
     console.log('Prepared club data for insertion:', clubData);
     
-    // Use the insert_club function to insert the club and make the user an admin
-    const { data, error } = await supabase.rpc('insert_club', {
-      name: clubData.name,
-      description: clubData.description,
-      category: clubData.category,
-      university: clubData.university,
-      university_id: clubData.university_id,
-      logo_url: clubData.logo_url,
-      club_admin_id: userId
-    });
-    
-    if (error) {
-      console.error('Error inserting club through RPC:', error);
-      throw error;
+    // Check if the user already has an admin relationship for a club in this university
+    const { data: existingClubs, error: checkError } = await supabase
+      .from('clubs')
+      .select('id')
+      .eq('university_id', universityId);
+      
+    if (checkError) {
+      console.error('Error checking existing clubs:', checkError);
+    } else if (existingClubs && existingClubs.length > 0) {
+      console.log(`Found ${existingClubs.length} existing clubs at this university`);
+      
+      const clubIds = existingClubs.map(club => club.id);
+      
+      const { data: existingAdminRoles, error: adminCheckError } = await supabase
+        .from('club_admins')
+        .select('club_id')
+        .eq('user_id', userId)
+        .in('club_id', clubIds);
+        
+      if (adminCheckError) {
+        console.error('Error checking existing admin roles:', adminCheckError);
+      } else if (existingAdminRoles && existingAdminRoles.length > 0) {
+        console.log('User already has admin roles for clubs at this university:', existingAdminRoles);
+      }
     }
     
-    const clubId = data;
-    console.log('Club created with ID:', clubId);
-    
-    // Update the club with the additional fields
-    const { error: updateError } = await supabase
+    // Create the club
+    const { data, error } = await supabase
       .from('clubs')
-      .update({
+      .insert({
+        name: clubData.name,
+        description: clubData.description,
+        category: clubData.category,
+        university: clubData.university,
+        university_id: clubData.university_id,
+        logo_url: clubData.logo_url,
         tagline: clubData.tagline,
         established_year: clubData.established_year,
         affiliation: clubData.affiliation,
@@ -94,39 +107,54 @@ export const insertClubData = async (
         twitter_link: clubData.twitter_link,
         discord_link: clubData.discord_link,
         document_url: clubData.document_url,
-        document_name: clubData.document_name
+        document_name: clubData.document_name,
+        status: 'pending'
       })
-      .eq('id', clubId);
-    
-    if (updateError) {
-      console.error('Error updating club with additional data:', updateError);
-      throw updateError;
+      .select();
+      
+    if (error) {
+      console.error('Error inserting club:', error);
+      throw error;
     }
     
-    // Check if the club_admin entry was created by the RPC function
-    const { data: adminCheck, error: adminCheckError } = await supabase
+    const clubId = data?.[0]?.id;
+    console.log('Club created with ID:', clubId);
+    
+    if (!clubId) {
+      throw new Error('Failed to get club ID after creation');
+    }
+    
+    // Check if the club_admin entry already exists
+    const { data: existingAdmin, error: checkAdminError } = await supabase
       .from('club_admins')
       .select('*')
       .eq('club_id', clubId)
-      .eq('user_id', userId);
-    
-    if (adminCheckError) {
-      console.error('Error checking club admin status:', adminCheckError);
-    } else {
-      console.log('Club admin check result:', adminCheck);
+      .eq('user_id', userId)
+      .single();
       
-      // If the club_admin entry doesn't exist, create it manually
-      if (!adminCheck || adminCheck.length === 0) {
-        console.log('Creating club admin relationship manually:', { club_id: clubId, user_id: userId });
-        const { error: adminError } = await supabase
-          .from('club_admins')
-          .insert({ club_id: clubId, user_id: userId });
+    if (checkAdminError && checkAdminError.code !== 'PGRST116') { // PGRST116 means no rows returned
+      console.error('Error checking for existing admin relationship:', checkAdminError);
+    }
+    
+    // Only create the club_admin relationship if it doesn't already exist
+    if (!existingAdmin) {
+      console.log('Creating club admin relationship for club ID:', clubId, 'and user ID:', userId);
+      
+      const { error: adminError } = await supabase
+        .from('club_admins')
+        .insert({ club_id: clubId, user_id: userId });
+      
+      if (adminError) {
+        console.error('Error creating club admin relationship:', adminError);
         
-        if (adminError) {
-          console.error('Error creating club admin relationship:', adminError);
+        if (adminError.code === '23505') { // Duplicate key violation
+          console.log('Admin relationship already exists (duplicate key error)');
+        } else {
           throw adminError;
         }
       }
+    } else {
+      console.log('Admin relationship already exists, no need to create');
     }
     
     // Get the complete club data to return
