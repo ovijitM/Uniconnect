@@ -53,6 +53,22 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({ formData, onInputChange }) 
           required
         />
       </div>
+
+      {formData.university && (
+        <div className="space-y-2">
+          <Label htmlFor="university">University</Label>
+          <Input
+            id="university"
+            name="university"
+            value={formData.university}
+            readOnly
+            className="bg-muted cursor-not-allowed"
+          />
+          <p className="text-xs text-muted-foreground">
+            University is automatically set from your profile
+          </p>
+        </div>
+      )}
       
       <div className="space-y-2">
         <Label htmlFor="description">Description *</Label>

@@ -33,7 +33,8 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       console.log("Starting club creation process...");
       setIsSubmitting(true);
 
-      console.log('Validating club data:', clubFormData);
+      // Log form data for debugging
+      console.log('Club form data before validation:', clubFormData);
       
       // Check if university is provided
       if (!clubFormData.university) {

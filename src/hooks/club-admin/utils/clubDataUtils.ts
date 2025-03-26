@@ -7,6 +7,14 @@ export const insertClubData = async (
   clubFormData: ClubFormData, 
   universityId: string
 ) => {
+  // Log the data being inserted
+  console.log("Inserting club data:", {
+    name: clubFormData.name,
+    description: clubFormData.description,
+    university: clubFormData.university,
+    universityId: universityId
+  });
+
   // Transform array and JSON fields
   const regularEvents = parseArrayField(clubFormData.regularEvents);
   const signatureEvents = parseArrayField(clubFormData.signatureEvents);
@@ -50,12 +58,15 @@ export const insertClubData = async (
     .select();
   
   if (error) {
+    console.error("Database error creating club:", error);
     throw new Error(`Failed to create club: ${error.message}`);
   }
   
   if (!data || data.length === 0) {
+    console.error("No club data returned after creation");
     throw new Error('No club data returned after creation');
   }
   
+  console.log("Successfully created club data:", data[0]);
   return data[0];
 };

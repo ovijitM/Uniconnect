@@ -36,9 +36,11 @@ export const useClubCreation = () => {
       // Find or create university
       let universityId;
       try {
-        universityId = await findOrCreateUniversity(clubFormData.university, clubFormData.universityId);
+        // Use the provided universityId if available, otherwise find or create
+        universityId = clubFormData.universityId || await findOrCreateUniversity(clubFormData.university);
         console.log("Creating club with university:", clubFormData.university, "and universityId:", universityId);
       } catch (error: any) {
+        console.error("Error processing university:", error);
         toast({
           title: 'Database Error',
           description: error.message || 'Failed to process university information. Please try again.',
@@ -64,6 +66,7 @@ export const useClubCreation = () => {
 
       // Add the current user as an admin of the club
       try {
+        console.log("Adding user as club admin:", userId, "for club:", clubData.id);
         const { error } = await supabase
           .from('club_admins')
           .insert({
@@ -71,7 +74,10 @@ export const useClubCreation = () => {
             user_id: userId
           });
           
-        if (error) throw error;
+        if (error) {
+          console.error("Error adding club admin:", error);
+          throw error;
+        }
       } catch (error: any) {
         console.error('Error adding club admin:', error);
         // If we fail to add admin, we should delete the club to avoid orphaned clubs
