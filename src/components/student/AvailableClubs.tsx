@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Tag } from 'lucide-react';
+import { Users, Tag, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface AvailableClubsProps {
@@ -20,6 +20,18 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
 }) => {
   // Filter out clubs that the student has already joined
   const availableClubs = clubs.filter(club => !joinedClubIds.includes(club.id));
+  
+  // Add local state to track which club is being joined
+  const [joiningClubId, setJoiningClubId] = useState<string | null>(null);
+  
+  const handleJoinClub = async (clubId: string) => {
+    setJoiningClubId(clubId);
+    try {
+      await onJoinClub(clubId);
+    } finally {
+      setJoiningClubId(null);
+    }
+  };
   
   return (
     <Card>
@@ -56,9 +68,15 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => onJoinClub(club.id)}
+                  onClick={() => handleJoinClub(club.id)}
+                  disabled={joiningClubId === club.id}
                 >
-                  Join
+                  {joiningClubId === club.id ? (
+                    <>
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      Joining...
+                    </>
+                  ) : 'Join'}
                 </Button>
               </div>
             ))}

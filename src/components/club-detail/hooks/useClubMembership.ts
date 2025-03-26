@@ -20,17 +20,21 @@ export const useClubMembership = (
     async function checkMembership() {
       if (!user || !clubId) return;
       
-      const { data: membershipData, error: membershipError } = await supabase
-        .from('club_members')
-        .select('*')
-        .eq('club_id', clubId)
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      setIsMember(!!membershipData);
-      
-      if (membershipError) {
-        console.error('Error checking membership:', membershipError);
+      try {
+        const { data: membershipData, error: membershipError } = await supabase
+          .from('club_members')
+          .select('*')
+          .eq('club_id', clubId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        setIsMember(!!membershipData);
+        
+        if (membershipError && membershipError.code !== 'PGRST116') { // PGRST116 means no rows returned
+          console.error('Error checking membership:', membershipError);
+        }
+      } catch (error) {
+        console.error('Error in checkMembership:', error);
       }
     }
     
@@ -48,7 +52,14 @@ export const useClubMembership = (
         return;
       }
       
-      if (!clubId) return;
+      if (!clubId) {
+        toast({
+          title: "Club not found",
+          description: "Unable to find club information",
+          variant: "destructive",
+        });
+        return;
+      }
       
       setIsJoining(true);
       
@@ -59,9 +70,34 @@ export const useClubMembership = (
           description: "This club is not approved yet",
           variant: "destructive",
         });
+        setIsJoining(false);
         return;
       }
       
+      // Check if already a member
+      const { data: existing, error: checkError } = await supabase
+        .from('club_members')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('club_id', clubId)
+        .maybeSingle();
+      
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
+        console.error('Error checking existing membership:', checkError);
+        throw checkError;
+      }
+      
+      if (existing) {
+        toast({
+          title: "Already a member",
+          description: "You're already a member of this club",
+          variant: "default",
+        });
+        setIsJoining(false);
+        return;
+      }
+      
+      // Join the club
       const { error } = await supabase
         .from('club_members')
         .insert({
@@ -70,6 +106,8 @@ export const useClubMembership = (
         });
       
       if (error) {
+        console.error('Error joining club:', error);
+        
         if (error.code === '23505') {
           // Duplicate key error - user is already a member
           toast({
@@ -98,11 +136,11 @@ export const useClubMembership = (
           variant: "default",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error joining club:', error);
       toast({
         title: "Failed to join club",
-        description: "There was an error joining the club. Please try again later.",
+        description: error.message || "There was an error joining the club. Please try again later.",
         variant: "destructive",
       });
     } finally {

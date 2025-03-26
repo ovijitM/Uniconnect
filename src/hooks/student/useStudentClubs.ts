@@ -61,19 +61,28 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
   };
 
   const joinClub = async (clubId: string) => {
-    if (!userId) return;
+    if (!userId) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please log in to join clubs',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     try {
+      console.log("Attempting to join club:", clubId, "for user:", userId);
+      
       // Check if already a member
       const { data: existing, error: checkError } = await supabase
         .from('club_members')
         .select('*')
         .eq('user_id', userId)
         .eq('club_id', clubId)
-        .single();
+        .maybeSingle();
       
-      if (checkError && checkError.code !== 'PGRST116') {
-        // PGRST116 means no rows returned, which is expected if not joined
+      if (checkError) {
+        console.error('Error checking membership:', checkError);
         throw checkError;
       }
       
@@ -94,7 +103,20 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
           club_id: clubId
         });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error joining club:', error);
+        
+        if (error.code === '23505') {
+          toast({
+            title: 'Already a member',
+            description: 'You are already a member of this club',
+            variant: 'default',
+          });
+        } else {
+          throw error;
+        }
+        return;
+      }
       
       toast({
         title: 'Success',
@@ -109,11 +131,11 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       }
       
       if (onSuccess) onSuccess();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error joining club:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to join club',
+        title: 'Failed to join club',
+        description: error.message || 'An unexpected error occurred',
         variant: 'destructive',
       });
     }
