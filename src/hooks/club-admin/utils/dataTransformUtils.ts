@@ -1,4 +1,3 @@
-
 /**
  * Parses a comma-separated string into an array
  */
@@ -93,4 +92,32 @@ export const validateRequiredFields = (formData: any, requiredFields: string[]):
   }
   
   return isValid;
+};
+
+/**
+ * Safely transform form data for API submission
+ */
+export const safelyTransformArrayData = (data: string | string[] | null | undefined): string[] | null => {
+  if (!data) return null;
+  
+  if (typeof data === 'string') {
+    return parseArrayField(data);
+  }
+  
+  if (Array.isArray(data)) {
+    return data.filter(item => item && item.trim().length > 0);
+  }
+  
+  return null;
+};
+
+/**
+ * Check for network connectivity issues
+ */
+export const isNetworkError = (error: any): boolean => {
+  return (
+    error.message?.includes('Failed to fetch') || 
+    error.message?.includes('Network request failed') ||
+    error.message?.includes('The network connection was lost')
+  );
 };

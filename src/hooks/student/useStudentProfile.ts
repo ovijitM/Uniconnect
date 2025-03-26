@@ -9,23 +9,36 @@ export const useStudentProfile = (userId: string | undefined) => {
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [maxRetries] = useState(3); // Maximum retry attempts
   const { toast } = useToast();
 
   const fetchUserProfile = useCallback(async () => {
     if (!userId) return;
     
+    // Don't attempt if we've already hit the retry limit
+    if (retryCount >= maxRetries) {
+      if (!userUniversity && !userUniversityId) {
+        toast({
+          title: 'Error',
+          description: `Failed to load profile after ${maxRetries} attempts. Please try again later.`,
+          variant: 'destructive',
+        });
+      }
+      return;
+    }
+    
     setIsLoadingProfile(true);
     setError(null);
     
     try {
-      console.log(`Fetching profile for user ${userId} (attempt ${retryCount + 1})`);
+      console.log(`Fetching profile for user ${userId} (attempt ${retryCount + 1}/${maxRetries})`);
       
       // Get the user's university
       const { data: profileData, error } = await supabase
         .from('profiles')
         .select('university, university_id')
         .eq('id', userId)
-        .single();
+        .maybeSingle(); // Using maybeSingle instead of single to handle no results gracefully
         
       if (error) {
         console.error('Error fetching profile:', error);
@@ -54,44 +67,51 @@ export const useStudentProfile = (userId: string | undefined) => {
       console.error('Error in fetchUserProfile:', error);
       setError(error.message || 'Failed to load profile data');
       
-      // Show toast only on first attempt or every third retry
-      if (retryCount === 0 || retryCount % 3 === 0) {
+      // Show toast only on first and last attempt
+      if (retryCount === 0 || retryCount === maxRetries - 1) {
         toast({
           title: 'Error',
-          description: 'Failed to load profile data. Retrying...',
+          description: retryCount === maxRetries - 1 
+            ? 'Last attempt to load profile data...' 
+            : 'Failed to load profile data. Retrying...',
           variant: 'destructive',
         });
       }
       
-      // Automatically retry after a delay, with increasing backoff
-      const retryDelay = Math.min(1000 * (retryCount + 1), 5000);
-      setTimeout(() => {
-        setRetryCount(prev => prev + 1);
-      }, retryDelay);
+      // Only retry if we haven't hit the limit yet
+      if (retryCount < maxRetries - 1) {
+        // Automatically retry after a delay, with increasing backoff
+        const retryDelay = Math.min(1000 * (retryCount + 1), 5000);
+        setTimeout(() => {
+          setRetryCount(prev => prev + 1);
+        }, retryDelay);
+      }
     } finally {
       setIsLoadingProfile(false);
     }
-  }, [userId, retryCount, toast]);
+  }, [userId, retryCount, toast, maxRetries, userUniversity, userUniversityId]);
 
-  // Trigger retry when retryCount changes
+  // Trigger retry when retryCount changes, but only if not at max retries
   useEffect(() => {
-    if (retryCount > 0 && retryCount < 5) {
+    if (retryCount > 0 && retryCount < maxRetries) {
       fetchUserProfile();
-    } else if (retryCount >= 5) {
+    } else if (retryCount >= maxRetries && !userUniversity) {
       toast({
         title: 'Error',
-        description: 'Multiple attempts to load your profile have failed. Please refresh the page or contact support.',
+        description: `Multiple attempts to load your profile have failed. Please refresh the page or contact support.`,
         variant: 'destructive',
       });
     }
-  }, [retryCount, fetchUserProfile, toast]);
+  }, [retryCount, fetchUserProfile, toast, maxRetries, userUniversity]);
 
   // Initial fetch
   useEffect(() => {
     if (userId) {
+      // Reset retry count when userId changes
+      setRetryCount(0);
       fetchUserProfile();
     }
-  }, [userId, fetchUserProfile]);
+  }, [userId]); // Removing fetchUserProfile from the dependency list to avoid recursive calls
 
   const updateUserUniversity = async (university: string) => {
     if (!userId) return false;
@@ -156,17 +176,18 @@ export const useStudentProfile = (userId: string | undefined) => {
     }
   };
 
-  // Reset retry count when userId changes
-  useEffect(() => {
-    setRetryCount(0);
-  }, [userId]);
+  // Manual reset function for users to retry
+  const retryFetchProfile = () => {
+    setRetryCount(0); // Reset the counter
+    fetchUserProfile(); // Try again
+  };
 
   return {
     userUniversity,
     userUniversityId,
     isLoadingProfile,
     error,
-    fetchUserProfile,
+    fetchUserProfile: retryFetchProfile, // Replace with the retry function
     updateUserUniversity
   };
 };

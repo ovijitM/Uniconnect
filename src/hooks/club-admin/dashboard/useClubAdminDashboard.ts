@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,6 +13,7 @@ export const useClubAdminDashboard = () => {
   const location = useLocation();
   const { toast } = useToast();
   const state = location.state as { openEventDialog?: boolean } | null;
+  const [initialLoadAttempted, setInitialLoadAttempted] = useState(false);
   const { userUniversity, fetchUserProfile, isLoadingProfile, error: profileError } = useStudentProfile(user?.id);
   
   // Use the existing club admin data hook
@@ -52,11 +53,12 @@ export const useClubAdminDashboard = () => {
 
   // Fetch the user's university on initial load
   useEffect(() => {
-    if (user?.id) {
+    if (user?.id && !initialLoadAttempted) {
+      setInitialLoadAttempted(true);
       fetchUserProfile();
       checkUserHasClub();
     }
-  }, [user?.id, fetchUserProfile, checkUserHasClub]);
+  }, [user?.id, initialLoadAttempted]);
 
   // Handle opening event dialog when navigated with state
   useEffect(() => {

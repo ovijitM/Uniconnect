@@ -4,12 +4,15 @@ import { useClubMembers } from './useClubMembers';
 import { useClubEvents } from './useClubEvents';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { isNetworkError } from './utils/dataTransformUtils';
 
 export const useClubAdminData = (userId: string | undefined) => {
   const [isLoading, setIsLoading] = useState(true);
   const [adminClubs, setAdminClubs] = useState<any[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedEventTitle, setSelectedEventTitle] = useState<string>('');
+  const [fetchAttempts, setFetchAttempts] = useState(0);
+  const [maxFetchAttempts] = useState(3);
   
   const { toast } = useToast();
   const { clubEvents, activeEventCount, pastEventCount, averageAttendance, fetchClubEvents } = useClubEvents();
@@ -21,15 +24,35 @@ export const useClubAdminData = (userId: string | undefined) => {
       return;
     }
     
+    // If we've already tried the maximum number of times, don't try again
+    if (fetchAttempts >= maxFetchAttempts) {
+      if (adminClubs.length === 0) {
+        toast({
+          title: 'Network Error',
+          description: `Failed to fetch data after ${maxFetchAttempts} attempts. Please check your connection and refresh the page.`,
+          variant: 'destructive',
+        });
+      }
+      setIsLoading(false);
+      return;
+    }
+    
     setIsLoading(true);
     try {
+      console.log(`Fetching club admin data (attempt ${fetchAttempts + 1}/${maxFetchAttempts})`);
+      
       // First, get the clubs this user is an admin for
       const { data: clubsData, error: clubsError } = await supabase
         .from('club_admins')
         .select('club_id')
         .eq('user_id', userId);
       
-      if (clubsError) throw clubsError;
+      if (clubsError) {
+        if (isNetworkError(clubsError)) {
+          throw new Error("Network connectivity issue. Please check your connection.");
+        }
+        throw clubsError;
+      }
       
       const clubIds = clubsData.map(item => item.club_id);
       
@@ -45,7 +68,12 @@ export const useClubAdminData = (userId: string | undefined) => {
         .select('*')
         .in('id', clubIds);
       
-      if (clubDetailsError) throw clubDetailsError;
+      if (clubDetailsError) {
+        if (isNetworkError(clubDetailsError)) {
+          throw new Error("Network connectivity issue. Please check your connection.");
+        }
+        throw clubDetailsError;
+      }
       
       setAdminClubs(clubs || []);
       
@@ -54,13 +82,33 @@ export const useClubAdminData = (userId: string | undefined) => {
       
       // Fetch members for these clubs
       await fetchClubMembers(clubIds, clubs || []);
-    } catch (error) {
+      
+      // Reset fetch attempts on success
+      setFetchAttempts(0);
+    } catch (error: any) {
       console.error('Error fetching club admin data:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load dashboard data. Please try again.',
-        variant: 'destructive',
-      });
+      
+      // Only show toast for first and last attempts
+      if (fetchAttempts === 0 || fetchAttempts === maxFetchAttempts - 1) {
+        toast({
+          title: 'Error',
+          description: fetchAttempts === maxFetchAttempts - 1 
+            ? 'Last attempt to load dashboard data...' 
+            : 'Failed to load dashboard data. Retrying...',
+          variant: 'destructive',
+        });
+      }
+      
+      // Increment fetch attempts
+      setFetchAttempts(prev => prev + 1);
+      
+      // Only retry if we haven't hit the maximum
+      if (fetchAttempts < maxFetchAttempts - 1) {
+        const retryDelay = Math.min(1000 * (fetchAttempts + 1), 3000);
+        setTimeout(() => {
+          fetchClubAdminData();
+        }, retryDelay);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +120,11 @@ export const useClubAdminData = (userId: string | undefined) => {
   };
 
   useEffect(() => {
-    fetchClubAdminData();
+    if (userId) {
+      // Reset fetch attempts when userId changes
+      setFetchAttempts(0);
+      fetchClubAdminData();
+    }
   }, [userId]);
 
   return {
