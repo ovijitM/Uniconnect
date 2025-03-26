@@ -12,7 +12,7 @@ export const useClubAdminData = (userId: string | undefined) => {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedEventTitle, setSelectedEventTitle] = useState<string>('');
   const [fetchAttempts, setFetchAttempts] = useState(0);
-  const [maxFetchAttempts] = useState(3);
+  const MAX_FETCH_ATTEMPTS = 3;
   
   const { toast } = useToast();
   const { clubEvents, activeEventCount, pastEventCount, averageAttendance, fetchClubEvents } = useClubEvents();
@@ -25,21 +25,23 @@ export const useClubAdminData = (userId: string | undefined) => {
     }
     
     // If we've already tried the maximum number of times, don't try again
-    if (fetchAttempts >= maxFetchAttempts) {
+    if (fetchAttempts >= MAX_FETCH_ATTEMPTS) {
+      console.log(`Max fetch attempts (${MAX_FETCH_ATTEMPTS}) reached, not retrying.`);
+      setIsLoading(false);
+      
       if (adminClubs.length === 0) {
         toast({
-          title: 'Network Error',
-          description: `Failed to fetch data after ${maxFetchAttempts} attempts. Please check your connection and refresh the page.`,
+          title: 'Error',
+          description: `Failed to fetch data after ${MAX_FETCH_ATTEMPTS} attempts. Please check your connection and refresh the page.`,
           variant: 'destructive',
         });
       }
-      setIsLoading(false);
       return;
     }
     
     setIsLoading(true);
     try {
-      console.log(`Fetching club admin data (attempt ${fetchAttempts + 1}/${maxFetchAttempts})`);
+      console.log(`Fetching club admin data (attempt ${fetchAttempts + 1}/${MAX_FETCH_ATTEMPTS})`);
       
       // First, get the clubs this user is an admin for
       const { data: clubsData, error: clubsError } = await supabase
@@ -48,6 +50,7 @@ export const useClubAdminData = (userId: string | undefined) => {
         .eq('user_id', userId);
       
       if (clubsError) {
+        console.error('Error fetching club admin data:', clubsError);
         if (isNetworkError(clubsError)) {
           throw new Error("Network connectivity issue. Please check your connection.");
         }
@@ -57,6 +60,7 @@ export const useClubAdminData = (userId: string | undefined) => {
       const clubIds = clubsData.map(item => item.club_id);
       
       if (clubIds.length === 0) {
+        console.log('No clubs found for this admin');
         setAdminClubs([]);
         setIsLoading(false);
         return;
@@ -69,6 +73,7 @@ export const useClubAdminData = (userId: string | undefined) => {
         .in('id', clubIds);
       
       if (clubDetailsError) {
+        console.error('Error fetching club details:', clubDetailsError);
         if (isNetworkError(clubDetailsError)) {
           throw new Error("Network connectivity issue. Please check your connection.");
         }
@@ -88,26 +93,36 @@ export const useClubAdminData = (userId: string | undefined) => {
     } catch (error: any) {
       console.error('Error fetching club admin data:', error);
       
-      // Only show toast for first and last attempts
-      if (fetchAttempts === 0 || fetchAttempts === maxFetchAttempts - 1) {
-        toast({
-          title: 'Error',
-          description: fetchAttempts === maxFetchAttempts - 1 
-            ? 'Last attempt to load dashboard data...' 
-            : 'Failed to load dashboard data. Retrying...',
-          variant: 'destructive',
-        });
-      }
-      
-      // Increment fetch attempts
-      setFetchAttempts(prev => prev + 1);
-      
-      // Only retry if we haven't hit the maximum
-      if (fetchAttempts < maxFetchAttempts - 1) {
-        const retryDelay = Math.min(1000 * (fetchAttempts + 1), 3000);
+      // Only retry for network errors
+      if (isNetworkError(error) && fetchAttempts < MAX_FETCH_ATTEMPTS - 1) {
+        // Show toast for first attempt only
+        if (fetchAttempts === 0) {
+          toast({
+            title: 'Connection Error',
+            description: 'Failed to load dashboard data. Will retry automatically.',
+            variant: 'destructive',
+          });
+        }
+        
+        // Increment fetch attempts
+        setFetchAttempts(current => current + 1);
+        
+        // Exponential backoff for retries
+        const retryDelay = Math.min(1000 * Math.pow(2, fetchAttempts), 5000);
+        console.log(`Will retry in ${retryDelay}ms (attempt ${fetchAttempts + 1}/${MAX_FETCH_ATTEMPTS})`);
+        
         setTimeout(() => {
           fetchClubAdminData();
         }, retryDelay);
+      } else {
+        // Final error message if max retries reached
+        if (fetchAttempts >= MAX_FETCH_ATTEMPTS - 1) {
+          toast({
+            title: 'Error',
+            description: `Failed to load dashboard data after ${MAX_FETCH_ATTEMPTS} attempts. Please refresh the page.`,
+            variant: 'destructive',
+          });
+        }
       }
     } finally {
       setIsLoading(false);

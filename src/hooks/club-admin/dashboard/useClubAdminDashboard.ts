@@ -74,8 +74,8 @@ export const useClubAdminDashboard = () => {
           
           // Only retry if it's a network error and we haven't exceeded max retries
           if (isNetworkError(error) && retryCount < MAX_RETRIES) {
-            const retryDelay = Math.min(1000 * (retryCount + 1), 5000);
-            setRetryCount(prev => prev + 1);
+            // Use exponential backoff for retries
+            const retryDelay = Math.min(1000 * Math.pow(2, retryCount), 5000);
             
             toast({
               title: "Connection Error",
@@ -83,11 +83,15 @@ export const useClubAdminDashboard = () => {
               variant: "destructive",
             });
             
+            // Increment retry count before starting the timer
+            setRetryCount(prevCount => prevCount + 1);
+            
             // Retry after delay
             setTimeout(() => {
               setInitialLoadAttempted(false);
             }, retryDelay);
-          } else if (retryCount >= MAX_RETRIES) {
+          } else {
+            // If we've hit max retries or it's not a network error, show a final error
             toast({
               title: "Connection Failed",
               description: `Failed to load data after ${MAX_RETRIES} attempts. Please check your connection and refresh the page.`,
@@ -99,7 +103,7 @@ export const useClubAdminDashboard = () => {
       
       loadProfileAndCheckClubs();
     }
-  }, [user?.id, initialLoadAttempted, retryCount]);
+  }, [user?.id, initialLoadAttempted, retryCount, fetchUserProfile, checkUserHasClub, toast, MAX_RETRIES]);
 
   // Handle opening event dialog when navigated with state
   useEffect(() => {
@@ -163,7 +167,10 @@ export const useClubAdminDashboard = () => {
 
   const handleRetryProfileFetch = () => {
     if (user?.id) {
-      fetchUserProfile();
+      // Reset retry count when manually retrying
+      setRetryCount(0);
+      setInitialLoadAttempted(false);
+      
       toast({
         title: "Retrying",
         description: "Attempting to reload your profile data...",
@@ -202,10 +209,7 @@ export const useClubAdminDashboard = () => {
     selectEventForAttendeeManagement,
     isLoadingProfile,
     profileError,
-    handleRetryProfileFetch: () => {
-      setRetryCount(0);
-      setInitialLoadAttempted(false);
-    },
+    handleRetryProfileFetch,
     handleCreateClubClick,
     hasExistingClub,
     isCheckingClubs,

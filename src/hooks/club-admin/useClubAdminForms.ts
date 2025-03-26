@@ -1,344 +1,435 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { ClubFormData, EventFormData } from './types';
 import { useToast } from '@/hooks/use-toast';
-import { EventFormData, ClubFormData } from './types';
-import { useClubCreation } from './useClubCreation';
-import { useEventCreation } from './useEventCreation';
-import { useStudentProfile } from '@/hooks/student/useStudentProfile';
+import { useClubValidation } from './useClubValidation';
+import { useEventValidation } from './useEventValidation';
+import { isNetworkError } from './utils/dataTransformUtils';
 
-export const useClubAdminForms = (userId: string | undefined, onSuccess: () => void) => {
+export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData: () => Promise<void>) => {
   const [eventFormData, setEventFormData] = useState<EventFormData>({
     title: '',
     description: '',
     date: '',
     location: '',
     category: '',
-    eventType: 'in-person',
     maxParticipants: '',
-    registrationDeadline: '',
+    clubId: '',
     imageUrl: '',
-    status: 'upcoming',
-    visibility: 'public',
-    onlinePlatform: '',
-    entryFee: 'Free',
     tagline: '',
+    eventType: 'in-person',
+    registrationDeadline: '',
+    onlinePlatform: '',
+    eligibility: '',
+    teamSize: '',
+    registrationLink: '',
+    entryFee: 'Free',
+    theme: '',
+    subTracks: '',
+    prizePool: '',
+    prizeCategories: '',
+    additionalPerks: '',
+    judgingCriteria: '',
+    judges: '',
+    schedule: '',
+    deliverables: '',
+    submissionPlatform: '',
+    mentors: '',
+    sponsors: '',
+    contactEmail: '',
+    communityLink: '',
+    eventWebsite: '',
+    eventHashtag: '',
+    howToRegister: '',
+    visibility: 'public'
   });
-  
+  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [clubFormData, setClubFormData] = useState<ClubFormData>({
     name: '',
     description: '',
     category: '',
-    university: '',
-    universityId: '',
-    tagline: '',
-    establishedYear: '',
-    affiliation: '',
-    whyJoin: '',
-    regularEvents: '',
-    signatureEvents: '',
-    communityEngagement: '',
-    whoCanJoin: '',
-    membershipFee: 'Free',
-    howToJoin: '',
-    presidentName: '',
-    presidentContact: '',
-    executiveMembers: '',
-    advisors: '',
-    phoneNumber: '',
-    website: '',
-    facebookLink: '',
-    instagramLink: '',
-    twitterLink: '',
-    discordLink: '',
     logoUrl: '',
-    documentUrl: '',
-    documentName: ''
+    university: '',
+    contactEmail: '',
+    contactPhone: '',
+    address: '',
+    socialMediaLinks: {
+      website: '',
+      instagram: '',
+      facebook: '',
+      twitter: '',
+      linkedin: '',
+      discord: ''
+    },
+    executiveMembers: '',
+    achievements: '',
+    documents: {
+      constitution: '',
+      codeOfConduct: '',
+      other: ''
+    },
+    missionStatement: '',
+    visionStatement: '',
+    values: '',
+    foundingDate: '',
+    clubType: '',
+    studentCount: '',
+    facultyAdvisor: '',
+    budgetInfo: '',
+    meetingInfo: '',
+    additionalNotes: ''
   });
-  
-  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [isClubDialogOpen, setIsClubDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasExistingClub, setHasExistingClub] = useState(false);
-  const [isCheckingClubs, setIsCheckingClubs] = useState(false);
-  
+  const [isCheckingClubs, setIsCheckingClubs] = useState(true);
   const { toast } = useToast();
-  const { createClub } = useClubCreation();
-  const { createEvent } = useEventCreation();
-  
-  const { userUniversity, userUniversityId, fetchUserProfile, isLoadingProfile } = useStudentProfile(userId);
-  
-  // Check if user already has a club
-  const checkUserHasClub = async () => {
-    if (!userId) return;
-    
+  const { validateClubData } = useClubValidation();
+  const { validateEventData } = useEventValidation();
+
+  const handleCreateClub = async () => {
     try {
-      setIsCheckingClubs(true);
+      console.log("Attempting to create club with data:", clubFormData);
+
+      if (!validateClubData(clubFormData)) {
+        console.error("Club data validation failed");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('clubs')
+        .insert([
+          {
+            name: clubFormData.name,
+            description: clubFormData.description,
+            category: clubFormData.category,
+            logo_url: clubFormData.logoUrl,
+            university_id: clubFormData.university,
+            contact_email: clubFormData.contactEmail,
+            contact_phone: clubFormData.contactPhone,
+            address: clubFormData.address,
+            social_media_links: clubFormData.socialMediaLinks,
+            executive_members: clubFormData.executiveMembers,
+            achievements: clubFormData.achievements,
+            documents: clubFormData.documents,
+            mission_statement: clubFormData.missionStatement,
+            vision_statement: clubFormData.visionStatement,
+            values: clubFormData.values,
+            founding_date: clubFormData.foundingDate,
+            club_type: clubFormData.clubType,
+            student_count: clubFormData.studentCount,
+            faculty_advisor: clubFormData.facultyAdvisor,
+            budget_info: clubFormData.budgetInfo,
+            meeting_info: clubFormData.meetingInfo,
+            additional_notes: clubFormData.additionalNotes,
+          },
+        ])
+        .select();
+
+      if (error) {
+        console.error("Error creating club:", error);
+        toast({
+          title: "Error",
+          description: "Failed to create club. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("Club created successfully:", data);
+      toast({
+        title: "Success",
+        description: "Club created successfully!",
+      });
+
+      setIsClubDialogOpen(false);
+      setClubFormData({
+        name: '',
+        description: '',
+        category: '',
+        logoUrl: '',
+        university: '',
+        contactEmail: '',
+        contactPhone: '',
+        address: '',
+        socialMediaLinks: {
+          website: '',
+          instagram: '',
+          facebook: '',
+          twitter: '',
+          linkedin: '',
+          discord: ''
+        },
+        executiveMembers: '',
+        achievements: '',
+        documents: {
+          constitution: '',
+          codeOfConduct: '',
+          other: ''
+        },
+        missionStatement: '',
+        visionStatement: '',
+        values: '',
+        foundingDate: '',
+        clubType: '',
+        studentCount: '',
+        facultyAdvisor: '',
+        budgetInfo: '',
+        meetingInfo: '',
+        additionalNotes: ''
+      });
+
+      // Refresh club admin data
+      await fetchClubAdminData();
+    } catch (error: any) {
+      console.error("Error creating club:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create club. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCreateEvent = async (collaborators: string[] = []) => {
+    try {
+      console.log('Creating event with data:', eventFormData);
+      console.log('User ID:', userId);
+
+      if (!userId) {
+        toast({
+          title: 'Error',
+          description: 'User ID is missing. Please log in again.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (!eventFormData.clubId) {
+        const { data: clubsData, error: clubsError } = await supabase
+          .from('club_admins')
+          .select('club_id')
+          .eq('user_id', userId);
+
+        if (clubsError) {
+          console.error('Error fetching user clubs:', clubsError);
+          toast({
+            title: 'Error',
+            description: 'Failed to fetch your clubs. Please try again.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        if (clubsData && clubsData.length > 0) {
+          eventFormData.clubId = clubsData[0].club_id;
+          console.log('Using first club ID:', eventFormData.clubId);
+        } else {
+          toast({
+            title: 'Error',
+            description: 'You must create a club first before creating events.',
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
+
+      if (!validateEventData(eventFormData, eventFormData.clubId)) {
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('events')
+        .insert({
+          title: eventFormData.title,
+          description: eventFormData.description,
+          date: new Date(eventFormData.date).toISOString(),
+          location: eventFormData.location,
+          category: eventFormData.category,
+          max_participants: eventFormData.maxParticipants ? parseInt(eventFormData.maxParticipants) : null,
+          club_id: eventFormData.clubId,
+          status: 'upcoming',
+          image_url: eventFormData.imageUrl || null,
+          visibility: eventFormData.visibility,
+          tagline: eventFormData.tagline || null,
+          event_type: eventFormData.eventType,
+          registration_deadline: eventFormData.registrationDeadline ? new Date(eventFormData.registrationDeadline).toISOString() : null,
+          online_platform: eventFormData.onlinePlatform || null,
+          eligibility: eventFormData.eligibility || null,
+          team_size: eventFormData.teamSize || null,
+          registration_link: eventFormData.registrationLink || null,
+          entry_fee: eventFormData.entryFee || 'Free',
+          theme: eventFormData.theme || null,
+          sub_tracks: eventFormData.subTracks ? eventFormData.subTracks.split(',').map(item => item.trim()) : null,
+          prize_pool: eventFormData.prizePool || null,
+          prize_categories: eventFormData.prizeCategories ? eventFormData.prizeCategories.split(',').map(item => item.trim()) : null,
+          additional_perks: eventFormData.additionalPerks ? eventFormData.additionalPerks.split(',').map(item => item.trim()) : null,
+          judging_criteria: eventFormData.judgingCriteria ? eventFormData.judgingCriteria.split(',').map(item => item.trim()) : null,
+          judges: eventFormData.judges ? eventFormData.judges.split(',').map(item => item.trim()) : null,
+          deliverables: eventFormData.deliverables ? eventFormData.deliverables.split(',').map(item => item.trim()) : null,
+          submission_platform: eventFormData.submissionPlatform || null,
+          mentors: eventFormData.mentors ? eventFormData.mentors.split(',').map(item => item.trim()) : null,
+          sponsors: eventFormData.sponsors ? eventFormData.sponsors.split(',').map(item => item.trim()) : null,
+          contact_email: eventFormData.contactEmail || null,
+          community_link: eventFormData.communityLink || null,
+          event_website: eventFormData.eventWebsite || null,
+          event_hashtag: eventFormData.eventHashtag || null,
+          schedule: eventFormData.schedule ? JSON.parse(eventFormData.schedule) : null
+        })
+        .select();
+
+      if (error) {
+        console.error('Error creating event:', error);
+        toast({
+          title: 'Error Creating Event',
+          description: `Failed to create event: ${error.message || 'Please try again.'}`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      console.log('Event created successfully:', data);
+
+      if (collaborators.length > 0 && data && data.length > 0) {
+        const eventId = data[0].id;
+
+        const collaboratorEntries = collaborators.map(clubId => ({
+          event_id: eventId,
+          club_id: clubId
+        }));
+
+        const { error: collaboratorsError } = await supabase
+          .from('event_collaborators')
+          .insert(collaboratorEntries);
+
+        if (collaboratorsError) {
+          console.error('Error adding collaborators:', collaboratorsError);
+        }
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Event created successfully!',
+        variant: 'default',
+      });
+
+      setEventFormData({
+        title: '',
+        description: '',
+        date: '',
+        location: '',
+        category: '',
+        maxParticipants: '',
+        clubId: '',
+        imageUrl: '',
+        tagline: '',
+        eventType: 'in-person',
+        registrationDeadline: '',
+        onlinePlatform: '',
+        eligibility: '',
+        teamSize: '',
+        registrationLink: '',
+        entryFee: 'Free',
+        theme: '',
+        subTracks: '',
+        prizePool: '',
+        prizeCategories: '',
+        additionalPerks: '',
+        judgingCriteria: '',
+        judges: '',
+        schedule: '',
+        deliverables: '',
+        submissionPlatform: '',
+        mentors: '',
+        sponsors: '',
+        contactEmail: '',
+        communityLink: '',
+        eventWebsite: '',
+        eventHashtag: '',
+        howToRegister: '',
+        visibility: 'public'
+      });
+      setIsEventDialogOpen(false);
+
+      // Refresh club admin data
+      await fetchClubAdminData();
+    } catch (error: any) {
+      console.error('Error creating event:', error);
+      toast({
+        title: 'Error',
+        description: `Failed to create event: ${error.message || 'Please try again.'}`,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleEventInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setEventFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleClubInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setClubFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleClubFileUpload = async (url: string, fileName: string, type: 'logo' | 'document' = 'logo') => {
+    if (type === 'logo') {
+      setClubFormData(prev => ({ ...prev, logoUrl: url }));
+    } else {
+      // Handle document uploads if needed
+      console.log(`Document uploaded: ${fileName} at ${url}`);
+    }
+  };
+
+  const handleEventFileUpload = async (url: string, fileName: string) => {
+    setEventFormData(prev => ({ ...prev, imageUrl: url }));
+  };
+
+  const checkUserHasClub = useCallback(async () => {
+    if (!userId) {
+      setIsCheckingClubs(false);
+      return;
+    }
+
+    setIsCheckingClubs(true);
+    try {
       const { data, error } = await supabase
         .from('club_admins')
         .select('club_id')
         .eq('user_id', userId);
-      
+
       if (error) {
-        console.error('Error checking if user has a club:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to check if you already have a club',
-          variant: 'destructive',
-        });
-        throw error;
+        console.error("Error checking user's clubs:", error);
+        if (isNetworkError(error)) {
+          toast({
+            title: "Connection Error",
+            description: "Could not check for existing clubs. Please check your network connection.",
+            variant: "destructive",
+          });
+        }
+        return;
       }
-      
-      setHasExistingClub(data !== null && data.length > 0);
-    } catch (error) {
-      console.error('Error in checkUserHasClub:', error);
+
+      const userHasClub = data && data.length > 0;
+      setHasExistingClub(userHasClub);
+    } catch (error: any) {
+      console.error("Error checking user's clubs:", error);
+      toast({
+        title: "Error",
+        description: "Failed to check for existing clubs. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsCheckingClubs(false);
     }
-  };
-  
-  // Update university info when available
-  useEffect(() => {
-    if (userUniversity && userUniversityId) {
-      setClubFormData(prev => ({
-        ...prev,
-        university: userUniversity,
-        universityId: userUniversityId
-      }));
-    }
-  }, [userUniversity, userUniversityId]);
-  
-  useEffect(() => {
-    if (userId) {
-      fetchUserProfile();
-      checkUserHasClub();
-    }
-  }, [userId]);
-  
-  // Event form handlers
-  const handleEventInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setEventFormData(prev => ({ ...prev, [name]: value }));
-  }, []);
-  
-  const handleEventFileUpload = useCallback((url: string) => {
-    setEventFormData(prev => ({ ...prev, imageUrl: url }));
-  }, []);
-  
-  // Club form handlers
-  const handleClubInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setClubFormData(prev => ({ ...prev, [name]: value }));
-  }, []);
-  
-  const handleClubFileUpload = useCallback((url: string, fileName: string, type: 'logo' | 'document' = 'document') => {
-    if (type === 'logo') {
-      setClubFormData(prev => ({ ...prev, logoUrl: url }));
-    } else {
-      setClubFormData(prev => ({ 
-        ...prev, 
-        documentUrl: url,
-        documentName: fileName
-      }));
-    }
-  }, []);
-  
-  // Create event handler
-  const handleCreateEvent = async () => {
-    if (isSubmitting) return;
-    
-    try {
-      setIsSubmitting(true);
-      
-      if (!userId) {
-        toast({
-          title: 'Error',
-          description: 'You must be logged in to create an event',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // Validate required fields
-      if (!eventFormData.title || !eventFormData.description || !eventFormData.date || !eventFormData.location || !eventFormData.category) {
-        toast({
-          title: 'Validation Error',
-          description: 'Please fill in all required fields: title, description, date, location, and category.',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // First get the user's club ID
-      const { data: adminData, error: adminError } = await supabase
-        .from('club_admins')
-        .select('club_id')
-        .eq('user_id', userId)
-        .single();
-      
-      if (adminError) {
-        console.error('Error getting admin club:', adminError);
-        toast({
-          title: 'Error',
-          description: 'Failed to find your club. You must have a club to create events.',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      const clubId = adminData.club_id;
-      
-      // Create the event
-      const success = await createEvent(eventFormData, clubId);
-      
-      if (success) {
-        toast({
-          title: 'Event Created',
-          description: 'Your event has been created successfully.',
-        });
-        
-        // Reset form and close dialog
-        setEventFormData({
-          title: '',
-          description: '',
-          date: '',
-          location: '',
-          category: '',
-          eventType: 'in-person',
-          maxParticipants: '',
-          registrationDeadline: '',
-          imageUrl: '',
-          status: 'upcoming',
-          visibility: 'public',
-          onlinePlatform: '',
-          entryFee: 'Free',
-          tagline: '',
-        });
-        setIsEventDialogOpen(false);
-        
-        // Refresh data
-        onSuccess();
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to create event. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Error in handleCreateEvent:', error);
-      toast({
-        title: 'Error',
-        description: 'An error occurred while creating the event. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  // Create club handler
-  const handleCreateClub = async () => {
-    if (isSubmitting) return;
-    
-    try {
-      setIsSubmitting(true);
-      
-      if (!userId) {
-        toast({
-          title: 'Error',
-          description: 'You must be logged in to create a club',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // Check if user already has a club
-      await checkUserHasClub();
-      
-      if (hasExistingClub) {
-        toast({
-          title: 'Club Limit Reached',
-          description: 'You can only be an admin for one club. Please manage your existing club.',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      // Logging form data before submission
-      console.log('Club form data before submission:', clubFormData);
-      
-      // Create the club
-      const success = await createClub(clubFormData, userId);
-      
-      if (success) {
-        toast({
-          title: 'Club Created',
-          description: 'Your club has been created successfully and is pending approval.',
-        });
-        
-        // Reset form and close dialog
-        setClubFormData({
-          name: '',
-          description: '',
-          category: '',
-          university: userUniversity || '',
-          universityId: userUniversityId || '',
-          tagline: '',
-          establishedYear: '',
-          affiliation: '',
-          whyJoin: '',
-          regularEvents: '',
-          signatureEvents: '',
-          communityEngagement: '',
-          whoCanJoin: '',
-          membershipFee: 'Free',
-          howToJoin: '',
-          presidentName: '',
-          presidentContact: '',
-          executiveMembers: '',
-          advisors: '',
-          phoneNumber: '',
-          website: '',
-          facebookLink: '',
-          instagramLink: '',
-          twitterLink: '',
-          discordLink: '',
-          logoUrl: '',
-          documentUrl: '',
-          documentName: ''
-        });
-        setIsClubDialogOpen(false);
-        
-        // Set hasExistingClub to true to prevent creating multiple clubs
-        setHasExistingClub(true);
-        
-        // Refresh data
-        onSuccess();
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to create club. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Error in handleCreateClub:', error);
-      toast({
-        title: 'Error',
-        description: 'An error occurred while creating the club. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
+  }, [userId, toast]);
+
   return {
     eventFormData,
     isEventDialogOpen,
@@ -354,8 +445,6 @@ export const useClubAdminForms = (userId: string | undefined, onSuccess: () => v
     handleEventFileUpload,
     hasExistingClub,
     isCheckingClubs,
-    checkUserHasClub,
-    isSubmitting,
-    isLoadingProfile
+    checkUserHasClub
   };
 };
