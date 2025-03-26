@@ -41,7 +41,7 @@ const ClubDetailPage: React.FC = () => {
     isClubAdmin,
     handleJoinClub,
     error
-  } = useClubDetail();
+  } = useClubDetail(clubId); // Pass clubId explicitly to useClubDetail
 
   const {
     incomingRequests,
@@ -58,7 +58,7 @@ const ClubDetailPage: React.FC = () => {
     isLoading, 
     clubExists: !!club, 
     memberCount: club?.memberCount,
-    error: error ? { message: error.message } : null 
+    error: error ? { message: error.message, name: error.name } : null 
   });
 
   const handleRetry = () => {
@@ -92,6 +92,7 @@ const ClubDetailPage: React.FC = () => {
           <AlertDescription className="mt-2">
             There was an error loading the club details. Please try again.
             {error.message && <p className="text-sm mt-1">{error.message}</p>}
+            {process.env.NODE_ENV === 'development' && <pre className="text-xs mt-2 p-2 bg-background/50 rounded overflow-x-auto">{JSON.stringify(error, null, 2)}</pre>}
           </AlertDescription>
           <Button 
             variant="outline" 

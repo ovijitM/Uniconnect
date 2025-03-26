@@ -1,15 +1,15 @@
 
-// We need to fix the issue where clubId is missing or not detected
-// Let's update the beginning of the useClubData hook
-
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Club, Event, EventStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useClubData = () => {
-  const { clubId } = useParams<{ clubId: string }>();
+export const useClubData = (providedClubId?: string) => {
+  // Use provided clubId or get it from URL params as fallback
+  const { clubId: urlClubId } = useParams<{ clubId: string }>();
+  const clubId = providedClubId || urlClubId;
+  
   const [club, setClub] = useState<Club | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [relatedClubs, setRelatedClubs] = useState<Club[]>([]);
@@ -33,7 +33,7 @@ export const useClubData = () => {
         setIsLoading(true);
         setError(null);
         
-        // Fetch club details with all the new fields
+        // Fetch club details with all the fields
         console.log("Fetching club details for clubId:", clubId);
         const { data: clubData, error: clubError } = await supabase
           .from('clubs')
@@ -133,7 +133,6 @@ export const useClubData = () => {
         
         if (eventsError) {
           console.error("Error fetching events:", eventsError);
-          throw eventsError;
         }
         
         console.log(`Fetched ${eventsData?.length || 0} events for club`);
@@ -271,7 +270,7 @@ export const useClubData = () => {
         const formattedClub = transformClubData(clubData);
         
         // Format the events data with all the new fields and ensure status is of correct type
-        const formattedEvents: Event[] = eventsData.map(event => {
+        const formattedEvents: Event[] = eventsData?.map(event => {
           let participants = 0;
           if (event.event_participants && Array.isArray(event.event_participants) && event.event_participants.length > 0) {
             const countData = event.event_participants[0];
@@ -333,7 +332,7 @@ export const useClubData = () => {
             eventWebsite: event.event_website,
             eventHashtag: event.event_hashtag
           };
-        });
+        }) || [];
         
         console.log(`Setting ${formattedEvents.length} formatted events`);
         

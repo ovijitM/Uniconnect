@@ -32,7 +32,7 @@ export const useEventDetail = (eventId: string | undefined) => {
           .from('profiles')
           .select('university, university_id')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError) {
           console.error('Error fetching user profile:', profileError);
@@ -40,8 +40,12 @@ export const useEventDetail = (eventId: string | undefined) => {
           return;
         }
 
+        // Handle case when event.organizer might be undefined
+        const organizerUniversity = event.organizer?.university || '';
+        
         // Check if the user's university matches the organizer's university
-        setCanAccess(profileData?.university === event.organizer.university);
+        setCanAccess(!!profileData && profileData.university === organizerUniversity);
+        
       } catch (error) {
         console.error('Error checking event access:', error);
         setCanAccess(false);
