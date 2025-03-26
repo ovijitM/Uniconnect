@@ -11,7 +11,8 @@ import {
   Settings, 
   LogOut,
   MenuIcon,
-  X
+  X,
+  PlusCircle
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +28,8 @@ import {
   SidebarMenuButton
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { useClubForm } from '@/hooks/club-admin/useClubForm';
 
 const ClubAdminSidebar: React.FC = () => {
   const location = useLocation();
@@ -35,6 +38,20 @@ const ClubAdminSidebar: React.FC = () => {
   const { toast } = useToast();
   const { logout, user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Initialize club form hooks for the sidebar create button
+  const { 
+    setIsClubDialogOpen,
+    handleCreateClubClick,
+    isLoadingProfile,
+    profileError
+  } = useClubForm(user?.id, () => {
+    toast({
+      title: 'Success',
+      description: 'Club created successfully.',
+    });
+    navigate('/club-admin-dashboard/clubs');
+  });
 
   const menuItems = [
     {
@@ -158,6 +175,22 @@ const ClubAdminSidebar: React.FC = () => {
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
+          
+          <Separator className="my-4" />
+          
+          {/* Create Club Button */}
+          <div className="px-4">
+            <Button 
+              variant="default" 
+              size="sm" 
+              className="w-full justify-start"
+              onClick={handleCreateClubClick}
+              disabled={isLoadingProfile}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create Club
+            </Button>
+          </div>
         </SidebarContent>
         
         <SidebarFooter>

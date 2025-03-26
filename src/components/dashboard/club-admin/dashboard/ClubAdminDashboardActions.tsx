@@ -1,15 +1,13 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PlusCircle, RefreshCw } from 'lucide-react';
-import { useClubAdminRoutes } from './useClubAdminRoutes';
+import { Plus, RefreshCw } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ClubAdminDashboardActionsProps {
-  profileError: string | undefined;
+  profileError: string | null;
   isLoadingProfile: boolean;
   handleRetryProfileFetch: () => void;
-  handleCreateClubClick: () => void;
   setIsEventDialogOpen: (open: boolean) => void;
 }
 
@@ -17,67 +15,41 @@ const ClubAdminDashboardActions: React.FC<ClubAdminDashboardActionsProps> = ({
   profileError,
   isLoadingProfile,
   handleRetryProfileFetch,
-  handleCreateClubClick,
   setIsEventDialogOpen
 }) => {
-  const { currentView } = useClubAdminRoutes();
-
-  // Render quick action buttons based on current view
-  const renderQuickActions = () => {
-    switch (currentView) {
-      case 'events':
-        return (
-          <Button 
-            onClick={() => setIsEventDialogOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <PlusCircle className="h-4 w-4" />
+  return (
+    <div className="py-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Club Admin Dashboard</h1>
+        <div className="flex gap-2">
+          <Button onClick={() => setIsEventDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
             Create Event
           </Button>
-        );
-      case 'clubs':
-        return (
-          <Button 
-            onClick={handleCreateClubClick}
-            className="flex items-center gap-2"
-            disabled={isLoadingProfile}
-          >
-            <PlusCircle className="h-4 w-4" />
-            Create Club
-          </Button>
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <>
-      {/* Profile error alert */}
+        </div>
+      </div>
+      
       {profileError && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertTitle>Profile Error</AlertTitle>
-          <AlertDescription className="flex flex-col gap-2">
-            <p>{profileError}</p>
-            <p>This may prevent you from creating clubs or accessing certain features.</p>
-            <Button 
-              onClick={handleRetryProfileFetch} 
+        <Alert variant="destructive" className="mt-4">
+          <AlertDescription className="flex justify-between items-center">
+            <span>Failed to load your profile data: {profileError}</span>
+            <Button
               variant="outline" 
-              size="sm" 
-              className="w-fit mt-2"
+              size="sm"
+              onClick={handleRetryProfileFetch}
+              disabled={isLoadingProfile}
             >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Retry Loading Profile
+              {isLoadingProfile ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              <span className="ml-2">Retry</span>
             </Button>
           </AlertDescription>
         </Alert>
       )}
-      
-      {/* Quick action buttons */}
-      <div className="flex justify-end mb-4">
-        {renderQuickActions()}
-      </div>
-    </>
+    </div>
   );
 };
 

@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useClubAdminDashboard } from '@/hooks/club-admin/dashboard/useClubAdminDashboard';
 import { useClubAdminRoutes } from '@/components/dashboard/club-admin/dashboard/useClubAdminRoutes';
+import ClubDialogWrapper from '@/components/dashboard/club-dialog/ClubDialogWrapper';
 
 // Components
 import DashboardLayout from '@/components/dashboard/shared/DashboardLayout';
@@ -45,9 +46,7 @@ const ClubAdminDashboard: React.FC = () => {
     fetchClubAdminData,
     selectEventForAttendeeManagement,
     isLoadingProfile,
-    profileError,
-    handleRetryProfileFetch,
-    handleCreateClubClick
+    profileError
   } = useClubAdminDashboard();
 
   // Redirect if not logged in or not a club admin
@@ -64,13 +63,18 @@ const ClubAdminDashboard: React.FC = () => {
   return (
     <DashboardLayout sidebar={<ClubAdminSidebar />}>
       <div className="max-w-7xl mx-auto">
-        <ClubAdminDashboardActions
-          profileError={profileError}
-          isLoadingProfile={isLoadingProfile}
-          handleRetryProfileFetch={handleRetryProfileFetch}
-          handleCreateClubClick={handleCreateClubClick}
-          setIsEventDialogOpen={setIsEventDialogOpen}
-        />
+        {/* Hidden club creation dialog that will be triggered from the sidebar */}
+        {isClubDialogOpen && (
+          <ClubDialogWrapper
+            isOpen={isClubDialogOpen}
+            onOpenChange={setIsClubDialogOpen}
+            formData={clubFormData}
+            onInputChange={handleClubInputChange}
+            onSubmit={handleCreateClub}
+            onFileUpload={handleClubFileUpload}
+            buttonText="Create Club"
+          />
+        )}
         
         <ClubAdminDashboardContent
           currentView={currentView}
