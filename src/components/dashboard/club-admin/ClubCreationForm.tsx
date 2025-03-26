@@ -13,6 +13,7 @@ interface ClubCreationFormProps {
   formData: ClubFormData;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
+  onSubmit: () => void;
   isSubmitting: boolean;
   isLoadingProfile: boolean;
 }
@@ -21,13 +22,19 @@ const ClubCreationForm: React.FC<ClubCreationFormProps> = ({
   formData,
   onInputChange,
   onFileUpload,
+  onSubmit,
   isSubmitting,
   isLoadingProfile
 }) => {
   const [activeTab, setActiveTab] = useState('basic');
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit();
+  };
+
   return (
-    <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-4 mb-8">
           <TabsTrigger value="basic">Basic Info</TabsTrigger>
@@ -113,7 +120,7 @@ const ClubCreationForm: React.FC<ClubCreationFormProps> = ({
           </Button>
         )}
       </div>
-    </div>
+    </form>
   );
 };
 

@@ -7,7 +7,6 @@ import DashboardLayout from '@/components/dashboard/shared/DashboardLayout';
 import ClubAdminSidebar from '@/components/dashboard/club-admin/ClubAdminSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form } from '@/components/ui/form';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import ClubCreationForm from '@/components/dashboard/club-admin/ClubCreationForm';
@@ -28,12 +27,6 @@ const CreateClubPage: React.FC = () => {
   } = useAdminClubCreation(user?.id, () => {
     navigate('/club-admin-dashboard/clubs');
   });
-
-  // Handle form submission
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleCreateClub();
-  };
 
   // Redirect if not logged in or not a club admin
   useEffect(() => {
@@ -73,15 +66,14 @@ const CreateClubPage: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Form onSubmit={onSubmit}>
-              <ClubCreationForm 
-                formData={clubFormData}
-                onInputChange={handleClubInputChange}
-                onFileUpload={handleFileUpload}
-                isSubmitting={isSubmitting}
-                isLoadingProfile={isLoadingProfile}
-              />
-            </Form>
+            <ClubCreationForm 
+              formData={clubFormData}
+              onInputChange={handleClubInputChange}
+              onFileUpload={handleFileUpload}
+              onSubmit={handleCreateClub}
+              isSubmitting={isSubmitting}
+              isLoadingProfile={isLoadingProfile}
+            />
           </CardContent>
         </Card>
       </div>
