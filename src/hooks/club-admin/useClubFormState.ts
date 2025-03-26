@@ -52,7 +52,6 @@ export const useClubFormState = () => {
   // Fetch the user's university when component mounts
   useEffect(() => {
     if (user?.id) {
-      console.log("Fetching user profile in useClubFormState");
       fetchUserProfile();
     }
   }, [user?.id, fetchUserProfile]);
@@ -65,7 +64,6 @@ export const useClubFormState = () => {
         university: userUniversity,
         universityId: userUniversityId
       }));
-      console.log('Set university from user profile:', userUniversity, 'with ID:', userUniversityId);
     } else if (isClubDialogOpen && !isLoadingProfile && !profileError && (!userUniversity || !userUniversityId)) {
       // Only alert the user if they don't have a university associated with their profile
       // and we're not loading and there's no error
@@ -81,7 +79,6 @@ export const useClubFormState = () => {
         description: "Failed to load your university information. Please try again later or update your profile.",
         variant: "destructive",
       });
-      console.error("Profile error:", profileError);
     }
   }, [userUniversity, userUniversityId, isClubDialogOpen, isLoadingProfile, profileError, toast]);
 
@@ -92,10 +89,8 @@ export const useClubFormState = () => {
 
   const handleClubFileUpload = useCallback((url: string, fileName: string, type: 'logo' | 'document' = 'document') => {
     if (type === 'logo') {
-      console.log("Setting logo URL:", url);
       setClubFormData(prev => ({ ...prev, logoUrl: url }));
     } else {
-      console.log("Setting document URL:", url, "Name:", fileName);
       setClubFormData(prev => ({ 
         ...prev, 
         documentUrl: url,

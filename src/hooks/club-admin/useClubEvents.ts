@@ -58,7 +58,7 @@ export const useClubEvents = () => {
       
       if (eventsWithAttendance.length > 0) {
         const totalAttendance = eventsWithAttendance.reduce(
-          (sum, event) => sum + parseInt(event.event_participants[0].count as string, 10) || 0, 
+          (sum, event) => sum + parseInt(String(event.event_participants[0].count), 10) || 0, 
           0
         );
         setAverageAttendance(Math.round(totalAttendance / eventsWithAttendance.length));

@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, RefreshCw } from 'lucide-react';
@@ -52,8 +51,6 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
   useEffect(() => {
     // Update form data with university information when available
     if (userUniversity && userUniversityId) {
-      console.log("Setting university in form:", userUniversity, userUniversityId);
-      
       // Create fake events to update form data
       const universityEvent = {
         target: { name: 'university', value: userUniversity }
