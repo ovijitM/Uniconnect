@@ -1,14 +1,11 @@
 
 import React from 'react';
-import CreateClubDialog from './CreateClubDialog';
 import CreateEventDialog from './CreateEventDialog';
-import { ClubFormData, EventFormData } from '@/hooks/club-admin/types';
+import { EventFormData } from '@/hooks/club-admin/types';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
 
 interface ClubAdminHeaderProps {
-  isClubDialogOpen: boolean;
-  setIsClubDialogOpen: (open: boolean) => void;
-  clubFormData: ClubFormData;
-  onClubInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onCreateClub: () => void;
   isEventDialogOpen: boolean;
   setIsEventDialogOpen: (open: boolean) => void;
@@ -16,17 +13,10 @@ interface ClubAdminHeaderProps {
   clubs: any[];
   onEventInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onCreateEvent: () => void;
-  // Updated props for file upload
-  onClubFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
   onEventFileUpload?: (url: string, fileName: string) => void;
-  hasExistingClub?: boolean;
 }
 
 const ClubAdminHeader: React.FC<ClubAdminHeaderProps> = ({
-  isClubDialogOpen,
-  setIsClubDialogOpen,
-  clubFormData,
-  onClubInputChange,
   onCreateClub,
   isEventDialogOpen,
   setIsEventDialogOpen,
@@ -34,25 +24,17 @@ const ClubAdminHeader: React.FC<ClubAdminHeaderProps> = ({
   clubs,
   onEventInputChange,
   onCreateEvent,
-  onClubFileUpload,
-  onEventFileUpload,
-  hasExistingClub
+  onEventFileUpload
 }) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
       <h1 className="text-3xl font-bold">Club Admin Dashboard</h1>
       
       <div className="flex gap-3">
-        {hasExistingClub ? null : (
-          <CreateClubDialog
-            isOpen={isClubDialogOpen}
-            onOpenChange={setIsClubDialogOpen}
-            formData={clubFormData}
-            onInputChange={onClubInputChange}
-            onSubmit={onCreateClub}
-            onFileUpload={onClubFileUpload}
-          />
-        )}
+        <Button onClick={onCreateClub}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Create Club
+        </Button>
         
         <CreateEventDialog
           isOpen={isEventDialogOpen}

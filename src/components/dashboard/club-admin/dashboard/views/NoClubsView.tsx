@@ -3,30 +3,18 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ClubFormData } from '@/hooks/club-admin/types';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import ClubDialogWrapper from '@/components/dashboard/club-dialog/ClubDialogWrapper';
 
 interface NoClubsViewProps {
-  isClubDialogOpen: boolean;
-  setIsClubDialogOpen: (open: boolean) => void;
-  clubFormData: ClubFormData;
-  handleClubInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleCreateClub: () => void;
-  handleClubFileUpload?: (url: string, fileName: string) => void;
+  onCreateClubClick: () => void;
   isLoading?: boolean;
   error?: string | null;
   onRefresh?: () => void;
 }
 
 const NoClubsView: React.FC<NoClubsViewProps> = ({
-  isClubDialogOpen,
-  setIsClubDialogOpen,
-  clubFormData,
-  handleClubInputChange,
-  handleCreateClub,
-  handleClubFileUpload,
+  onCreateClubClick,
   isLoading = false,
   error = null,
   onRefresh
@@ -52,7 +40,7 @@ const NoClubsView: React.FC<NoClubsViewProps> = ({
           
           <div className="flex flex-col sm:flex-row justify-center gap-3 mt-4">
             <Button 
-              onClick={() => setIsClubDialogOpen(true)} 
+              onClick={onCreateClubClick} 
               className="w-full sm:w-auto"
               disabled={isLoading}
             >
@@ -78,16 +66,6 @@ const NoClubsView: React.FC<NoClubsViewProps> = ({
           </div>
         </CardContent>
       </Card>
-      
-      <ClubDialogWrapper
-        isOpen={isClubDialogOpen}
-        onOpenChange={setIsClubDialogOpen}
-        formData={clubFormData}
-        onInputChange={handleClubInputChange}
-        onSubmit={handleCreateClub}
-        onFileUpload={handleClubFileUpload}
-        buttonText="Create Club"
-      />
     </div>
   );
 };
