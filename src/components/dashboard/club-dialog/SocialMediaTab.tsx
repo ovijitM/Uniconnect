@@ -52,7 +52,7 @@ const SocialMediaTab: React.FC<SocialMediaTabProps> = ({ formData, onInputChange
           rows={3}
         />
         <p className="text-xs text-muted-foreground">
-          Format: [{"name": "John Doe", "role": "Vice President", "email": "john@example.com"}]
+          Format: {`[{"name": "John Doe", "role": "Vice President", "email": "john@example.com"}]`}
         </p>
       </div>
       
