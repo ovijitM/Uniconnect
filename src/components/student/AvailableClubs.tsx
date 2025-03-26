@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Tag, Loader2 } from 'lucide-react';
+import { Users, Tag, Loader2, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 
@@ -19,8 +19,8 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
   isLoading, 
   onJoinClub 
 }) => {
-  // Filter out clubs that the student has already joined
-  const availableClubs = clubs.filter(club => !joinedClubIds.includes(club.id));
+  // Filter out clubs that the student has already joined is now done at the parent component
+  const availableClubs = clubs;
   
   // Add local state to track which club is being joined
   const [joiningClubId, setJoiningClubId] = useState<string | null>(null);

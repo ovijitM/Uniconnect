@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, ExternalLink, LogOut, Loader2 } from 'lucide-react';
+import { Users, ExternalLink, LogOut, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 interface StudentClubsProps {
   clubs: any[];
@@ -75,6 +76,12 @@ const StudentClubs: React.FC<StudentClubsProps> = ({ clubs, isLoading, onLeaveCl
                   <p className="text-sm text-muted-foreground line-clamp-1">
                     {club.description}
                   </p>
+                  <div className="mt-1">
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      <Check className="h-3 w-3" />
+                      Joined
+                    </Badge>
+                  </div>
                 </div>
                 <div className="flex space-x-2">
                   {onLeaveClub && (

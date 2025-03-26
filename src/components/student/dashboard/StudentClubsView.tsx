@@ -35,7 +35,7 @@ const StudentClubsView: React.FC<StudentClubsViewProps> = ({
         <div>
           <h2 className="text-lg font-medium mb-4">Available Clubs</h2>
           <AvailableClubs 
-            clubs={clubs}
+            clubs={clubs.filter(club => !joinedClubIds.includes(club.id))}
             joinedClubIds={joinedClubIds}
             isLoading={isLoading}
             onJoinClub={onJoinClub}

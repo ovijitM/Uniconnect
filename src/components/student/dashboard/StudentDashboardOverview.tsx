@@ -68,7 +68,7 @@ const StudentDashboardOverview: React.FC<StudentDashboardOverviewProps> = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <AvailableClubs 
-          clubs={clubs}
+          clubs={clubs.filter(club => !joinedClubIds.includes(club.id))}
           joinedClubIds={joinedClubIds}
           isLoading={isLoading}
           onJoinClub={onJoinClub}
