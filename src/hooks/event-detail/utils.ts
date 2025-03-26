@@ -7,32 +7,36 @@ export const formatEventData = (eventData: any, clubData: any | null): Event => 
     throw new Error('No event data provided');
   }
 
-  // Extract participant count from event_participants
+  // Extract participant count from event_participants with robust error handling
   let participants = 0;
-  if (eventData.event_participants) {
-    if (Array.isArray(eventData.event_participants) && eventData.event_participants.length > 0) {
-      const countData = eventData.event_participants[0];
-      
-      // Handle different count formats
-      if (typeof countData === 'number') {
-        participants = countData;
-      } else if (typeof countData === 'string') {
-        participants = parseInt(countData, 10) || 0;
-      } else if (countData && typeof countData === 'object') {
-        const rawCount = countData.count;
-        if (typeof rawCount === 'number') {
-          participants = rawCount;
-        } else if (typeof rawCount === 'string') {
-          participants = parseInt(rawCount, 10) || 0;
+  try {
+    if (eventData.event_participants) {
+      if (Array.isArray(eventData.event_participants) && eventData.event_participants.length > 0) {
+        const countData = eventData.event_participants[0];
+        
+        // Handle different count formats
+        if (typeof countData === 'number') {
+          participants = countData;
+        } else if (typeof countData === 'string') {
+          participants = parseInt(countData, 10) || 0;
+        } else if (countData && typeof countData === 'object') {
+          const rawCount = countData.count;
+          if (typeof rawCount === 'number') {
+            participants = rawCount;
+          } else if (typeof rawCount === 'string') {
+            participants = parseInt(rawCount, 10) || 0;
+          }
         }
       }
     }
+  } catch (error) {
+    console.error('Error parsing participant count:', error);
   }
   
   // Ensure participants is a valid number
   participants = isNaN(participants) ? 0 : participants;
   
-  // Create a default or minimal organizer object if club data is missing
+  // Create a default or minimal organizer object if club data is missing or incomplete
   const organizer = clubData ? {
     id: clubData.id || 'unknown',
     name: clubData.name || 'Unknown Organization',
@@ -54,7 +58,7 @@ export const formatEventData = (eventData: any, clubData: any | null): Event => 
   };
   
   // Log the event transformation
-  console.log(`Formatting event: ${eventData.id} (${eventData.title || 'Untitled Event'}) with organizer: ${organizer.name}`);
+  console.log(`Formatting event: ${eventData.id || 'unknown'} (${eventData.title || 'Untitled Event'}) with organizer: ${organizer.name}`);
   
   return {
     id: eventData.id || '',

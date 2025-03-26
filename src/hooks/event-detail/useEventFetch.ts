@@ -58,10 +58,15 @@ export const useEventFetch = (eventId: string | undefined) => {
 
           if (clubError) {
             console.error("Error fetching club data:", clubError);
+            // Continue with null clubData, the formatter will handle this
           } else if (club) {
             console.log("Club data received:", club);
             clubData = club;
+          } else {
+            console.warn("No club found for ID:", eventData.club_id);
           }
+        } else {
+          console.warn("Event has no associated club_id");
         }
 
         // Get collaborating clubs for this event
@@ -83,31 +88,37 @@ export const useEventFetch = (eventId: string | undefined) => {
 
         if (collaborationError) {
           console.error("Error fetching collaborators:", collaborationError);
+          // Continue without collaborators, as they're optional
         } else {
           console.log(`Found ${collaborationData?.length || 0} collaborating clubs`);
         }
 
-        // Format event data with club and collaborators
-        const formattedEvent = formatEventData(eventData, clubData);
+        try {
+          // Format event data with club and collaborators
+          const formattedEvent = formatEventData(eventData, clubData);
 
-        // Add collaborators if present
-        if (collaborationData && collaborationData.length > 0) {
-          formattedEvent.collaborators = collaborationData
-            .filter(item => item.clubs) // Filter out any null clubs
-            .map(item => ({
-              id: item.clubs.id,
-              name: item.clubs.name,
-              description: item.clubs.description || 'No description available',
-              logoUrl: item.clubs.logo_url,
-              category: item.clubs.category || 'General',
-              university: item.clubs.university || 'Unknown University',
-              memberCount: item.clubs.club_members?.[0]?.count || 0,
-              events: []
-            }));
+          // Add collaborators if present
+          if (collaborationData && collaborationData.length > 0) {
+            formattedEvent.collaborators = collaborationData
+              .filter(item => item.clubs) // Filter out any null clubs
+              .map(item => ({
+                id: item.clubs.id,
+                name: item.clubs.name,
+                description: item.clubs.description || 'No description available',
+                logoUrl: item.clubs.logo_url,
+                category: item.clubs.category || 'General',
+                university: item.clubs.university || 'Unknown University',
+                memberCount: item.clubs.club_members?.[0]?.count || 0,
+                events: []
+              }));
+          }
+
+          console.log("Successfully formatted event:", formattedEvent.title);
+          setEvent(formattedEvent);
+        } catch (formatError) {
+          console.error('Error formatting event data:', formatError);
+          setError(formatError instanceof Error ? formatError : new Error('Failed to format event data'));
         }
-
-        console.log("Successfully formatted event:", formattedEvent.title);
-        setEvent(formattedEvent);
       } catch (error) {
         console.error('Error in fetchEventData:', error);
         setError(error instanceof Error ? error : new Error(String(error)));
