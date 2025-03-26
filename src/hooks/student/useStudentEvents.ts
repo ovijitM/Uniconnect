@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -55,8 +56,9 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
         
       // Apply visibility filtering based on user's university
       if (userUniversity) {
-        // Fixed OR clause syntax
-        upcomingEventsQuery = upcomingEventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${JSON.stringify(userUniversity)})`);
+        upcomingEventsQuery = upcomingEventsQuery.or(
+          `visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`
+        );
       } else {
         upcomingEventsQuery = upcomingEventsQuery.eq('visibility', 'public');
       }

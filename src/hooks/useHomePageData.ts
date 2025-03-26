@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Event, Club, EventStatus } from '@/types';
@@ -83,10 +82,9 @@ export const useHomePageData = () => {
           .select('*, clubs!events_club_id_fkey(*)');
         
         if (user && userUniversity) {
-          // Fixed OR clause syntax
           eventsQuery = eventsQuery
             .eq('clubs.status', 'approved')
-            .or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${JSON.stringify(userUniversity)})`);
+            .or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
         } else {
           eventsQuery = eventsQuery
             .eq('clubs.status', 'approved')

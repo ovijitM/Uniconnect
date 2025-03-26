@@ -2,6 +2,7 @@
 import { useClubFormState } from './useClubFormState';
 import { useClubValidation } from './useClubValidation';
 import { useClubCreation } from './useClubCreation';
+import { ClubFormData } from './types';
 import { useToast } from '@/hooks/use-toast';
 
 export const useClubForm = (userId: string | undefined, onSuccess: () => void) => {
@@ -15,8 +16,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
     handleClubInputChange,
     handleClubFileUpload,
     isLoadingProfile,
-    profileError,
-    retryProfileFetch
+    profileError
   } = useClubFormState();
 
   const { toast } = useToast();
@@ -33,8 +33,7 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
       console.log("Starting club creation process...");
       setIsSubmitting(true);
 
-      // Log form data for debugging
-      console.log('Club form data before validation:', clubFormData);
+      console.log('Validating club data:', clubFormData);
       
       // Check if university is provided
       if (!clubFormData.university) {
@@ -140,37 +139,6 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
     }
   };
 
-  const handleCreateClubClick = () => {
-    if (!clubFormData.university) {
-      if (profileError) {
-        toast({
-          title: "Profile Error",
-          description: "Unable to load your university information. Please try again or update your profile.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      toast({
-        title: "University Required",
-        description: "You need to have a university associated with your profile to create a club. Please update your profile first.",
-        variant: "warning",
-      });
-      return;
-    }
-    setIsClubDialogOpen(true);
-  };
-
-  const handleRetryProfileFetch = () => {
-    if (retryProfileFetch) {
-      retryProfileFetch();
-      toast({
-        title: "Retrying",
-        description: "Attempting to reload your profile data...",
-      });
-    }
-  };
-
   return {
     clubFormData,
     setClubFormData,
@@ -181,8 +149,6 @@ export const useClubForm = (userId: string | undefined, onSuccess: () => void) =
     handleCreateClub,
     handleClubFileUpload,
     isLoadingProfile,
-    profileError,
-    handleRetryProfileFetch,
-    handleCreateClubClick
+    profileError
   };
 };

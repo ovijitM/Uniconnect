@@ -16,7 +16,6 @@ interface ClubDialogWrapperProps {
   onFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
   buttonText?: string;
   trigger?: React.ReactNode;
-  isSubmitting?: boolean;
 }
 
 const ClubDialogWrapper: React.FC<ClubDialogWrapperProps> = ({
@@ -27,8 +26,7 @@ const ClubDialogWrapper: React.FC<ClubDialogWrapperProps> = ({
   onSubmit,
   onFileUpload,
   buttonText = "Create Club",
-  trigger,
-  isSubmitting = false
+  trigger
 }) => {
   const [activeTab, setActiveTab] = useState('basic');
   const { 
@@ -97,7 +95,6 @@ const ClubDialogWrapper: React.FC<ClubDialogWrapperProps> = ({
           onNext={handleNext}
           onSubmit={handleSubmit}
           buttonText={buttonText}
-          isSubmitting={isSubmitting}
         />
       </DialogContent>
     </Dialog>

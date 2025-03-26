@@ -57,11 +57,8 @@ export const useClubFormState = () => {
   }, [user?.id, fetchUserProfile]);
 
   // Set the university from user profile when it's available
-  // Only update if the values have changed to prevent infinite loops
   useEffect(() => {
-    if (userUniversity && userUniversityId && 
-        (clubFormData.university !== userUniversity || 
-         clubFormData.universityId !== userUniversityId)) {
+    if (userUniversity && userUniversityId) {
       setClubFormData(prev => ({
         ...prev,
         university: userUniversity,
@@ -83,7 +80,7 @@ export const useClubFormState = () => {
         variant: "destructive",
       });
     }
-  }, [userUniversity, userUniversityId, isClubDialogOpen, isLoadingProfile, profileError, toast, clubFormData.university, clubFormData.universityId]);
+  }, [userUniversity, userUniversityId, isClubDialogOpen, isLoadingProfile, profileError, toast]);
 
   const handleClubInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

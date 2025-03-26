@@ -5,8 +5,10 @@ import { useClubCreation } from '@/hooks/club-admin/useClubCreation';
 import { useClubValidation } from '@/hooks/club-admin/useClubValidation';
 import { useToast } from '@/hooks/use-toast';
 import { useStudentProfile } from '@/hooks/student/useStudentProfile';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useAdminClubCreation = (userId: string | undefined, onSuccess: () => void) => {
+  const { user } = useAuth();
   const [clubFormData, setClubFormData] = useState<ClubFormData>({
     name: '',
     description: '',
@@ -41,7 +43,7 @@ export const useAdminClubCreation = (userId: string | undefined, onSuccess: () =
   // Get university information if available
   const { userUniversity, userUniversityId, fetchUserProfile, isLoadingProfile, error: profileError } = useStudentProfile(userId);
   
-  // Set university info from user profile once when it becomes available
+  // Set university info from user profile only once when it becomes available
   useEffect(() => {
     if (userUniversity && userUniversityId && 
         (!clubFormData.university || !clubFormData.universityId)) {
@@ -52,7 +54,7 @@ export const useAdminClubCreation = (userId: string | undefined, onSuccess: () =
       }));
       console.log('Set university from user profile:', userUniversity, 'with ID:', userUniversityId);
     }
-  }, [userUniversity, userUniversityId, clubFormData.university, clubFormData.universityId]);
+  }, [userUniversity, userUniversityId]);
   
   // Fetch user profile when component mounts
   useEffect(() => {
@@ -103,24 +105,13 @@ export const useAdminClubCreation = (userId: string | undefined, onSuccess: () =
         return;
       }
 
-      // Check if logo is uploaded
-      if (!clubFormData.logoUrl) {
-        toast({
-          title: "Missing Logo",
-          description: "Please upload a logo for your club.",
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
       // Create the club
       const success = await createClub(clubFormData, userId);
       
       if (success) {
         toast({
           title: "Club Created Successfully",
-          description: "The club has been created successfully and is pending approval.",
+          description: "The club has been created successfully.",
         });
         
         // Reset form

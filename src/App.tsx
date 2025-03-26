@@ -21,8 +21,6 @@ import AlertsPage from '@/pages/admin/AlertsPage';
 import ActivityPage from '@/pages/admin/ActivityPage';
 import SettingsPage from '@/pages/admin/SettingsPage';
 import ClubAdminDashboard from '@/pages/club-admin/ClubAdminDashboard';
-import ClubCreatePage from '@/pages/club-admin/CreateClubPage';
-import ClubCreationPage from '@/pages/club-admin/ClubCreationPage';
 import StudentDashboard from '@/pages/student/StudentDashboard';
 
 // Context providers
@@ -89,24 +87,12 @@ function App() {
               </RequireAuth>
             } />
             
-            {/* Club admin routes - keeping only profile and club-related routes */}
+            {/* Other protected routes */}
             <Route path="/club-admin-dashboard/*" element={
               <RequireAuth allowedRoles={['club_admin']}>
                 <ClubAdminDashboard />
               </RequireAuth>
             } />
-            <Route path="/club-admin-dashboard/create-club" element={
-              <RequireAuth allowedRoles={['club_admin']}>
-                <ClubCreatePage />
-              </RequireAuth>
-            } />
-            <Route path="/club-admin-dashboard/create-club-new" element={
-              <RequireAuth allowedRoles={['club_admin']}>
-                <ClubCreationPage />
-              </RequireAuth>
-            } />
-            
-            {/* Student routes */}
             <Route path="/student-dashboard/*" element={
               <RequireAuth allowedRoles={['student']}>
                 <StudentDashboard />

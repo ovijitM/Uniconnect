@@ -14,12 +14,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, sidebar }) 
     <div className="min-h-screen bg-background">
       <Navbar />
       <SidebarProvider defaultOpen={true}>
-        <div className="flex w-full min-h-[calc(100vh-4rem)] pt-16">
+        <div className="flex w-full min-h-screen pt-16">
           {sidebar}
-          <SidebarInset className="flex-1 p-6 overflow-auto">
-            <div className="max-w-7xl mx-auto">
-              {children}
-            </div>
+          <SidebarInset className="p-4 md:p-6">
+            {children}
           </SidebarInset>
         </div>
       </SidebarProvider>

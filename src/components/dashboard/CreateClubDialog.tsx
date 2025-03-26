@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, RefreshCw } from 'lucide-react';
@@ -49,11 +48,10 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
     }
   }, [user?.id, fetchUserProfile]);
 
-  // Pre-fill university data when it becomes available
   useEffect(() => {
-    if (userUniversity && userUniversityId && user?.id && isOpen && 
-        (!formData.university || !formData.universityId)) {
-      // Update the university fields if they're not already set
+    // Update form data with university information when available
+    if (userUniversity && userUniversityId) {
+      // Create fake events to update form data
       const universityEvent = {
         target: { name: 'university', value: userUniversity }
       } as React.ChangeEvent<HTMLInputElement>;
@@ -65,10 +63,8 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
       } as React.ChangeEvent<HTMLInputElement>;
       
       onInputChange(universityIdEvent);
-      
-      console.log("Pre-filled university data:", userUniversity, userUniversityId);
     }
-  }, [userUniversity, userUniversityId, user?.id, isOpen, formData.university, formData.universityId, onInputChange]);
+  }, [userUniversity, userUniversityId, onInputChange]);
 
   const handleOpenChange = (open: boolean) => {
     if (open && !userUniversity) {
