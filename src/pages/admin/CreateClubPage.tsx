@@ -8,23 +8,19 @@ import AdminSidebar from '@/components/dashboard/admin/AdminSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save } from 'lucide-react';
-import { ClubFormData } from '@/hooks/club-admin/types';
-import { useClubForm } from '@/hooks/club-admin/useClubForm';
-import { useClubFileUpload } from '@/hooks/club-admin/useClubFileUpload';
-import { useStudentProfile } from '@/hooks/student/useStudentProfile';
 import BasicInfoTab from '@/components/dashboard/club-dialog/BasicInfoTab';
 import DetailsTab from '@/components/dashboard/club-dialog/DetailsTab';
 import SocialMediaTab from '@/components/dashboard/club-dialog/SocialMediaTab';
 import DocumentUploadTab from '@/components/dashboard/club-dialog/DocumentUploadTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAdminClubCreation } from '@/hooks/admin/useAdminClubCreation';
 
 const CreateClubPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('basic');
-  const { userUniversity, fetchUserProfile, isLoadingProfile, error: profileError } = useStudentProfile(user?.id);
   
   // Initialize club form with success callback to navigate back to clubs list
   const {
@@ -32,9 +28,8 @@ const CreateClubPage: React.FC = () => {
     handleClubInputChange,
     handleCreateClub,
     isSubmitting,
-    isLoadingProfile: isLoadingClubProfile,
-    profileError: clubProfileError
-  } = useClubForm(user?.id, () => {
+    handleFileUpload
+  } = useAdminClubCreation(user?.id, () => {
     toast({
       title: "Club Created",
       description: "The club has been created successfully.",
@@ -42,46 +37,9 @@ const CreateClubPage: React.FC = () => {
     navigate('/admin-dashboard/clubs');
   });
 
-  // Initialize file upload hook
-  const { handleClubFileUpload, isUploading } = useClubFileUpload();
-
-  // Fetch user profile when component mounts
-  useEffect(() => {
-    if (user?.id) {
-      fetchUserProfile();
-    }
-  }, [user?.id, fetchUserProfile]);
-
-  // Handle file uploads for logo and documents
-  const handleFileUpload = (url: string, fileName: string, type: 'logo' | 'document' = 'document') => {
-    handleClubFileUpload(url, fileName, type);
-  };
-
   // Redirect if not logged in or not an admin
   if (!user) {
     return null; // Will redirect to login via RequireAuth
-  }
-
-  // Show error if there's a profile error
-  if (profileError || clubProfileError) {
-    const error = profileError || clubProfileError;
-    return (
-      <DashboardLayout sidebar={<AdminSidebar />}>
-        <div className="p-6">
-          <Alert variant="destructive">
-            <AlertTitle>Error Loading Profile</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-            <Button 
-              onClick={() => fetchUserProfile()} 
-              variant="outline" 
-              className="mt-4"
-            >
-              Retry
-            </Button>
-          </Alert>
-        </div>
-      </DashboardLayout>
-    );
   }
 
   return (
@@ -96,7 +54,7 @@ const CreateClubPage: React.FC = () => {
           </div>
           <Button 
             onClick={() => handleCreateClub()} 
-            disabled={isSubmitting || isUploading}
+            disabled={isSubmitting}
             className="flex items-center gap-2"
           >
             <Save size={16} />
@@ -173,7 +131,7 @@ const CreateClubPage: React.FC = () => {
                   </Button>
                   <Button 
                     onClick={() => handleCreateClub()} 
-                    disabled={isSubmitting || isUploading}
+                    disabled={isSubmitting}
                   >
                     {isSubmitting ? 'Creating...' : 'Create Club'}
                   </Button>

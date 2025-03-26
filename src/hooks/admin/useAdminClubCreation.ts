@@ -1,11 +1,14 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ClubFormData } from '@/hooks/club-admin/types';
 import { useClubCreation } from '@/hooks/club-admin/useClubCreation';
 import { useClubValidation } from '@/hooks/club-admin/useClubValidation';
 import { useToast } from '@/hooks/use-toast';
+import { useStudentProfile } from '@/hooks/student/useStudentProfile';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useAdminClubCreation = (userId: string | undefined, onSuccess: () => void) => {
+  const { user } = useAuth();
   const [clubFormData, setClubFormData] = useState<ClubFormData>({
     name: '',
     description: '',
@@ -36,6 +39,29 @@ export const useAdminClubCreation = (userId: string | undefined, onSuccess: () =
     documentUrl: '',
     documentName: ''
   });
+  
+  // Get university information if available
+  const { userUniversity, userUniversityId, fetchUserProfile } = useStudentProfile(userId);
+  
+  // Set university info from user profile only once when it becomes available
+  useEffect(() => {
+    if (userUniversity && userUniversityId && 
+        (!clubFormData.university || !clubFormData.universityId)) {
+      console.log(`Setting university in form: ${userUniversity} ${userUniversityId}`);
+      setClubFormData(prev => ({
+        ...prev, 
+        university: userUniversity,
+        universityId: userUniversityId
+      }));
+    }
+  }, [userUniversity, userUniversityId]);
+  
+  // Fetch user profile when component mounts
+  useEffect(() => {
+    if (userId) {
+      fetchUserProfile();
+    }
+  }, [userId, fetchUserProfile]);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
