@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -166,6 +165,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
           onFileUpload={handleFileUpload}
           defaultValue={formData.documentUrl}
           buttonText="Upload Event Document"
+          uploadType="document"
         />
       </div>
     </div>

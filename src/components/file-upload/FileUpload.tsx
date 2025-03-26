@@ -12,6 +12,7 @@ export interface FileUploadProps {
   buttonText?: string;
   className?: string;
   defaultValue?: string;
+  uploadType?: 'logo' | 'document';
 }
 
 export const FileUpload: React.FC<FileUploadProps> = ({
@@ -20,7 +21,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'],
   buttonText = 'Upload Document',
   className,
-  defaultValue
+  defaultValue,
+  uploadType = 'document'
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<string | null>(defaultValue || null);
@@ -41,11 +43,21 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       return;
     }
 
-    // Check file type
-    if (allowedTypes.length && !allowedTypes.includes(file.type)) {
+    // Check file type (for documents)
+    if (uploadType === 'document' && allowedTypes.length && !allowedTypes.includes(file.type)) {
       toast({
         title: 'Unsupported file type',
         description: `Please upload one of the following: ${allowedTypes.join(', ')}`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // For logo uploads, only allow image types
+    if (uploadType === 'logo' && !file.type.startsWith('image/')) {
+      toast({
+        title: 'Unsupported file type',
+        description: 'Please upload an image file (PNG, JPG, etc.)',
         variant: 'destructive',
       });
       return;
@@ -55,19 +67,17 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     setFileName(file.name);
 
     try {
-      // Create object URL for the file
-      const objectUrl = URL.createObjectURL(file);
-      setUploadedFile(objectUrl);
-      
+      // The actual upload happens in the parent component via onFileUpload
+      // We just pass the file to the parent and let it handle the upload
       if (onFileUpload) {
-        onFileUpload(objectUrl, file.name);
+        onFileUpload(URL.createObjectURL(file), file.name);
       }
-
-      toast({
-        title: 'File processed successfully',
-        description: `${file.name} has been processed`,
-        variant: 'default',
-      });
+      
+      // Store temporary URL for preview
+      setUploadedFile(URL.createObjectURL(file));
+      
+      // Note: The real URL will be set by the parent when upload is complete
+      // This is just for preview purposes
     } catch (error) {
       console.error('Error processing file:', error);
       toast({
@@ -112,7 +122,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               className="hidden" 
               onChange={handleFileChange}
               disabled={isUploading}
-              accept={allowedTypes.join(',')}
+              accept={uploadType === 'logo' ? 'image/*' : allowedTypes.join(',')}
             />
           </label>
         </div>
@@ -121,9 +131,9 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           <div className="flex items-center flex-1 space-x-3">
             <File className="w-8 h-8 text-blue-500" />
             <div className="flex-1 truncate">
-              <p className="font-medium text-sm truncate">{fileName || 'Document'}</p>
+              <p className="font-medium text-sm truncate">{fileName || 'File'}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {uploadedFile}
+                {uploadedFile.substring(0, 50)}...
               </p>
             </div>
           </div>

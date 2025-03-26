@@ -41,7 +41,7 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
       console.log(`Starting ${type} upload with file: ${file.name}, size: ${file.size} bytes`);
       
       // Use the club file upload hook for the actual upload
-      const fileUrl = await handleClubFileUpload(file);
+      const fileUrl = await handleClubFileUpload(file, type);
       
       if (fileUrl && onFileUpload) {
         onFileUpload(fileUrl, file.name, type);

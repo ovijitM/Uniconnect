@@ -12,7 +12,7 @@ export const useClubFileUpload = (clubId?: string) => {
     maxSize: 5, // 5MB max size
   });
 
-  const handleClubFileUpload = async (file: File): Promise<string | null> => {
+  const handleClubFileUpload = async (file: File, fileType: 'logo' | 'document' = 'document'): Promise<string | null> => {
     try {
       setIsUploading(true);
       
@@ -25,22 +25,22 @@ export const useClubFileUpload = (clubId?: string) => {
         return null;
       }
 
-      console.log(`Processing club file: ${file.name}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+      console.log(`Processing club ${fileType}: ${file.name}, size: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
       
-      const fileUrl = await uploadDocument(file);
+      const fileUrl = await uploadDocument(file, fileType);
       
       if (fileUrl) {
-        console.log('Club file processed successfully, URL:', fileUrl);
+        console.log(`Club ${fileType} uploaded successfully, URL:`, fileUrl);
         return fileUrl;
       }
       
-      console.log('Club file processing returned null URL');
+      console.log(`Club ${fileType} upload returned null URL`);
       return null;
     } catch (error) {
-      console.error('Error processing club file:', error);
+      console.error(`Error uploading club ${fileType}:`, error);
       toast({
-        title: 'Processing Failed',
-        description: error instanceof Error ? error.message : 'There was an error processing your file',
+        title: 'Upload Failed',
+        description: error instanceof Error ? error.message : 'There was an error uploading your file',
         variant: 'destructive',
       });
       return null;
