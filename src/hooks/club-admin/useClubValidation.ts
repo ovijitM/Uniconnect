@@ -16,7 +16,6 @@ export const useClubValidation = () => {
       'name',
       'description',
       'category',
-      'tagline',
       'university'
     ];
     
@@ -43,7 +42,6 @@ export const useClubValidation = () => {
       name: formData.name,
       description: formData.description,
       category: formData.category,
-      tagline: formData.tagline,
       university: formData.university,
       universityId: formData.universityId,
       logoUrl: formData.logoUrl?.substring(0, 30) + '...',
