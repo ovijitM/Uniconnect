@@ -2,12 +2,14 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useStudentClubs = (userId: string | undefined, onSuccess?: () => void) => {
   const [isLoadingClubs, setIsLoadingClubs] = useState(false);
   const [clubs, setClubs] = useState<any[]>([]);
   const [joinedClubs, setJoinedClubs] = useState<any[]>([]);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const fetchClubs = async (userUniversity?: string | null) => {
     if (!userId) return;
@@ -61,7 +63,7 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
   };
 
   const joinClub = async (clubId: string) => {
-    if (!userId) {
+    if (!user || !userId) {
       toast({
         title: 'Authentication Required',
         description: 'Please log in to join clubs',
@@ -95,7 +97,7 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
         return;
       }
       
-      // Join the club
+      // Join the club - ensure we're inserting with correct user_id
       const { error } = await supabase
         .from('club_members')
         .insert({
@@ -112,6 +114,8 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
             description: 'You are already a member of this club',
             variant: 'default',
           });
+        } else if (error.message?.includes('row-level security policy')) {
+          throw new Error('Permission denied. You may not have the right privileges to join this club.');
         } else {
           throw error;
         }
@@ -133,11 +137,7 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       if (onSuccess) onSuccess();
     } catch (error: any) {
       console.error('Error joining club:', error);
-      toast({
-        title: 'Failed to join club',
-        description: error.message || 'An unexpected error occurred',
-        variant: 'destructive',
-      });
+      throw error; // Re-throw to allow the component to handle the error
     }
   };
 

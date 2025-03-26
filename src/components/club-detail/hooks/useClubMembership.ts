@@ -115,6 +115,12 @@ export const useClubMembership = (
             description: "You're already a member of this club",
             variant: "default",
           });
+        } else if (error.message?.includes('row-level security policy')) {
+          toast({
+            title: "Permission denied",
+            description: "You don't have permission to join this club",
+            variant: "destructive",
+          });
         } else {
           throw error;
         }

@@ -4,12 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Users, Tag, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { toast } from '@/hooks/use-toast';
 
 interface AvailableClubsProps {
   clubs: any[];
   joinedClubIds: string[];
   isLoading: boolean;
-  onJoinClub: (clubId: string) => void;
+  onJoinClub: (clubId: string) => Promise<void>;
 }
 
 const AvailableClubs: React.FC<AvailableClubsProps> = ({ 
@@ -25,9 +26,18 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
   const [joiningClubId, setJoiningClubId] = useState<string | null>(null);
   
   const handleJoinClub = async (clubId: string) => {
+    if (joiningClubId) return; // Prevent multiple clicks
+    
     setJoiningClubId(clubId);
     try {
       await onJoinClub(clubId);
+    } catch (error: any) {
+      console.error('Error in handleJoinClub:', error);
+      toast({
+        title: "Failed to join club",
+        description: error.message || "Please try again later",
+        variant: "destructive",
+      });
     } finally {
       setJoiningClubId(null);
     }
