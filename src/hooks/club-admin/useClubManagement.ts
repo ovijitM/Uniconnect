@@ -13,7 +13,6 @@ export const useClubManagement = (onRefresh: () => void) => {
     name: '',
     description: '',
     category: '',
-    // Added all fields to match the club creation form
     tagline: '',
     establishedYear: '',
     affiliation: '',
@@ -37,7 +36,6 @@ export const useClubManagement = (onRefresh: () => void) => {
     university: '',
     universityId: '',
     
-    // Add new leadership fields
     presidentChairName: '',
     presidentChairContact: '',
     executiveMembersRoles: '',
@@ -52,7 +50,6 @@ export const useClubManagement = (onRefresh: () => void) => {
       name: club.name,
       description: club.description,
       category: club.category,
-      // Add all the additional fields with fallbacks
       tagline: club.tagline || '',
       establishedYear: club.establishedYear ? String(club.establishedYear) : '',
       affiliation: club.affiliation || '',
@@ -76,7 +73,6 @@ export const useClubManagement = (onRefresh: () => void) => {
       university: club.university || '',
       universityId: club.universityId || '',
       
-      // Map new leadership fields
       presidentChairName: club.presidentChairName || '',
       presidentChairContact: club.presidentChairContact || '',
       executiveMembersRoles: club.executiveMembersRoles ? JSON.stringify(club.executiveMembersRoles) : '',
@@ -178,7 +174,7 @@ export const useClubManagement = (onRefresh: () => void) => {
           how_to_join: editFormData.howToJoin || null,
           president_name: editFormData.presidentName || null,
           president_contact: editFormData.presidentContact || null,
-          executive_members: executiveMembers,
+          executive_members: JSON.parse(editFormData.executiveMembers || '{}'),
           advisors: advisors,
           phone_number: editFormData.phoneNumber || null,
           website: editFormData.website || null,
@@ -190,7 +186,6 @@ export const useClubManagement = (onRefresh: () => void) => {
           university_id: universityId || null,
           updated_at: new Date().toISOString(),
           
-          // Add new leadership fields
           president_chair_name: editFormData.presidentChairName || null,
           president_chair_contact: editFormData.presidentChairContact || null,
           executive_members_roles: executiveMembersRoles,

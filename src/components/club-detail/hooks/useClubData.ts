@@ -247,7 +247,7 @@ export const useClubData = () => {
           presidentContact: clubData.president_contact,
           executiveMembers: clubData.executive_members,
           advisors: clubData.advisors,
-          phone_number: clubData.phone_number,
+          phoneNumber: clubData.phone_number,
           website: clubData.website,
           facebookLink: clubData.facebook_link,
           instagramLink: clubData.instagram_link,

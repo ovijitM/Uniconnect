@@ -52,7 +52,6 @@ const MediaContactTab: React.FC<MediaContactTabProps> = ({
         <div className="space-y-2">
           <Label>Club Logo</Label>
           <FileUpload 
-            folder="club-logos"
             onUploadComplete={handleLogoUpload}
             accept="image/*"
             maxSize={5}
@@ -63,7 +62,6 @@ const MediaContactTab: React.FC<MediaContactTabProps> = ({
         <div className="space-y-2">
           <Label>Club Documents (Constitution, Bylaws, etc.)</Label>
           <FileUpload 
-            folder="club-documents"
             onUploadComplete={handleDocumentUpload}
             accept=".pdf,.doc,.docx"
             maxSize={10}

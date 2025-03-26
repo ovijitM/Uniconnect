@@ -1,4 +1,3 @@
-
 // Event form data type
 export interface EventFormData {
   title: string;
@@ -33,7 +32,7 @@ export interface EventFormData {
   communityLink: string;
   eventWebsite: string;
   eventHashtag: string;
-  howToRegister: string; // Added this property
+  howToRegister: string;
   visibility: 'public' | 'university_only';
 }
 
@@ -83,4 +82,10 @@ export interface ClubFormData {
   budgetInfo: string;
   meetingInfo: string;
   additionalNotes: string;
+  // New leadership fields
+  presidentChairName: string;
+  presidentChairContact: string;
+  executiveMembersRoles: string;
+  facultyAdvisors: string;
+  primaryFacultyAdvisor: string;
 }
