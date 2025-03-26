@@ -11,16 +11,25 @@ export const useClubData = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [relatedClubs, setRelatedClubs] = useState<Club[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     async function fetchClubData() {
-      if (!clubId) return;
+      console.log("useClubData: Starting fetch for clubId:", clubId);
+      if (!clubId) {
+        console.error("No clubId provided");
+        setIsLoading(false);
+        setError(new Error("No club ID provided"));
+        return;
+      }
       
       try {
         setIsLoading(true);
+        setError(null);
         
         // Fetch club details with all the new fields
+        console.log("Fetching club details for clubId:", clubId);
         const { data: clubData, error: clubError } = await supabase
           .from('clubs')
           .select(`
@@ -58,14 +67,20 @@ export const useClubData = () => {
         
         if (clubError) {
           console.error('Error fetching club data:', clubError);
+          setError(clubError);
           throw clubError;
         }
         
+        console.log("Club data fetched:", clubData);
+        
         if (!clubData) {
+          console.error("Club not found");
+          setError(new Error('Club not found'));
           throw new Error('Club not found');
         }
         
         // Fetch events for this club
+        console.log("Fetching events for clubId:", clubId);
         const { data: eventsData, error: eventsError } = await supabase
           .from('events')
           .select(`
@@ -108,9 +123,15 @@ export const useClubData = () => {
           .eq('club_id', clubId)
           .order('date');
         
-        if (eventsError) throw eventsError;
+        if (eventsError) {
+          console.error("Error fetching events:", eventsError);
+          throw eventsError;
+        }
+        
+        console.log(`Fetched ${eventsData?.length || 0} events for club`);
         
         // Fetch related clubs (same category) with all fields
+        console.log("Fetching related clubs with category:", clubData.category);
         const { data: relatedData, error: relatedError } = await supabase
           .from('clubs')
           .select(`
@@ -132,6 +153,7 @@ export const useClubData = () => {
         if (relatedError) {
           console.error('Error fetching related clubs:', relatedError);
         } else {
+          console.log(`Fetched ${relatedData?.length || 0} related clubs`);
           const formattedRelatedClubs = relatedData.map(club => {
             let memberCount = 0;
             if (club.club_members && Array.isArray(club.club_members) && club.club_members.length > 0) {
@@ -191,6 +213,8 @@ export const useClubData = () => {
           
           memberCount = isNaN(memberCount) ? 0 : memberCount;
         }
+        
+        console.log("Processing club data with member count:", memberCount);
         
         // Format the club data with all new fields
         const formattedClub: Club = {
@@ -292,10 +316,13 @@ export const useClubData = () => {
           };
         });
         
+        console.log(`Setting ${formattedEvents.length} formatted events`);
+        
         setClub(formattedClub);
         setEvents(formattedEvents);
       } catch (error) {
-        console.error('Error fetching club data:', error);
+        console.error('Error in fetchClubData:', error);
+        setError(error instanceof Error ? error : new Error(String(error)));
         toast({
           title: 'Error fetching club data',
           description: 'Failed to load club details. Please try again later.',
@@ -314,6 +341,7 @@ export const useClubData = () => {
     setClub,
     events,
     isLoading,
-    relatedClubs
+    relatedClubs,
+    error
   };
 };

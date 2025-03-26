@@ -4,7 +4,7 @@ import { useClubMembership } from './useClubMembership';
 import { useClubAdmin } from './useClubAdmin';
 
 export const useClubDetail = () => {
-  const { club, setClub, events, isLoading, relatedClubs } = useClubData();
+  const { club, setClub, events, isLoading, relatedClubs, error } = useClubData();
   const { isMember, isJoining, handleJoinClub } = useClubMembership(club, setClub);
   const { isAdmin, isClubAdmin } = useClubAdmin();
 
@@ -17,6 +17,7 @@ export const useClubDetail = () => {
     relatedClubs,
     isAdmin,
     isClubAdmin,
-    handleJoinClub
+    handleJoinClub,
+    error
   };
 };

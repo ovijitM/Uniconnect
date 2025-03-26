@@ -38,13 +38,25 @@ const ClubsPage: React.FC = () => {
   }, [user?.id]);
 
   const handleReview = async (id: string) => {
-    const result = await reviewClubOrEvent(id, 'club');
-    if (result.success) {
-      navigate(`/clubs/${id}`);
+    console.log("Starting review process for club ID:", id);
+    try {
+      const result = await reviewClubOrEvent(id, 'club');
+      console.log("Review result:", result);
+      if (result.success) {
+        navigate(`/clubs/${id}`);
+      }
+    } catch (error) {
+      console.error("Error in handleReview:", error);
+      toast({
+        title: 'Error',
+        description: 'Failed to review club.',
+        variant: 'destructive',
+      });
     }
   };
 
   const handleViewClub = (clubId: string) => {
+    console.log("Navigating to club detail page:", clubId);
     navigate(`/clubs/${clubId}`);
   };
 
@@ -76,7 +88,7 @@ const ClubsPage: React.FC = () => {
       });
 
       // Refresh the data
-      fetchAdminData();
+      await fetchAdminData();
     } catch (error) {
       console.error('Error approving club:', error);
       toast({

@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import Layout from '@/components/Layout';
@@ -16,8 +16,12 @@ import ClubCollaborations from '@/components/club-detail/ClubCollaborations';
 import CollaborationRequestDialog from '@/components/club-detail/CollaborationRequestDialog';
 import { Separator } from '@/components/ui/separator';
 import { useCollaborations } from '@/hooks/club-admin/useCollaborations';
+import { useToast } from '@/hooks/use-toast';
 
 const ClubDetailPage: React.FC = () => {
+  const { clubId } = useParams<{ clubId: string }>();
+  const { toast } = useToast();
+  
   const {
     club,
     events,
@@ -27,8 +31,20 @@ const ClubDetailPage: React.FC = () => {
     relatedClubs,
     isAdmin,
     isClubAdmin,
-    handleJoinClub
+    handleJoinClub,
+    error
   } = useClubDetail();
+
+  useEffect(() => {
+    if (error) {
+      console.error("Error loading club detail:", error);
+      toast({
+        title: 'Error loading club',
+        description: 'There was an error loading the club details. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  }, [error, toast]);
 
   const {
     incomingRequests,
@@ -39,6 +55,14 @@ const ClubDetailPage: React.FC = () => {
     sendCollaborationRequest,
     respondToCollaborationRequest
   } = useCollaborations(club?.id);
+
+  console.log("ClubDetailPage: Rendering with club data:", { 
+    clubId, 
+    isLoading, 
+    clubExists: !!club, 
+    memberCount: club?.memberCount,
+    error 
+  });
 
   if (isLoading) {
     return <ClubDetailSkeleton />;
