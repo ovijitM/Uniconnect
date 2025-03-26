@@ -1,92 +1,160 @@
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FileUpload } from '@/components/file-upload/FileUpload';
-import { Badge } from '@/components/ui/badge';
-import { ClubFormData } from '@/hooks/club-admin/types';
-import { Trash2 } from 'lucide-react';
+import { Upload, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useClubFileUpload } from '@/hooks/club-admin/useClubFileUpload';
+import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface DocumentUploadTabProps {
-  formData: ClubFormData;
-  onFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
+  formData: {
+    documentUrl?: string;
+    documentName?: string;
+    logoUrl?: string;
+  };
+  onFileUpload?: (url: string, fileName: string, type: 'logo' | 'document') => void;
 }
 
-const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({ 
+const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
   formData,
   onFileUpload
 }) => {
-  const handleDocumentUpload = (url: string, fileName: string) => {
-    if (onFileUpload) {
-      onFileUpload(url, fileName, 'document');
-    }
-  };
-
-  const removeDocument = () => {
-    if (onFileUpload) {
-      onFileUpload('', '', 'document');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [documentUploading, setDocumentUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const { handleClubFileUpload, isUploading } = useClubFileUpload();
+  
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'document' | 'logo') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      setUploadError(null);
+      if (type === 'logo') setLogoUploading(true);
+      else setDocumentUploading(true);
+      
+      console.log(`Starting ${type} upload with file: ${file.name}, size: ${file.size} bytes`);
+      
+      // Use the club file upload hook for the actual upload
+      const fileUrl = await handleClubFileUpload(file, type);
+      
+      if (fileUrl && onFileUpload) {
+        onFileUpload(fileUrl, file.name, type);
+        toast({
+          title: 'Upload successful',
+          description: `${type === 'logo' ? 'Logo' : 'Document'} uploaded successfully`,
+        });
+      } else {
+        setUploadError(`Failed to upload ${type}. Please try again.`);
+      }
+    } catch (error) {
+      console.error(`Error uploading ${type}:`, error);
+      setUploadError(error instanceof Error ? error.message : `Error uploading ${type}`);
+      toast({
+        title: `Error uploading ${type}`,
+        description: error instanceof Error ? error.message : 'An unknown error occurred',
+        variant: 'destructive',
+      });
+    } finally {
+      if (type === 'logo') setLogoUploading(false);
+      else setDocumentUploading(false);
     }
   };
 
   return (
     <div className="space-y-6">
+      {uploadError && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Upload Failed</AlertTitle>
+          <AlertDescription>{uploadError}</AlertDescription>
+        </Alert>
+      )}
+      
       <div className="space-y-2">
-        <Label className="text-base font-semibold">
-          Club Documents
-        </Label>
-        <p className="text-sm text-muted-foreground mb-4">
-          Upload documents like your club constitution, bylaws, or other important files.
-        </p>
-        
-        {formData.documentUrl ? (
-          <div className="flex items-center gap-4 p-4 border rounded-md">
-            <div className="flex-1">
-              <p className="font-medium">{formData.documentName}</p>
-              <a 
-                href={formData.documentUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:underline"
-              >
-                View Document
-              </a>
-            </div>
-            <button 
-              type="button"
-              onClick={removeDocument}
-              className="text-destructive hover:text-destructive/80"
-              aria-label="Remove document"
-            >
-              <Trash2 className="h-5 w-5" />
-            </button>
-          </div>
-        ) : (
-          <FileUpload 
-            onUploadComplete={(url, fileName) => handleDocumentUpload(url, fileName)}
-            acceptedFileTypes={['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']}
-            maxFileSize={10}
-            buttonText="Upload Document"
-            helperText="Upload your club constitution, bylaws, or other important documents"
-            uploadType="document"
+        <Label htmlFor="logo">Club Logo Image *</Label>
+        <div className="flex items-center gap-3">
+          <Input
+            id="logo"
+            type="file"
+            accept="image/*"
+            ref={logoInputRef}
+            className="hidden"
+            onChange={(e) => handleFileChange(e, 'logo')}
           />
-        )}
+          <Button 
+            type="button" 
+            variant={formData.logoUrl ? "outline" : "destructive"}
+            onClick={() => logoInputRef.current?.click()}
+            className="w-full"
+            disabled={logoUploading}
+          >
+            {logoUploading ? 'Uploading...' : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                {formData.logoUrl ? 'Change Logo' : 'Upload Logo'}
+              </>
+            )}
+          </Button>
+          {formData.logoUrl ? (
+            <div className="flex items-center gap-2">
+              <img 
+                src={formData.logoUrl} 
+                alt="Logo preview" 
+                className="h-10 w-10 object-cover rounded-md" 
+              />
+              <CheckCircle className="h-4 w-4 text-green-500" />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="text-sm">Required</span>
+            </div>
+          )}
+        </div>
+        <p className="text-sm text-muted-foreground">Upload a logo for your club (PNG, JPG, SVG).</p>
       </div>
 
-      <div className="mt-8 border-t pt-6">
-        <h3 className="font-semibold mb-4">Final Submission Notes</h3>
-        <ul className="space-y-2 text-sm">
-          <li className="flex items-start gap-2">
-            <Badge variant="outline" className="mt-0.5">Note</Badge>
-            <span>Your club will be submitted for review and approval by university administrators.</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <Badge variant="outline" className="mt-0.5">Note</Badge>
-            <span>You'll be notified when your club is approved or if there are any issues.</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <Badge variant="outline" className="mt-0.5">Note</Badge>
-            <span>Once approved, you can add events and start managing your club activities.</span>
-          </li>
-        </ul>
+      <div className="space-y-2">
+        <Label htmlFor="document">Club Constitution (Optional)</Label>
+        <div className="flex items-center gap-3">
+          <Input
+            id="document"
+            type="file"
+            accept=".pdf,.doc,.docx"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={(e) => handleFileChange(e, 'document')}
+          />
+          <Button 
+            type="button" 
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full"
+            disabled={documentUploading}
+          >
+            {documentUploading ? 'Uploading...' : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                {formData.documentUrl ? 'Change Document' : 'Upload Document'}
+              </>
+            )}
+          </Button>
+          {formData.documentUrl && (
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <span className="text-sm text-muted-foreground truncate max-w-[200px]">
+                {formData.documentName || 'Document uploaded'}
+              </span>
+            </div>
+          )}
+        </div>
+        <p className="text-sm text-muted-foreground">Upload your club's constitution or bylaws (PDF, DOC).</p>
       </div>
     </div>
   );

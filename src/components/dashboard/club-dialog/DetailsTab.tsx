@@ -3,144 +3,204 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ClubFormData } from '@/hooks/club-admin/types';
 
 interface DetailsTabProps {
-  formData: ClubFormData;
+  formData: {
+    establishedYear?: string;
+    affiliation?: string;
+    whyJoin?: string;
+    regularEvents?: string;
+    signatureEvents?: string;
+    communityEngagement?: string;
+    whoCanJoin?: string;
+    membershipFee?: string;
+    howToJoin?: string;
+    presidentName?: string;
+    presidentContact?: string;
+    executiveMembers?: string;
+    advisors?: string;
+  };
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
 const DetailsTab: React.FC<DetailsTabProps> = ({ formData, onInputChange }) => {
-  const handleMembershipFeeChange = (value: string) => {
-    const event = {
-      target: {
-        name: 'membershipFee',
-        value
-      }
-    } as React.ChangeEvent<HTMLInputElement>;
-    
-    onInputChange(event);
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <Label htmlFor="affiliation" className="text-base font-semibold">
-          Affiliation
+    <div className="space-y-4 py-4">
+      <div className="grid gap-2">
+        <Label htmlFor="establishedYear">
+          Established Year*
+        </Label>
+        <Input
+          id="establishedYear"
+          name="establishedYear"
+          type="number"
+          value={formData.establishedYear || ''}
+          onChange={onInputChange}
+          required
+          placeholder="e.g., 2023"
+        />
+      </div>
+      
+      <div className="grid gap-2">
+        <Label htmlFor="affiliation">
+          Affiliation*
         </Label>
         <Input
           id="affiliation"
           name="affiliation"
-          value={formData.affiliation}
+          value={formData.affiliation || ''}
           onChange={onInputChange}
-          placeholder="Department or organization the club is affiliated with"
+          required
+          placeholder="Department, Organization, etc."
         />
       </div>
       
-      <div className="space-y-1">
-        <Label htmlFor="whyJoin" className="text-base font-semibold">
-          Why Join
+      <div className="grid gap-2">
+        <Label htmlFor="whyJoin">
+          Why Join*
         </Label>
         <Textarea
           id="whyJoin"
           name="whyJoin"
-          value={formData.whyJoin}
+          value={formData.whyJoin || ''}
           onChange={onInputChange}
-          placeholder="Reasons why students should join your club"
-          rows={3}
+          required
+          placeholder="Explain the benefits of joining your club"
         />
       </div>
       
-      <div className="space-y-1">
-        <Label htmlFor="regularEvents" className="text-base font-semibold">
+      <div className="grid gap-2">
+        <Label htmlFor="whoCanJoin">
+          Who Can Join*
+        </Label>
+        <Input
+          id="whoCanJoin"
+          name="whoCanJoin"
+          value={formData.whoCanJoin || ''}
+          onChange={onInputChange}
+          required
+          placeholder="Eligibility criteria for joining"
+        />
+      </div>
+      
+      <div className="grid gap-2">
+        <Label htmlFor="membershipFee">
+          Membership Fee*
+        </Label>
+        <Input
+          id="membershipFee"
+          name="membershipFee"
+          value={formData.membershipFee || ''}
+          onChange={onInputChange}
+          required
+          placeholder="Free, $10/semester, etc."
+        />
+      </div>
+      
+      <div className="grid gap-2">
+        <Label htmlFor="howToJoin">
+          How To Join*
+        </Label>
+        <Textarea
+          id="howToJoin"
+          name="howToJoin"
+          value={formData.howToJoin || ''}
+          onChange={onInputChange}
+          required
+          placeholder="Describe the process to join your club"
+        />
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="presidentName">
+          President Name*
+        </Label>
+        <Input
+          id="presidentName"
+          name="presidentName"
+          value={formData.presidentName || ''}
+          onChange={onInputChange}
+          required
+          placeholder="Name of the club president"
+        />
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="presidentContact">
+          President Contact*
+        </Label>
+        <Input
+          id="presidentContact"
+          name="presidentContact"
+          value={formData.presidentContact || ''}
+          onChange={onInputChange}
+          required
+          placeholder="Email or phone of the president"
+        />
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="regularEvents">
           Regular Events
         </Label>
         <Textarea
           id="regularEvents"
           name="regularEvents"
-          value={formData.regularEvents}
+          value={formData.regularEvents || ''}
           onChange={onInputChange}
-          placeholder="Comma-separated list of regular events (weekly, monthly)"
-          rows={2}
+          placeholder="List regular events, separated by commas"
         />
       </div>
-      
-      <div className="space-y-1">
-        <Label htmlFor="signatureEvents" className="text-base font-semibold">
+
+      <div className="grid gap-2">
+        <Label htmlFor="signatureEvents">
           Signature Events
         </Label>
         <Textarea
           id="signatureEvents"
           name="signatureEvents"
-          value={formData.signatureEvents}
+          value={formData.signatureEvents || ''}
           onChange={onInputChange}
-          placeholder="Comma-separated list of major annual events"
-          rows={2}
+          placeholder="List signature events, separated by commas"
         />
       </div>
-      
-      <div className="space-y-1">
-        <Label htmlFor="communityEngagement" className="text-base font-semibold">
+
+      <div className="grid gap-2">
+        <Label htmlFor="communityEngagement">
           Community Engagement
         </Label>
         <Textarea
           id="communityEngagement"
           name="communityEngagement"
-          value={formData.communityEngagement}
+          value={formData.communityEngagement || ''}
           onChange={onInputChange}
-          placeholder="How the club engages with the broader community"
-          rows={3}
+          placeholder="How your club engages with the community"
         />
       </div>
-      
-      <div className="space-y-1">
-        <Label htmlFor="whoCanJoin" className="text-base font-semibold">
-          Who Can Join
+
+      <div className="grid gap-2">
+        <Label htmlFor="executiveMembers">
+          Executive Members
         </Label>
         <Textarea
-          id="whoCanJoin"
-          name="whoCanJoin"
-          value={formData.whoCanJoin}
+          id="executiveMembers"
+          name="executiveMembers"
+          value={formData.executiveMembers || ''}
           onChange={onInputChange}
-          placeholder="Eligibility criteria for joining the club"
-          rows={2}
+          placeholder="JSON format: {'role': 'name'}"
         />
       </div>
-      
-      <div className="space-y-1">
-        <Label htmlFor="membershipFee" className="text-base font-semibold">
-          Membership Fee
-        </Label>
-        <Select 
-          value={formData.membershipFee} 
-          onValueChange={handleMembershipFeeChange}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select membership fee" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Free">Free</SelectItem>
-            <SelectItem value="Less than $10">Less than $10</SelectItem>
-            <SelectItem value="$10 - $20">$10 - $20</SelectItem>
-            <SelectItem value="$20 - $50">$20 - $50</SelectItem>
-            <SelectItem value="More than $50">More than $50</SelectItem>
-            <SelectItem value="Varies">Varies</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div className="space-y-1">
-        <Label htmlFor="howToJoin" className="text-base font-semibold">
-          How To Join
+
+      <div className="grid gap-2">
+        <Label htmlFor="advisors">
+          Advisors
         </Label>
         <Textarea
-          id="howToJoin"
-          name="howToJoin"
-          value={formData.howToJoin}
+          id="advisors"
+          name="advisors"
+          value={formData.advisors || ''}
           onChange={onInputChange}
-          placeholder="Process for joining the club"
-          rows={2}
+          placeholder="List advisors, separated by commas"
         />
       </div>
     </div>

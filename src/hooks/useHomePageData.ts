@@ -1,9 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Event, Club, EventStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAuthFallback } from './useAuthFallback';
 
 export const useHomePageData = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -11,16 +11,7 @@ export const useHomePageData = () => {
   const [featuredEvent, setFeaturedEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  
-  let authData;
-  try {
-    authData = useAuth();
-  } catch (error) {
-    console.warn('AuthContext not available, using fallback');
-    authData = useAuthFallback();
-  }
-  
-  const { user } = authData;
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchData() {
@@ -92,6 +83,7 @@ export const useHomePageData = () => {
           .select('*, clubs!events_club_id_fkey(*)');
         
         if (user && userUniversity) {
+          // Fixed OR clause syntax
           eventsQuery = eventsQuery
             .eq('clubs.status', 'approved')
             .or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${JSON.stringify(userUniversity)})`);

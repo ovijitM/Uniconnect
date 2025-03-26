@@ -1,111 +1,120 @@
 
-import { useState } from 'react';
-import { ClubFormData } from './types';
-import { supabase } from '@/integrations/supabase/client';
-import { addClubAdmin } from './utils/clubAdminUtils';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { ClubFormData } from './types';
+import { findOrCreateUniversity } from './utils/universityUtils';
+import { insertClubData } from './utils/clubDataUtils';
 
 export const useClubCreation = () => {
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const createClub = async (formData: ClubFormData, userId?: string): Promise<boolean> => {
-    if (!userId) {
-      toast({
-        title: "Authentication Error",
-        description: "User ID is required to create a club.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
+  const createClub = async (clubFormData: ClubFormData, userId: string | undefined): Promise<boolean> => {
     try {
-      setIsLoading(true);
-      console.log('Creating club with data:', formData);
-
-      // Convert established year to number if it exists
-      const establishedYear = formData.establishedYear 
-        ? parseInt(formData.establishedYear) 
-        : null;
-
-      // Convert string arrays to actual arrays if they are strings
-      const processStringArray = (value: string | string[] | null): string[] | null => {
-        if (!value) return null;
-        if (typeof value === 'string') {
-          return value.split(',').map(item => item.trim()).filter(Boolean);
-        }
-        return value;
-      };
-
-      const regularEvents = processStringArray(formData.regularEvents);
-      const signatureEvents = processStringArray(formData.signatureEvents);
-      const advisors = processStringArray(formData.advisors);
-
-      // Create the club in the database
-      const { data: club, error } = await supabase
-        .from('clubs')
-        .insert({
-          name: formData.name,
-          description: formData.description,
-          category: formData.category,
-          university: formData.university,
-          university_id: formData.universityId,
-          logo_url: formData.logoUrl,
-          tagline: formData.tagline,
-          established_year: establishedYear,
-          affiliation: formData.affiliation,
-          why_join: formData.whyJoin,
-          regular_events: regularEvents,
-          signature_events: signatureEvents,
-          community_engagement: formData.communityEngagement,
-          who_can_join: formData.whoCanJoin,
-          membership_fee: formData.membershipFee,
-          how_to_join: formData.howToJoin,
-          president_name: formData.presidentName,
-          president_contact: formData.presidentContact,
-          executive_members: formData.executiveMembers ? JSON.parse(formData.executiveMembers) : null,
-          advisors: advisors,
-          phone_number: formData.phoneNumber,
-          website: formData.website,
-          facebook_link: formData.facebookLink,
-          instagram_link: formData.instagramLink,
-          twitter_link: formData.twitterLink,
-          discord_link: formData.discordLink,
-          document_url: formData.documentUrl,
-          document_name: formData.documentName,
-          status: 'pending' // Set status to pending for admin approval
-        })
-        .select('id')
-        .single();
-
-      if (error) {
-        console.error('Error creating club:', error);
-        throw error;
+      console.log("Starting createClub function with user ID:", userId);
+      
+      if (!userId) {
+        console.error("No user ID provided");
+        toast({
+          title: 'Authentication Error',
+          description: 'You must be logged in to create a club.',
+          variant: 'destructive',
+        });
+        return false;
       }
 
-      console.log('Club created successfully with ID:', club.id);
+      // Check if required fields are provided
+      if (!clubFormData.name || !clubFormData.description || !clubFormData.category) {
+        console.error("Missing required basic fields");
+        toast({
+          title: 'Missing Required Fields',
+          description: 'Please fill in all required fields (name, description, category).',
+          variant: 'destructive',
+        });
+        return false;
+      }
 
-      // Add the user as an admin for this club
-      await addClubAdmin(club.id, userId);
+      // Check if university is provided
+      if (!clubFormData.university) {
+        console.error("No university provided");
+        toast({
+          title: 'Missing University',
+          description: 'A university affiliation is required to create a club.',
+          variant: 'destructive',
+        });
+        return false;
+      }
 
-      toast({
-        title: "Success",
-        description: "Club created successfully and pending approval.",
-      });
+      // Check if logo is uploaded
+      if (!clubFormData.logoUrl) {
+        console.error("No logo URL provided");
+        toast({
+          title: 'Missing Logo',
+          description: 'Please upload a logo for your club.',
+          variant: 'destructive',
+        });
+        return false;
+      }
 
-      return true;
+      // Find or create university
+      let universityId;
+      try {
+        // Use the provided universityId if available, otherwise find or create
+        universityId = clubFormData.universityId || await findOrCreateUniversity(clubFormData.university);
+        console.log("Creating club with university:", clubFormData.university, "and universityId:", universityId);
+      } catch (error: any) {
+        console.error("Error processing university:", error);
+        toast({
+          title: 'Database Error',
+          description: error.message || 'Failed to process university information. Please try again.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+
+      // Insert club data with explicit error handling
+      try {
+        const clubData = await insertClubData(clubFormData, universityId, userId);
+        
+        if (!clubData || !clubData.id) {
+          console.error('Error: No club data returned after insertion');
+          toast({
+            title: 'Error Creating Club',
+            description: 'No club data was returned after creation. Please try again.',
+            variant: 'destructive',
+          });
+          return false;
+        }
+        
+        console.log('Club created successfully:', clubData);
+        
+        toast({
+          title: 'Success',
+          description: 'Club created successfully! It will be visible after admin approval.',
+          variant: 'default',
+        });
+        
+        return true;
+      } catch (error: any) {
+        console.error('Error creating club:', error);
+        
+        // Provide more detailed error message for better debugging
+        toast({
+          title: 'Error Creating Club',
+          description: error.message || 'Failed to create club. Please try again.',
+          variant: 'destructive',
+        });
+        return false;
+      }
     } catch (error: any) {
-      console.error('Error in createClub:', error);
+      console.error('Error creating club:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to create club",
-        variant: "destructive",
+        title: 'Error',
+        description: `Failed to create club: ${error.message || 'Please try again.'}`,
+        variant: 'destructive',
       });
       return false;
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  return { createClub, isLoading };
+  return { createClub };
 };

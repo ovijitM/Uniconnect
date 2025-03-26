@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { PlusCircle, Calendar } from 'lucide-react';
 import CreateClubDialog from './CreateClubDialog';
 import CreateEventDialog from './CreateEventDialog';
 import { ClubFormData, EventFormData } from '@/hooks/club-admin/types';
@@ -43,23 +41,6 @@ const ClubAdminHeader: React.FC<ClubAdminHeaderProps> = ({
       <h1 className="text-3xl font-bold">Club Admin Dashboard</h1>
       
       <div className="flex gap-3">
-        <Button 
-          onClick={() => setIsClubDialogOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <PlusCircle className="h-4 w-4" />
-          Create Club
-        </Button>
-        
-        <Button 
-          onClick={() => setIsEventDialogOpen(true)}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <Calendar className="h-4 w-4" />
-          Create Event
-        </Button>
-        
         <CreateClubDialog
           isOpen={isClubDialogOpen}
           onOpenChange={setIsClubDialogOpen}
