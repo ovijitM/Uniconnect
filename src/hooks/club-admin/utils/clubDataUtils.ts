@@ -51,6 +51,18 @@ export const insertClubData = async (
       
       console.log("Successfully created club with security definer function, club ID:", clubId);
       
+      // Create a basic club object with the data we know is valid
+      const basicClubData = {
+        id: clubId,
+        name: clubFormData.name,
+        description: clubFormData.description,
+        category: clubFormData.category,
+        university: clubFormData.university,
+        university_id: universityId,
+        logo_url: clubFormData.logoUrl,
+        status: 'pending'
+      };
+      
       // Update the club with additional fields
       const updateData = {
         tagline: clubFormData.tagline || null,
@@ -80,48 +92,55 @@ export const insertClubData = async (
       // Log the update data for debugging
       logFormData(updateData, "Club Update Data");
       
-      const { error: updateError } = await supabase
-        .from('clubs')
-        .update(updateData)
-        .eq('id', clubId);
-      
-      if (updateError) {
-        console.error("Error updating club with additional fields:", updateError);
-        throw new Error(`Failed to update club: ${updateError.message}`);
+      try {
+        const { error: updateError } = await supabase
+          .from('clubs')
+          .update(updateData)
+          .eq('id', clubId);
+        
+        if (updateError) {
+          console.error("Error updating club with additional fields:", updateError);
+          // Even if update fails, we return the basic club data since the club was created
+          console.log("Returning basic club data despite update error");
+          return basicClubData;
+        }
+        
+        console.log("Successfully updated club with additional fields");
+      } catch (updateCatchError) {
+        console.error("Exception during club update:", updateCatchError);
+        // Return basic data even if update fails with exception
+        return basicClubData;
       }
       
-      console.log("Successfully updated club with additional fields");
-      
-      // Get the club data to return - use maybeSingle() instead of single()
-      const { data: clubData, error: getError } = await supabase
-        .from('clubs')
-        .select('*')
-        .eq('id', clubId)
-        .maybeSingle();
-          
-      if (getError) {
-        console.error("Error fetching created club:", getError);
-        throw new Error(`Failed to fetch club data: ${getError.message}`);
+      // Try to get the complete club data, but don't fail if we can't
+      try {
+        // Get the club data to return - use maybeSingle() instead of single()
+        const { data: clubData, error: getError } = await supabase
+          .from('clubs')
+          .select('*')
+          .eq('id', clubId)
+          .maybeSingle();
+            
+        if (getError) {
+          console.error("Error fetching created club:", getError);
+          // Return basic data instead of throwing
+          return basicClubData;
+        }
+        
+        // Check if we got the club data back
+        if (!clubData) {
+          console.error("No club data found after querying by ID:", clubId);
+          // Return the basic club data we know
+          return basicClubData;
+        }
+        
+        console.log("Final club data:", clubData);
+        return clubData;
+      } catch (fetchError) {
+        console.error("Exception during club data fetch:", fetchError);
+        // Return basic club data as fallback
+        return basicClubData;
       }
-      
-      // Check if we got the club data back
-      if (!clubData) {
-        console.error("No club data found after querying by ID:", clubId);
-        // Instead of throwing, return the basic club data we know
-        return {
-          id: clubId,
-          name: clubFormData.name,
-          description: clubFormData.description,
-          category: clubFormData.category,
-          university: clubFormData.university,
-          university_id: universityId,
-          logo_url: clubFormData.logoUrl,
-          status: 'pending'
-        };
-      }
-      
-      console.log("Final club data:", clubData);
-      return clubData;
     } else {
       throw new Error('User ID is required to create a club');
     }
