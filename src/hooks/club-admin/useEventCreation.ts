@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -11,7 +10,6 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCollaborators, setSelectedCollaborators] = useState<string[]>([]);
 
-  // Convert array-like string inputs to actual arrays
   const convertToArray = (value: string): string[] | null => {
     if (!value || !value.trim()) return null;
     return value.split(',').map(item => item.trim()).filter(Boolean);
@@ -29,7 +27,6 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
       console.log('Creating event with data:', eventFormData);
       console.log('User ID:', userId);
       
-      // Check if the user has clubs if clubId is not set
       if (!eventFormData.clubId) {
         const { data: clubsData, error: clubsError } = await supabase
           .from('club_admins')
@@ -61,7 +58,6 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         }
       }
       
-      // Validate form data
       if (!validateEventData(eventFormData, eventFormData.clubId)) {
         setIsSubmitting(false);
         return;
@@ -102,7 +98,8 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
           contact_email: eventFormData.contactEmail || null,
           community_link: eventFormData.communityLink || null,
           event_website: eventFormData.eventWebsite || null,
-          event_hashtag: eventFormData.eventHashtag || null
+          event_hashtag: eventFormData.eventHashtag || null,
+          schedule: eventFormData.schedule ? JSON.parse(eventFormData.schedule) : null
         })
         .select();
       
@@ -119,7 +116,6 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
       
       console.log('Event created successfully:', data);
       
-      // Add collaborators if any were selected
       if (collaborators.length > 0 && data && data.length > 0) {
         const eventId = data[0].id;
         
@@ -134,7 +130,6 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         
         if (collaboratorsError) {
           console.error('Error adding collaborators:', collaboratorsError);
-          // We won't throw here as the event was successfully created
         }
       }
       
@@ -144,7 +139,6 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         variant: 'default',
       });
       
-      // Reset form and close dialog
       setEventFormData({
         title: '',
         description: '',
@@ -169,6 +163,7 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         additionalPerks: '',
         judgingCriteria: '',
         judges: '',
+        schedule: '',
         deliverables: '',
         submissionPlatform: '',
         mentors: '',
@@ -182,7 +177,6 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
       setSelectedCollaborators([]);
       setIsEventDialogOpen(false);
       
-      // Refresh event data
       onSuccess();
     } catch (error: any) {
       console.error('Error creating event:', error);

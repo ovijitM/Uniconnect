@@ -38,7 +38,7 @@ export interface EventFormData {
   category: string;
   eventType: string;
   maxParticipants: string;
-  visibility: string;
+  visibility: 'public' | 'university_only';
   clubId: string;
   imageUrl: string;
   tagline: string;
@@ -55,7 +55,7 @@ export interface EventFormData {
   additionalPerks: string;
   judgingCriteria: string;
   judges: string;
-  schedule: string;
+  schedule: string; // Adding the missing schedule property
   deliverables: string;
   submissionPlatform: string;
   mentors: string;

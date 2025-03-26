@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, X } from 'lucide-react';
@@ -29,7 +28,6 @@ const EventsPage: React.FC = () => {
       try {
         setIsLoading(true);
         
-        // If user is logged in, get their university
         let userUniversity = null;
         if (user) {
           const { data: profileData } = await supabase
@@ -43,7 +41,6 @@ const EventsPage: React.FC = () => {
           }
         }
         
-        // Fetch events from Supabase
         let eventsQuery = supabase
           .from('events')
           .select(`
@@ -61,23 +58,16 @@ const EventsPage: React.FC = () => {
             event_participants(count)
           `);
           
-        // Filter events based on visibility and user's university
         if (user && userUniversity) {
-          // For logged-in users with a university, fetch:
-          // 1. All public events
-          // 2. University-only events from their university
           eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
         } else {
-          // For non-logged-in users or users without a university, fetch only public events
           eventsQuery = eventsQuery.eq('visibility', 'public');
         }
         
-        // Execute the query and order by date
         const { data: eventsData, error: eventsError } = await eventsQuery.order('date');
         
         if (eventsError) throw eventsError;
         
-        // Get club details for each event
         const eventsWithOrganizers = await Promise.all(
           eventsData.map(async (event) => {
             const { data: clubData } = await supabase
@@ -102,8 +92,8 @@ const EventsPage: React.FC = () => {
               location: event.location,
               imageUrl: event.image_url,
               category: event.category,
-              status: event.status,
-              visibility: event.visibility as 'public' | 'university_only',
+              status: (event.status || 'upcoming') as EventStatus,
+              visibility: (event.visibility || 'public') as 'public' | 'university_only',
               participants: event.event_participants[0]?.count || 0,
               maxParticipants: event.max_participants || undefined,
               organizer: {
@@ -122,7 +112,6 @@ const EventsPage: React.FC = () => {
         
         setEvents(eventsWithOrganizers);
         
-        // Extract unique categories
         if (eventsWithOrganizers.length > 0) {
           const uniqueCategories = Array.from(new Set(eventsWithOrganizers.map(event => event.category)));
           setCategories(uniqueCategories);
@@ -143,10 +132,8 @@ const EventsPage: React.FC = () => {
   }, [toast, user]);
 
   useEffect(() => {
-    // Filter events based on search, status, and categories
     let filtered = [...events];
     
-    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(event => 
         event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -155,12 +142,10 @@ const EventsPage: React.FC = () => {
       );
     }
     
-    // Filter by status
     if (selectedStatus !== 'all') {
       filtered = filtered.filter(event => event.status === selectedStatus);
     }
     
-    // Filter by categories
     if (selectedCategories.length > 0) {
       filtered = filtered.filter(event => selectedCategories.includes(event.category));
     }

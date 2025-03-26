@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Club, Event } from '@/types';
+import { Club, Event, EventStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -181,7 +181,7 @@ export const useClubData = () => {
           discordLink: clubData.discord_link
         };
         
-        // Format the events data with all the new fields
+        // Format the events data with all the new fields and ensure status is of correct type
         const formattedEvents: Event[] = eventsData.map(event => ({
           id: event.id,
           title: event.title,
@@ -191,11 +191,12 @@ export const useClubData = () => {
           imageUrl: event.image_url,
           organizer: formattedClub,
           category: event.category,
-          status: event.status,
+          status: (event.status || 'upcoming') as EventStatus, // Cast to EventStatus
           participants: event.event_participants[0]?.count || 0,
           maxParticipants: event.max_participants || undefined,
           
           // New fields
+          visibility: (event.visibility || 'public') as 'public' | 'university_only',
           eventType: event.event_type,
           tagline: event.tagline,
           registrationDeadline: event.registration_deadline,

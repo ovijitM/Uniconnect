@@ -13,8 +13,8 @@ export const useEventFormState = () => {
     clubId: '',
     imageUrl: '', 
     
-    // Initialize new fields with proper default values
-    tagline: '', // Now required
+    // Initialize all fields with proper default values
+    tagline: '', 
     eventType: 'in-person',
     registrationDeadline: '',
     onlinePlatform: '',
@@ -29,6 +29,7 @@ export const useEventFormState = () => {
     additionalPerks: '',
     judgingCriteria: '',
     judges: '',
+    schedule: '', // Added missing schedule field
     deliverables: '',
     submissionPlatform: '',
     mentors: '',
@@ -38,7 +39,7 @@ export const useEventFormState = () => {
     eventWebsite: '',
     eventHashtag: '',
     
-    // Initialize visibility field with default value
+    // Explicitly set visibility with the correct type
     visibility: 'public'
   });
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Event, Club } from '@/types';
+import { Event, Club, EventStatus } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -17,7 +17,6 @@ export const useHomePageData = () => {
       try {
         setIsLoading(true);
         
-        // If user is logged in, get their university
         let userUniversity = null;
         if (user) {
           const { data: profileData } = await supabase
@@ -31,7 +30,6 @@ export const useHomePageData = () => {
           }
         }
         
-        // Fetch clubs from Supabase with status filter
         const { data: clubsData, error: clubsError } = await supabase
           .from('clubs')
           .select('*')
@@ -39,7 +37,6 @@ export const useHomePageData = () => {
         
         if (clubsError) throw clubsError;
         
-        // Get club members count for each club
         const clubsWithCounts = await Promise.all(
           clubsData.map(async (club) => {
             const { count, error: countError } = await supabase
@@ -80,32 +77,24 @@ export const useHomePageData = () => {
           })
         );
         
-        // Fetch events from Supabase based on visibility
         let eventsQuery = supabase
           .from('events')
           .select('*, clubs!events_club_id_fkey(*)');
         
-        // Apply visibility filtering based on user's university
         if (user && userUniversity) {
-          // For logged-in users with a university, fetch:
-          // 1. All public events
-          // 2. University-only events from their university
           eventsQuery = eventsQuery
             .eq('clubs.status', 'approved')
             .or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
         } else {
-          // For non-logged-in users or users without a university, fetch only public events
           eventsQuery = eventsQuery
             .eq('clubs.status', 'approved')
             .eq('visibility', 'public');
         }
         
-        // Order the events by date
         const { data: eventsData, error: eventsError } = await eventsQuery.order('date');
         
         if (eventsError) throw eventsError;
         
-        // Get participants count and club details for each event
         const eventsWithDetails = await Promise.all(
           eventsData.map(async (event) => {
             const { count: participantsCount } = await supabase
@@ -113,10 +102,8 @@ export const useHomePageData = () => {
               .select('*', { count: 'exact', head: true })
               .eq('event_id', event.id);
             
-            // Get club data (already joined in the query above)
             const clubData = event.clubs;
             
-            // Get club member count
             const { count: memberCount } = await supabase
               .from('club_members')
               .select('*', { count: 'exact', head: true })
@@ -130,11 +117,12 @@ export const useHomePageData = () => {
               location: event.location,
               imageUrl: event.image_url,
               category: event.category,
-              status: event.status,
+              status: (event.status || 'upcoming') as EventStatus,
               participants: participantsCount || 0,
               maxParticipants: event.max_participants || undefined,
               eventType: event.event_type,
               tagline: event.tagline,
+              visibility: (event.visibility || 'public') as 'public' | 'university_only',
               registrationDeadline: event.registration_deadline,
               onlinePlatform: event.online_platform,
               eligibility: event.eligibility,
@@ -194,7 +182,6 @@ export const useHomePageData = () => {
         setClubs(clubsWithCounts);
         setEvents(eventsWithDetails);
         
-        // Set the featured event (first upcoming event)
         const upcomingEvents = eventsWithDetails.filter(event => event.status === 'upcoming');
         if (upcomingEvents.length > 0) {
           setFeaturedEvent(upcomingEvents[0]);
