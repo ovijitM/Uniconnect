@@ -7,6 +7,8 @@ import { useAdminData } from '@/hooks/admin';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
 
 const ClubsPage: React.FC = () => {
   const { user } = useAuth();
@@ -42,10 +44,20 @@ const ClubsPage: React.FC = () => {
     navigate(`/clubs/${clubId}`);
   };
 
+  const handleCreateClub = () => {
+    navigate('/admin-dashboard/clubs/create');
+  };
+
   return (
     <DashboardLayout sidebar={<AdminSidebar />}>
       <div className="container p-6">
-        <h1 className="text-2xl font-bold mb-6">Clubs Management</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Clubs Management</h1>
+          <Button onClick={handleCreateClub} className="flex items-center gap-2">
+            <PlusCircle className="h-4 w-4" />
+            Create New Club
+          </Button>
+        </div>
         <ClubsTableContent 
           clubs={clubs} 
           isLoading={isLoading}

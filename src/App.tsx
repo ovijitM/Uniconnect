@@ -15,6 +15,7 @@ import RequireAuth from '@/components/auth/RequireAuth';
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import UsersPage from '@/pages/admin/UsersPage';
 import ClubsPage from '@/pages/admin/ClubsPage';
+import CreateClubPage from '@/pages/admin/CreateClubPage';
 import UniversitiesPage from '@/pages/admin/UniversitiesPage';
 import AlertsPage from '@/pages/admin/AlertsPage';
 import ActivityPage from '@/pages/admin/ActivityPage';
@@ -58,6 +59,11 @@ function App() {
             <Route path="/admin-dashboard/clubs" element={
               <RequireAuth allowedRoles={['admin']}>
                 <ClubsPage />
+              </RequireAuth>
+            } />
+            <Route path="/admin-dashboard/clubs/create" element={
+              <RequireAuth allowedRoles={['admin']}>
+                <CreateClubPage />
               </RequireAuth>
             } />
             <Route path="/admin-dashboard/universities" element={
