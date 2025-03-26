@@ -1,62 +1,68 @@
 
+// Update the useEventDetail.ts hook to expose the error state
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { useEventFetch } from './event-detail/useEventFetch';
 import { useEventParticipation } from './event-detail/useEventParticipation';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useState, useEffect } from 'react';
+import { useToast } from './use-toast';
 
-export const useEventDetail = (eventId?: string) => {
-  const { event, setEvent, isLoading } = useEventFetch(eventId);
+export const useEventDetail = (eventId: string | undefined) => {
   const { user } = useAuth();
-  const [userUniversity, setUserUniversity] = useState<string | null>(null);
-  const [canAccess, setCanAccess] = useState<boolean>(true);
-  const { isParticipating, handleParticipate, handleUnregister } = useEventParticipation(
-    eventId,
-    event,
-    setEvent
-  );
+  const { event, isLoading, error } = useEventFetch(eventId);
+  const { toast } = useToast();
+  const [canAccess, setCanAccess] = useState(true);
+  
+  const { 
+    isParticipating,
+    isRegistering,
+    isUnregistering,
+    handleParticipate,
+    handleUnregister
+  } = useEventParticipation(eventId, event);
 
-  // Check if user has access to university-only events
+  // Check if the user can access the event based on visibility restrictions
   useEffect(() => {
-    const checkUniversityAccess = async () => {
-      if (!user || !event) return;
-      
-      // If event is public, allow access
-      if (event.visibility !== 'university_only') {
+    async function checkEventAccess() {
+      if (!event || !user || event.visibility !== 'university_only') {
         setCanAccess(true);
         return;
       }
-      
+
       try {
-        // Get user's university
-        const { data: profileData, error } = await supabase
+        // Get the user's university
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('university')
+          .select('university, university_id')
           .eq('id', user.id)
           .single();
-          
-        if (error) throw error;
-        
-        setUserUniversity(profileData.university);
-        
-        // Check if user's university matches the event's club university
-        setCanAccess(profileData.university === event.organizer.university);
+
+        if (profileError) {
+          console.error('Error fetching user profile:', profileError);
+          setCanAccess(false);
+          return;
+        }
+
+        // Check if the user's university matches the organizer's university
+        setCanAccess(profileData?.university === event.organizer.university);
       } catch (error) {
-        console.error('Error checking university access:', error);
+        console.error('Error checking event access:', error);
         setCanAccess(false);
       }
-    };
-    
-    checkUniversityAccess();
-  }, [user, event]);
+    }
+
+    checkEventAccess();
+  }, [event, user]);
 
   return {
     event,
     isLoading,
     isParticipating,
+    isRegistering,
+    isUnregistering,
     canAccess,
-    userUniversity,
     handleParticipate,
-    handleUnregister
+    handleUnregister,
+    error
   };
 };

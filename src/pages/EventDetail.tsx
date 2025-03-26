@@ -16,18 +16,42 @@ import EventSubmissionAndContact from '@/components/event-detail/EventSubmission
 import EventCollaborators from '@/components/event-detail/EventCollaborators';
 import EventReviews from '@/components/event-detail/EventReviews';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Lock } from 'lucide-react';
+import { Lock, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
 const EventDetailPage: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
-  const { event, isLoading, isParticipating, canAccess, handleParticipate, handleUnregister } = useEventDetail(eventId);
+  const { event, isLoading, isParticipating, canAccess, handleParticipate, handleUnregister, error } = useEventDetail(eventId);
   const { user } = useAuth();
+
+  const handleRetry = () => {
+    // Force page refresh
+    window.location.reload();
+  };
 
   if (isLoading) {
     return (
       <Layout>
         <EventDetailSkeleton />
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="text-center py-8">
+          <AlertCircle className="mx-auto h-12 w-12 text-destructive mb-4" />
+          <h2 className="text-2xl font-medium mb-2">Error Loading Event</h2>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            There was an error loading the event details. Please try again later.
+          </p>
+          <Button onClick={handleRetry}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Try Again
+          </Button>
+        </div>
       </Layout>
     );
   }

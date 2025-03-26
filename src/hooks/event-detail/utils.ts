@@ -2,6 +2,11 @@
 import { Event } from '@/types';
 
 export const formatEventData = (eventData: any, clubData: any | null): Event => {
+  if (!eventData) {
+    console.error('No event data provided to formatEventData');
+    throw new Error('No event data provided');
+  }
+
   // Extract participant count from event_participants
   let participants = 0;
   if (eventData.event_participants) {
@@ -28,10 +33,10 @@ export const formatEventData = (eventData: any, clubData: any | null): Event => 
   const organizer = clubData ? {
     id: clubData.id,
     name: clubData.name,
-    description: clubData.description,
+    description: clubData.description || 'No description available',
     logoUrl: clubData.logo_url,
-    category: clubData.category,
-    university: clubData.university,
+    category: clubData.category || 'General',
+    university: clubData.university || 'Unknown University',
     memberCount: clubData.club_members?.[0]?.count || 0,
     events: []
   } : {
@@ -40,48 +45,50 @@ export const formatEventData = (eventData: any, clubData: any | null): Event => 
     description: 'Information not available',
     logoUrl: null,
     category: 'Unknown',
+    university: 'Unknown University',
     memberCount: 0,
     events: []
   };
   
   return {
-    id: eventData.id,
-    title: eventData.title,
-    description: eventData.description,
-    date: eventData.date,
-    location: eventData.location,
-    imageUrl: eventData.image_url,
+    id: eventData.id || '',
+    title: eventData.title || 'Untitled Event',
+    description: eventData.description || 'No description provided',
+    date: eventData.date || new Date().toISOString(),
+    location: eventData.location || 'Location not specified',
+    imageUrl: eventData.image_url || null,
     organizer: organizer,
-    category: eventData.category,
+    category: eventData.category || 'General',
     status: eventData.status || 'upcoming',
     participants: participants,
     maxParticipants: eventData.max_participants || undefined,
     
     // Additional fields
     visibility: eventData.visibility || 'public',
-    eventType: eventData.event_type,
-    tagline: eventData.tagline,
-    registrationDeadline: eventData.registration_deadline,
-    onlinePlatform: eventData.online_platform,
-    eligibility: eventData.eligibility,
-    teamSize: eventData.team_size,
-    registrationLink: eventData.registration_link,
-    entryFee: eventData.entry_fee,
-    theme: eventData.theme,
+    eventType: eventData.event_type || 'in-person',
+    tagline: eventData.tagline || '',
+    registrationDeadline: eventData.registration_deadline || null,
+    onlinePlatform: eventData.online_platform || null,
+    eligibility: eventData.eligibility || null,
+    teamSize: eventData.team_size || null,
+    registrationLink: eventData.registration_link || null,
+    entryFee: eventData.entry_fee || 'Free',
+    theme: eventData.theme || null,
     subTracks: eventData.sub_tracks || [],
-    prizePool: eventData.prize_pool,
+    prizePool: eventData.prize_pool || null,
     prizeCategories: eventData.prize_categories || [],
     additionalPerks: eventData.additional_perks || [],
     judgingCriteria: eventData.judging_criteria || [],
     judges: eventData.judges || [],
-    schedule: eventData.schedule,
+    schedule: eventData.schedule || null,
     deliverables: eventData.deliverables || [],
-    submissionPlatform: eventData.submission_platform,
+    submissionPlatform: eventData.submission_platform || null,
     mentors: eventData.mentors || [],
     sponsors: eventData.sponsors || [],
-    contactEmail: eventData.contact_email,
-    communityLink: eventData.community_link,
-    eventWebsite: eventData.event_website,
-    eventHashtag: eventData.event_hashtag
+    contactEmail: eventData.contact_email || null,
+    communityLink: eventData.community_link || null,
+    eventWebsite: eventData.event_website || null,
+    eventHashtag: eventData.event_hashtag || null,
+    collaborators: [] // This will be populated later if needed
   };
 };
