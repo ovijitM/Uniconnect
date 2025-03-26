@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -64,6 +63,9 @@ const CreateEventPage: React.FC = () => {
     eventHashtag: '',
     documentUrl: '',
     documentName: '',
+    
+    // Add missing schedule property required by EventFormData type
+    schedule: '',
     
     // Required for the API
     visibility: 'public' as 'public' | 'university_only',
@@ -309,7 +311,7 @@ const CreateEventPage: React.FC = () => {
                     <FileUpload
                       onUploadComplete={(url) => handleImageUpload(url)}
                       buttonText="Upload Event Image"
-                      uploadType="image"
+                      uploadType="logo"
                     />
                   </div>
                 </div>
@@ -576,7 +578,7 @@ const CreateEventPage: React.FC = () => {
                         type="email"
                         value={formData.contactEmail}
                         onChange={handleInputChange}
-                        placeholder="Email for inquiries"
+                        placeholder="Contact email for event inquiries"
                       />
                     </div>
                     <div className="space-y-2">
@@ -586,7 +588,7 @@ const CreateEventPage: React.FC = () => {
                         name="eventWebsite"
                         value={formData.eventWebsite}
                         onChange={handleInputChange}
-                        placeholder="Website URL"
+                        placeholder="Website URL for the event"
                       />
                     </div>
                   </div>
@@ -599,7 +601,7 @@ const CreateEventPage: React.FC = () => {
                         name="communityLink"
                         value={formData.communityLink}
                         onChange={handleInputChange}
-                        placeholder="e.g., Discord, Slack, etc."
+                        placeholder="Discord, Slack, etc."
                       />
                     </div>
                     <div className="space-y-2">
@@ -609,30 +611,23 @@ const CreateEventPage: React.FC = () => {
                         name="eventHashtag"
                         value={formData.eventHashtag}
                         onChange={handleInputChange}
-                        placeholder="e.g., #YourEventName"
+                        placeholder="e.g., #EventName2023"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="eventDocument" className="text-sm font-medium">Event Document</label>
-                    <p className="text-xs text-muted-foreground mb-2">Upload any detailed guidelines, rules, or additional information</p>
-                    <FileUpload 
-                      onUploadComplete={handleFileUpload}
-                      buttonText="Upload Event Document"
+                    <label htmlFor="documentUpload" className="text-sm font-medium">Event Documents</label>
+                    <p className="text-xs text-muted-foreground mb-2">Upload event rules, guidelines, or any other relevant documents</p>
+                    <FileUpload
+                      onUploadComplete={(url, fileName) => handleFileUpload(url, fileName)}
+                      buttonText="Upload Document"
                       uploadType="document"
                     />
-                    {formData.documentName && (
-                      <div className="mt-2 p-2 bg-muted rounded flex items-center justify-between">
-                        <span>{formData.documentName}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setFormData(prev => ({ ...prev, documentUrl: '', documentName: '' }))}
-                        >
-                          Remove
-                        </Button>
-                      </div>
+                    {formData.documentUrl && (
+                      <p className="text-sm mt-2">
+                        Uploaded: {formData.documentName}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -640,7 +635,7 @@ const CreateEventPage: React.FC = () => {
                   <Button variant="outline" onClick={() => setActiveTab('logistics')}>
                     Back
                   </Button>
-                  <Button onClick={handleReviewSubmit}>
+                  <Button onClick={handleReviewSubmit} disabled={isSubmitting}>
                     Review & Submit
                   </Button>
                 </div>
@@ -648,15 +643,15 @@ const CreateEventPage: React.FC = () => {
             </Tabs>
           </CardContent>
         </Card>
-      </div>
 
-      <ConfirmationDialog
-        isOpen={isConfirmDialogOpen}
-        onOpenChange={setIsConfirmDialogOpen}
-        formData={formData}
-        onConfirm={handleConfirmSubmit}
-        isSubmitting={isSubmitting}
-      />
+        <ConfirmationDialog 
+          isOpen={isConfirmDialogOpen}
+          onClose={() => setIsConfirmDialogOpen(false)}
+          onConfirm={handleConfirmSubmit}
+          formData={formData}
+          isSubmitting={isSubmitting}
+        />
+      </div>
     </DashboardLayout>
   );
 };

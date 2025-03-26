@@ -2,24 +2,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  CalendarDays, 
-  ChevronDown, 
-  ChevronsUpDown, 
+  Building2, 
   Gauge, 
   Home, 
   PlusCircle, 
-  Settings, 
-  Users, 
-  UserCircle,
-  Building2
+  Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 
 interface SidebarItemProps {
@@ -87,44 +76,6 @@ const ClubAdminSidebar: React.FC = () => {
               icon={<PlusCircle className="mr-2 h-4 w-4" />}
               title="Create Club (Full Form)"
               active={pathname === '/club-admin-dashboard/create-club-new'}
-            />
-          </div>
-        </div>
-        <div className="px-4 py-2">
-          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
-            Events
-          </h2>
-          <div className="space-y-1">
-            <SidebarItem
-              href="/club-admin-dashboard/events"
-              icon={<CalendarDays className="mr-2 h-4 w-4" />}
-              title="Manage Events"
-              active={pathname.includes('/events') && !pathname.includes('/create-event')}
-            />
-            <SidebarItem
-              href="/club-admin-dashboard/create-event"
-              icon={<PlusCircle className="mr-2 h-4 w-4" />}
-              title="Create Event"
-              active={pathname === '/club-admin-dashboard/create-event'}
-            />
-          </div>
-        </div>
-        <div className="px-4 py-2">
-          <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
-            Community
-          </h2>
-          <div className="space-y-1">
-            <SidebarItem
-              href="/club-admin-dashboard/members"
-              icon={<Users className="mr-2 h-4 w-4" />}
-              title="Members"
-              active={pathname.includes('/members')}
-            />
-            <SidebarItem
-              href="/club-admin-dashboard/attendance"
-              icon={<UserCircle className="mr-2 h-4 w-4" />}
-              title="Attendance"
-              active={pathname.includes('/attendance')}
             />
           </div>
         </div>

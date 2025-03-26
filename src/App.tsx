@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from '@/pages/Home';
 import Clubs from '@/pages/Clubs';
@@ -24,7 +23,6 @@ import SettingsPage from '@/pages/admin/SettingsPage';
 import ClubAdminDashboard from '@/pages/club-admin/ClubAdminDashboard';
 import ClubCreatePage from '@/pages/club-admin/CreateClubPage';
 import ClubCreationPage from '@/pages/club-admin/ClubCreationPage';
-import CreateEventPage from '@/pages/club-admin/CreateEventPage';
 import StudentDashboard from '@/pages/student/StudentDashboard';
 
 // Context providers
@@ -91,7 +89,7 @@ function App() {
               </RequireAuth>
             } />
             
-            {/* Club admin routes */}
+            {/* Club admin routes - keeping only profile and club-related routes */}
             <Route path="/club-admin-dashboard/*" element={
               <RequireAuth allowedRoles={['club_admin']}>
                 <ClubAdminDashboard />
@@ -105,11 +103,6 @@ function App() {
             <Route path="/club-admin-dashboard/create-club-new" element={
               <RequireAuth allowedRoles={['club_admin']}>
                 <ClubCreationPage />
-              </RequireAuth>
-            } />
-            <Route path="/club-admin-dashboard/create-event" element={
-              <RequireAuth allowedRoles={['club_admin']}>
-                <CreateEventPage />
               </RequireAuth>
             } />
             
