@@ -1,13 +1,37 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import CreateClubDialog from './CreateClubDialog';
-import { ClubFormData } from '@/hooks/club-admin/types';
 
 interface NoClubsViewProps {
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
-  clubFormData: ClubFormData;
+  clubFormData: {
+    name: string;
+    description: string;
+    category: string;
+    tagline?: string;
+    establishedYear?: string;
+    affiliation?: string;
+    whyJoin?: string;
+    regularEvents?: string;
+    signatureEvents?: string;
+    communityEngagement?: string;
+    whoCanJoin?: string;
+    membershipFee?: string;
+    howToJoin?: string;
+    presidentName?: string;
+    presidentContact?: string;
+    executiveMembers?: string;
+    advisors?: string;
+    phoneNumber?: string;
+    website?: string;
+    facebookLink?: string;
+    instagramLink?: string;
+    twitterLink?: string;
+    discordLink?: string;
+  };
   handleClubInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleCreateClub: () => void;
 }

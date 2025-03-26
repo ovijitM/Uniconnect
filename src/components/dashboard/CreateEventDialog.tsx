@@ -16,8 +16,8 @@ interface CreateEventDialogProps {
     category: string;
     maxParticipants: string;
     clubId: string;
-    imageUrl?: string;
-    tagline: string; // Changed from optional to required
+    imageUrl?: string; // Added field for event banner/poster
+    tagline?: string;
     eventType?: string;
     registrationDeadline?: string;
     onlinePlatform?: string;
@@ -40,14 +40,12 @@ interface CreateEventDialogProps {
     communityLink?: string;
     eventWebsite?: string;
     eventHashtag?: string;
-    visibility: 'public' | 'university_only'; // Required field
   };
   clubs: any[];
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onSubmit: () => void;
   buttonText?: string;
   trigger?: React.ReactNode;
-  onFileUpload?: (url: string, fileName: string) => void; // Added this prop
 }
 
 const CreateEventDialog: React.FC<CreateEventDialogProps> = ({
@@ -58,8 +56,7 @@ const CreateEventDialog: React.FC<CreateEventDialogProps> = ({
   onInputChange,
   onSubmit,
   buttonText = "Create New Event",
-  trigger,
-  onFileUpload // Added the prop here
+  trigger
 }) => {
   const defaultTrigger = (
     <Button>
@@ -78,7 +75,6 @@ const CreateEventDialog: React.FC<CreateEventDialogProps> = ({
       onSubmit={onSubmit}
       buttonText="Create Event"
       trigger={trigger || defaultTrigger}
-      onFileUpload={onFileUpload} // Pass the prop to EventDialogWrapper
     />
   );
 };

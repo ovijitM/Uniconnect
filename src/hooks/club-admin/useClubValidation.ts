@@ -1,84 +1,59 @@
 
+import { useToast } from '@/hooks/use-toast';
 import { ClubFormData } from './types';
-import { validateRequiredFields } from './utils/dataTransformUtils';
-
-interface ValidationResult {
-  isValid: boolean;
-  errorMessage?: string;
-}
 
 export const useClubValidation = () => {
-  const validateClubData = (formData: ClubFormData): ValidationResult => {
-    console.log("Validating club data:", formData);
-    
-    // Required fields for basic info
-    const requiredFields = [
-      'name',
-      'description',
-      'category',
-      'tagline',
-      'university'
-    ];
-    
-    // Check required fields
-    if (!validateRequiredFields(formData, requiredFields)) {
-      console.error("Missing required basic fields");
-      return {
-        isValid: false,
-        errorMessage: "Please fill in all required fields in the Basic Info tab."
-      };
-    }
-    
-    // Check logo is present
-    if (!formData.logoUrl) {
-      console.error("Missing logo URL");
-      return {
-        isValid: false,
-        errorMessage: "Please upload a logo for your club in the Basic Info tab."
-      };
+  const { toast } = useToast();
+
+  const validateClubData = async (clubFormData: ClubFormData): Promise<boolean> => {
+    // Check for required basic information
+    if (!clubFormData.name.trim() || !clubFormData.description.trim() || !clubFormData.category.trim()) {
+      toast({
+        title: 'Missing Basic Information',
+        description: 'Please fill in all required basic fields (name, description, category).',
+        variant: 'destructive',
+      });
+      return false;
     }
 
-    // Log the validated data for debugging
-    console.log("Validation passed, club data is valid:", {
-      name: formData.name,
-      description: formData.description,
-      category: formData.category,
-      tagline: formData.tagline,
-      university: formData.university,
-      universityId: formData.universityId,
-      logoUrl: formData.logoUrl?.substring(0, 30) + '...',
-      // Include other fields that are being sent
-      socialMedia: {
-        website: formData.website,
-        facebookLink: formData.facebookLink,
-        instagramLink: formData.instagramLink,
-        twitterLink: formData.twitterLink,
-        discordLink: formData.discordLink,
-      },
-      details: {
-        establishedYear: formData.establishedYear,
-        affiliation: formData.affiliation,
-        whyJoin: formData.whyJoin,
-        regularEvents: formData.regularEvents,
-        signatureEvents: formData.signatureEvents,
-        communityEngagement: formData.communityEngagement,
-        whoCanJoin: formData.whoCanJoin,
-        membershipFee: formData.membershipFee,
-        howToJoin: formData.howToJoin,
-        presidentName: formData.presidentName,
-        presidentContact: formData.presidentContact,
-        executiveMembers: formData.executiveMembers,
-        advisors: formData.advisors,
-        phoneNumber: formData.phoneNumber,
-      },
-      documents: {
-        documentUrl: formData.documentUrl,
-        documentName: formData.documentName,
-      }
-    });
+    // Check for required profile information
+    if (!clubFormData.tagline.trim() || 
+        !clubFormData.establishedYear.trim() || 
+        !clubFormData.affiliation.trim() || 
+        !clubFormData.logoUrl.trim()) {
+      toast({
+        title: 'Missing Profile Information',
+        description: 'Please provide tagline, established year, affiliation, and logo URL.',
+        variant: 'destructive',
+      });
+      return false;
+    }
 
-    // All validations passed
-    return { isValid: true };
+    // Check for required membership information
+    if (!clubFormData.whyJoin.trim() || 
+        !clubFormData.whoCanJoin.trim() || 
+        !clubFormData.howToJoin.trim()) {
+      toast({
+        title: 'Missing Membership Information',
+        description: 'Please complete why join, who can join, and how to join sections.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    // Check for required contact information
+    if (!clubFormData.presidentName.trim() || 
+        !clubFormData.presidentContact.trim() || 
+        !clubFormData.phoneNumber.trim()) {
+      toast({
+        title: 'Missing Contact Information',
+        description: 'Please provide president name, contact information, and phone number.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    return true;
   };
 
   return { validateClubData };

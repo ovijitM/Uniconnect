@@ -1,3 +1,4 @@
+
 export interface Club {
   id: string;
   name: string;
@@ -9,7 +10,6 @@ export interface Club {
   memberCount: number;
   events: Event[];
   university?: string;
-  universityId?: string;
   
   // New fields
   tagline?: string;
@@ -50,10 +50,7 @@ export interface Event {
   participants: number;
   maxParticipants?: number;
   
-  // New field for visibility
-  visibility?: 'public' | 'university_only';
-  
-  // Existing fields
+  // New fields
   eventType?: string;
   tagline?: string;
   registrationDeadline?: string;

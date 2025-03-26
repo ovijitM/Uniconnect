@@ -1,13 +1,12 @@
 
-import React, { ReactNode } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Logo } from '@/components/ui/logo';
+import React from 'react';
+import { motion } from 'framer-motion';
 
 interface AuthCardProps {
   title: string;
-  subtitle?: string;
-  children: ReactNode;
-  footerContent?: ReactNode;
+  subtitle: string;
+  children: React.ReactNode;
+  footerContent?: React.ReactNode;
 }
 
 const AuthCard: React.FC<AuthCardProps> = ({ 
@@ -17,28 +16,26 @@ const AuthCard: React.FC<AuthCardProps> = ({
   footerContent 
 }) => {
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-        <div className="flex flex-col space-y-2 text-center">
-          <Logo className="mx-auto h-6 w-6" />
-          <CardTitle className="text-2xl font-semibold tracking-tight">{title}</CardTitle>
-          {subtitle && (
-            <CardDescription className="text-sm text-muted-foreground">
-              {subtitle}
-            </CardDescription>
-          )}
+    <div className="max-w-md mx-auto mt-10">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="glass-card p-8"
+      >
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold">{title}</h1>
+          <p className="text-muted-foreground">{subtitle}</p>
         </div>
-        <Card>
-          <CardContent className="pt-6">
-            {children}
-          </CardContent>
-          {footerContent && (
-            <CardFooter className="flex flex-col space-y-4 border-t px-6 py-4">
-              {footerContent}
-            </CardFooter>
-          )}
-        </Card>
-      </div>
+
+        {children}
+
+        {footerContent && (
+          <div className="mt-6 text-center">
+            {footerContent}
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 };

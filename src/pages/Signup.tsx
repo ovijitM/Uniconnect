@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Layout from '@/components/Layout';
 import { UserRole } from '@/types/auth';
-import { Mail, KeyRound, User, UserPlus, GraduationCap, Users, School } from 'lucide-react';
+import { Mail, KeyRound, User, UserPlus, GraduationCap, Users, Shield, School } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const Signup: React.FC = () => {
@@ -64,10 +64,9 @@ const Signup: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Determine the final university name to use
-    const finalUniversity = showCustomUniversity ? customUniversity : university;
+    const universityName = showCustomUniversity ? customUniversity : university;
     
-    if (!name || !email || !password || !role || !finalUniversity) {
+    if (!name || !email || !password || !role || !universityName) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -79,9 +78,20 @@ const Signup: React.FC = () => {
     try {
       setIsSubmitting(true);
       
-      console.log("Signing up with role:", role, "university:", finalUniversity);
+      // If using a custom university, add it to the database
+      if (showCustomUniversity && customUniversity) {
+        const { error: universityError } = await supabase
+          .from('universities')
+          .insert({
+            name: customUniversity
+          });
+        
+        if (universityError && !universityError.message.includes('unique constraint')) {
+          throw universityError;
+        }
+      }
       
-      const user = await signup(email, password, name, role, finalUniversity);
+      const user = await signup(email, password, name, role, universityName);
       toast({
         title: "Success",
         description: "Your account has been created successfully",
@@ -101,10 +111,10 @@ const Signup: React.FC = () => {
     }
   };
 
-  // Only show student and club_admin options
   const roleOptions = [
     { id: 'student', label: 'Student', icon: GraduationCap },
     { id: 'club_admin', label: 'Club Administrator', icon: Users },
+    { id: 'admin', label: 'System Administrator', icon: Shield },
   ];
 
   return (
@@ -133,7 +143,6 @@ const Signup: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="pl-10"
-                  required
                 />
               </div>
             </div>
@@ -149,7 +158,6 @@ const Signup: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
-                  required
                 />
               </div>
             </div>
@@ -165,16 +173,15 @@ const Signup: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10"
-                  required
                 />
               </div>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="university" className="block">University <span className="text-red-500">*</span></Label>
+              <Label htmlFor="university">University</Label>
               <div className="relative">
                 <School className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Select onValueChange={handleUniversityChange} required>
+                <Select onValueChange={handleUniversityChange}>
                   <SelectTrigger className="w-full pl-10">
                     <SelectValue placeholder="Select your university" />
                   </SelectTrigger>
@@ -198,7 +205,7 @@ const Signup: React.FC = () => {
             
             {showCustomUniversity && (
               <div className="space-y-2">
-                <Label htmlFor="customUniversity">Specify University <span className="text-red-500">*</span></Label>
+                <Label htmlFor="customUniversity">Specify University</Label>
                 <div className="relative">
                   <School className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
@@ -208,7 +215,6 @@ const Signup: React.FC = () => {
                     value={customUniversity}
                     onChange={(e) => setCustomUniversity(e.target.value)}
                     className="pl-10"
-                    required
                   />
                 </div>
               </div>

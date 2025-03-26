@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, CheckCircle, X, LogOut } from 'lucide-react';
+import { User, CheckCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface EventActionsProps {
@@ -8,17 +8,13 @@ interface EventActionsProps {
   isParticipating: boolean;
   onParticipate: () => void;
   onUnregister?: () => void;
-  isDisabled?: boolean;
-  disabledReason?: string;
 }
 
 const EventActions: React.FC<EventActionsProps> = ({ 
   status, 
   isParticipating, 
   onParticipate,
-  onUnregister,
-  isDisabled,
-  disabledReason
+  onUnregister 
 }) => {
   if (status !== 'upcoming') {
     return null;
@@ -42,7 +38,7 @@ const EventActions: React.FC<EventActionsProps> = ({
               variant="destructive"
               onClick={onUnregister}
             >
-              <LogOut className="mr-2 h-4 w-4" />
+              <X className="mr-2 h-4 w-4" />
               Cancel Registration
             </Button>
           )}
@@ -51,16 +47,10 @@ const EventActions: React.FC<EventActionsProps> = ({
         <Button
           className="w-full"
           onClick={onParticipate}
-          disabled={isDisabled}
-          title={disabledReason}
         >
           <User className="mr-2 h-4 w-4" />
           Register for this event
         </Button>
-      )}
-      
-      {isDisabled && disabledReason && (
-        <p className="text-xs text-amber-600 mt-1">{disabledReason}</p>
       )}
     </div>
   );

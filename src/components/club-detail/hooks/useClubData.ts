@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Club, Event, EventStatus } from '@/types';
+import { Club, Event } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -77,7 +77,6 @@ export const useClubData = () => {
             image_url,
             category,
             status,
-            visibility,
             max_participants,
             event_participants(count),
             event_type,
@@ -132,64 +131,19 @@ export const useClubData = () => {
         if (relatedError) {
           console.error('Error fetching related clubs:', relatedError);
         } else {
-          const formattedRelatedClubs = relatedData.map(club => {
-            let memberCount = 0;
-            if (club.club_members && Array.isArray(club.club_members) && club.club_members.length > 0) {
-              const countData = club.club_members[0];
-              
-              // Handle different count formats
-              if (typeof countData === 'number') {
-                memberCount = countData;
-              } else if (typeof countData === 'string') {
-                memberCount = parseInt(countData, 10) || 0;
-              } else if (countData && typeof countData === 'object') {
-                const rawCount = countData.count;
-                if (typeof rawCount === 'number') {
-                  memberCount = rawCount;
-                } else if (typeof rawCount === 'string') {
-                  memberCount = parseInt(rawCount, 10) || 0;
-                }
-              }
-              
-              memberCount = isNaN(memberCount) ? 0 : memberCount;
-            }
-            
-            return {
-              id: club.id,
-              name: club.name,
-              description: club.description,
-              logoUrl: club.logo_url,
-              category: club.category,
-              status: club.status,
-              memberCount: memberCount,
-              events: [],
-              tagline: club.tagline,
-              establishedYear: club.established_year
-            };
-          });
+          const formattedRelatedClubs = relatedData.map(club => ({
+            id: club.id,
+            name: club.name,
+            description: club.description,
+            logoUrl: club.logo_url,
+            category: club.category,
+            status: club.status,
+            memberCount: club.club_members[0]?.count || 0,
+            events: [],
+            tagline: club.tagline,
+            establishedYear: club.established_year
+          }));
           setRelatedClubs(formattedRelatedClubs);
-        }
-        
-        // Process club member count
-        let memberCount = 0;
-        if (clubData.club_members && Array.isArray(clubData.club_members) && clubData.club_members.length > 0) {
-          const countData = clubData.club_members[0];
-          
-          // Handle different count formats
-          if (typeof countData === 'number') {
-            memberCount = countData;
-          } else if (typeof countData === 'string') {
-            memberCount = parseInt(countData, 10) || 0;
-          } else if (countData && typeof countData === 'object') {
-            const rawCount = countData.count;
-            if (typeof rawCount === 'number') {
-              memberCount = rawCount;
-            } else if (typeof rawCount === 'string') {
-              memberCount = parseInt(rawCount, 10) || 0;
-            }
-          }
-          
-          memberCount = isNaN(memberCount) ? 0 : memberCount;
         }
         
         // Format the club data with all new fields
@@ -201,7 +155,7 @@ export const useClubData = () => {
           category: clubData.category,
           status: clubData.status,
           rejectionReason: clubData.rejection_reason,
-          memberCount: memberCount,
+          memberCount: clubData.club_members[0]?.count || 0,
           events: [],
           
           // New fields
@@ -227,70 +181,46 @@ export const useClubData = () => {
           discordLink: clubData.discord_link
         };
         
-        // Format the events data with all the new fields and ensure status is of correct type
-        const formattedEvents: Event[] = eventsData.map(event => {
-          let participants = 0;
-          if (event.event_participants && Array.isArray(event.event_participants) && event.event_participants.length > 0) {
-            const countData = event.event_participants[0];
-            
-            // Handle different count formats
-            if (typeof countData === 'number') {
-              participants = countData;
-            } else if (typeof countData === 'string') {
-              participants = parseInt(countData, 10) || 0;
-            } else if (countData && typeof countData === 'object') {
-              const rawCount = countData.count;
-              if (typeof rawCount === 'number') {
-                participants = rawCount;
-              } else if (typeof rawCount === 'string') {
-                participants = parseInt(rawCount, 10) || 0;
-              }
-            }
-            
-            participants = isNaN(participants) ? 0 : participants;
-          }
+        // Format the events data with all the new fields
+        const formattedEvents: Event[] = eventsData.map(event => ({
+          id: event.id,
+          title: event.title,
+          description: event.description,
+          date: event.date,
+          location: event.location,
+          imageUrl: event.image_url,
+          organizer: formattedClub,
+          category: event.category,
+          status: event.status,
+          participants: event.event_participants[0]?.count || 0,
+          maxParticipants: event.max_participants || undefined,
           
-          return {
-            id: event.id,
-            title: event.title,
-            description: event.description,
-            date: event.date,
-            location: event.location,
-            imageUrl: event.image_url,
-            organizer: formattedClub,
-            category: event.category,
-            status: (event.status || 'upcoming') as EventStatus, // Cast to EventStatus
-            participants: participants,
-            maxParticipants: event.max_participants || undefined,
-            
-            // New fields
-            visibility: (event.visibility || 'public') as 'public' | 'university_only',
-            eventType: event.event_type,
-            tagline: event.tagline,
-            registrationDeadline: event.registration_deadline,
-            onlinePlatform: event.online_platform,
-            eligibility: event.eligibility,
-            teamSize: event.team_size,
-            registrationLink: event.registration_link,
-            entryFee: event.entry_fee,
-            theme: event.theme,
-            subTracks: event.sub_tracks,
-            prizePool: event.prize_pool,
-            prizeCategories: event.prize_categories,
-            additionalPerks: event.additional_perks,
-            judgingCriteria: event.judging_criteria,
-            judges: event.judges,
-            schedule: event.schedule,
-            deliverables: event.deliverables,
-            submissionPlatform: event.submission_platform,
-            mentors: event.mentors,
-            sponsors: event.sponsors,
-            contactEmail: event.contact_email,
-            communityLink: event.community_link,
-            eventWebsite: event.event_website,
-            eventHashtag: event.event_hashtag
-          };
-        });
+          // New fields
+          eventType: event.event_type,
+          tagline: event.tagline,
+          registrationDeadline: event.registration_deadline,
+          onlinePlatform: event.online_platform,
+          eligibility: event.eligibility,
+          teamSize: event.team_size,
+          registrationLink: event.registration_link,
+          entryFee: event.entry_fee,
+          theme: event.theme,
+          subTracks: event.sub_tracks,
+          prizePool: event.prize_pool,
+          prizeCategories: event.prize_categories,
+          additionalPerks: event.additional_perks,
+          judgingCriteria: event.judging_criteria,
+          judges: event.judges,
+          schedule: event.schedule,
+          deliverables: event.deliverables,
+          submissionPlatform: event.submission_platform,
+          mentors: event.mentors,
+          sponsors: event.sponsors,
+          contactEmail: event.contact_email,
+          communityLink: event.community_link,
+          eventWebsite: event.event_website,
+          eventHashtag: event.event_hashtag
+        }));
         
         setClub(formattedClub);
         setEvents(formattedEvents);

@@ -29,7 +29,6 @@ export const useEventFetch = (eventId: string | undefined) => {
             image_url,
             category,
             status,
-            visibility,
             max_participants,
             club_id,
             event_participants(count),
@@ -72,7 +71,6 @@ export const useEventFetch = (eventId: string | undefined) => {
             description,
             logo_url,
             category,
-            university,
             club_members(count)
           `)
           .eq('id', eventData.club_id)

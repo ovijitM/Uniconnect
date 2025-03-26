@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { EventFormData } from './types';
 
@@ -10,10 +11,10 @@ export const useEventFormState = () => {
     category: '',
     maxParticipants: '',
     clubId: '',
-    imageUrl: '', 
+    imageUrl: '', // Added field for event banner/poster
     
-    // Initialize all fields with proper default values
-    tagline: '', 
+    // Initialize new fields
+    tagline: '',
     eventType: 'in-person',
     registrationDeadline: '',
     onlinePlatform: '',
@@ -28,7 +29,6 @@ export const useEventFormState = () => {
     additionalPerks: '',
     judgingCriteria: '',
     judges: '',
-    schedule: '', // Added missing schedule field with proper initialization
     deliverables: '',
     submissionPlatform: '',
     mentors: '',
@@ -36,10 +36,7 @@ export const useEventFormState = () => {
     contactEmail: '',
     communityLink: '',
     eventWebsite: '',
-    eventHashtag: '',
-    
-    // Explicitly set visibility with the correct type
-    visibility: 'public'
+    eventHashtag: ''
   });
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
 

@@ -1,8 +1,7 @@
-
 import React from 'react';
 import CreateClubDialog from './CreateClubDialog';
 import CreateEventDialog from './CreateEventDialog';
-import { ClubFormData, EventFormData } from '@/hooks/club-admin/types';
+import { ClubFormData, EventFormData } from '@/hooks/club-admin/useClubAdminForms';
 
 interface ClubAdminHeaderProps {
   isClubDialogOpen: boolean;
@@ -16,9 +15,6 @@ interface ClubAdminHeaderProps {
   clubs: any[];
   onEventInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onCreateEvent: () => void;
-  // Updated props for file upload
-  onClubFileUpload?: (url: string, fileName: string, type?: 'logo' | 'document') => void;
-  onEventFileUpload?: (url: string, fileName: string) => void;
 }
 
 const ClubAdminHeader: React.FC<ClubAdminHeaderProps> = ({
@@ -32,9 +28,7 @@ const ClubAdminHeader: React.FC<ClubAdminHeaderProps> = ({
   eventFormData,
   clubs,
   onEventInputChange,
-  onCreateEvent,
-  onClubFileUpload,
-  onEventFileUpload
+  onCreateEvent
 }) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -47,7 +41,6 @@ const ClubAdminHeader: React.FC<ClubAdminHeaderProps> = ({
           formData={clubFormData}
           onInputChange={onClubInputChange}
           onSubmit={onCreateClub}
-          onFileUpload={onClubFileUpload}
         />
         
         <CreateEventDialog
@@ -57,7 +50,6 @@ const ClubAdminHeader: React.FC<ClubAdminHeaderProps> = ({
           clubs={clubs}
           onInputChange={onEventInputChange}
           onSubmit={onCreateEvent}
-          onFileUpload={onEventFileUpload}
         />
       </div>
     </div>

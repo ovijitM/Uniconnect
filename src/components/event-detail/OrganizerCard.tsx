@@ -8,10 +8,9 @@ interface OrganizerCardProps {
   name: string;
   logoUrl: string;
   description: string;
-  university?: string;
 }
 
-const OrganizerCard: React.FC<OrganizerCardProps> = ({ id, name, logoUrl, description, university }) => {
+const OrganizerCard: React.FC<OrganizerCardProps> = ({ id, name, logoUrl, description }) => {
   return (
     <div className="glass-panel rounded-xl p-6">
       <div className="flex items-center gap-4 mb-4">
@@ -27,9 +26,6 @@ const OrganizerCard: React.FC<OrganizerCardProps> = ({ id, name, logoUrl, descri
         <div>
           <h3 className="font-medium">{name}</h3>
           <p className="text-sm text-muted-foreground">Organizer</p>
-          {university && (
-            <p className="text-xs text-muted-foreground">{university}</p>
-          )}
         </div>
       </div>
       <p className="text-sm text-muted-foreground mb-4">

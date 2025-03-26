@@ -1,34 +1,19 @@
 
 import React from 'react';
 import ClubProfileSettings from '@/components/dashboard/ClubProfileSettings';
-import { ClubFormData } from '@/hooks/club-admin/types';
 
 interface ProfileViewProps {
   clubs: any[];
   isLoading: boolean;
   onRefresh: () => Promise<void>;
   onCreateClub: () => void;
-  // Added missing props to fix type error
-  clubFormData: ClubFormData;
-  handleClubInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  handleCreateClub: () => void;
-  handleClubFileUpload?: (url: string, fileName: string) => void;
-  isClubDialogOpen: boolean;
-  setIsClubDialogOpen: (open: boolean) => void;
 }
 
 const ProfileView: React.FC<ProfileViewProps> = ({
   clubs,
   isLoading,
   onRefresh,
-  onCreateClub,
-  // Not using these props in the component but they're required for type compatibility
-  clubFormData,
-  handleClubInputChange,
-  handleCreateClub,
-  handleClubFileUpload,
-  isClubDialogOpen,
-  setIsClubDialogOpen
+  onCreateClub
 }) => {
   return (
     <div className="space-y-6">

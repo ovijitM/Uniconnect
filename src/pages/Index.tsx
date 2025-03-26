@@ -9,7 +9,7 @@ import PopularCategoriesSection from '@/components/home/PopularCategoriesSection
 import CallToActionSection from '@/components/home/CallToActionSection';
 import { useHomePageData } from '@/hooks/useHomePageData';
 
-const Home: React.FC = () => {
+const Index: React.FC = () => {
   const { events, clubs, featuredEvent, isLoading } = useHomePageData();
 
   return (
@@ -34,4 +34,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+export default Index;

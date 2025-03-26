@@ -33,9 +33,7 @@ export const useClubManagement = (onRefresh: () => void) => {
     facebookLink: '',
     instagramLink: '',
     twitterLink: '',
-    discordLink: '',
-    university: '',
-    universityId: '',
+    discordLink: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,9 +63,7 @@ export const useClubManagement = (onRefresh: () => void) => {
       facebookLink: club.facebookLink || '',
       instagramLink: club.instagramLink || '',
       twitterLink: club.twitterLink || '',
-      discordLink: club.discordLink || '',
-      university: club.university || '',
-      universityId: club.universityId || '',
+      discordLink: club.discordLink || ''
     });
     setIsEditDialogOpen(true);
   };
@@ -91,37 +87,6 @@ export const useClubManagement = (onRefresh: () => void) => {
           variant: "destructive",
         });
         return;
-      }
-
-      // Handle university relationship
-      let universityId = editFormData.universityId;
-      
-      if (editFormData.university && !universityId) {
-        // Try to find the university
-        const { data: uniData, error: uniError } = await supabase
-          .from('universities')
-          .select('id')
-          .eq('name', editFormData.university)
-          .maybeSingle();
-          
-        if (uniError) {
-          console.error('Error finding university:', uniError);
-        } else if (uniData) {
-          universityId = uniData.id;
-        } else {
-          // Create the university if it doesn't exist
-          const { data: newUni, error: createError } = await supabase
-            .from('universities')
-            .insert({ name: editFormData.university })
-            .select()
-            .single();
-            
-          if (createError) {
-            console.error('Error creating university:', createError);
-          } else if (newUni) {
-            universityId = newUni.id;
-          }
-        }
       }
       
       // Transform array and JSON fields
@@ -168,8 +133,6 @@ export const useClubManagement = (onRefresh: () => void) => {
           instagram_link: editFormData.instagramLink || null,
           twitter_link: editFormData.twitterLink || null,
           discord_link: editFormData.discordLink || null,
-          university: editFormData.university || null,
-          university_id: universityId || null,
           updated_at: new Date().toISOString()
         })
         .eq('id', selectedClub.id);
