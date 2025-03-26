@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClubAdminData } from '@/hooks/club-admin/useClubAdminData';
 import { useStudentProfile } from '@/hooks/student/useStudentProfile';
+import { EventFormData } from '@/hooks/club-admin/types';
 
 export const useClubAdminDashboard = () => {
   const { user } = useAuth();
@@ -39,7 +40,7 @@ export const useClubAdminDashboard = () => {
 
   // Event dialog state
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
-  const [eventFormData, setEventFormData] = useState({
+  const [eventFormData, setEventFormData] = useState<EventFormData>({
     title: '',
     description: '',
     date: '',
@@ -49,6 +50,31 @@ export const useClubAdminDashboard = () => {
     maxParticipants: '',
     imageUrl: '',
     clubId: '',
+    tagline: '',
+    registrationDeadline: '',
+    onlinePlatform: '',
+    eligibility: '',
+    teamSize: '',
+    registrationLink: '',
+    entryFee: 'Free',
+    theme: '',
+    subTracks: '',
+    prizePool: '',
+    prizeCategories: '',
+    additionalPerks: '',
+    judgingCriteria: '',
+    judges: '',
+    schedule: '',
+    deliverables: '',
+    submissionPlatform: '',
+    mentors: '',
+    sponsors: '',
+    contactEmail: '',
+    communityLink: '',
+    eventWebsite: '',
+    eventHashtag: '',
+    howToRegister: '',
+    visibility: 'public'
   });
 
   // Fetch the user's university on initial load

@@ -36,6 +36,42 @@ export interface EventFormData {
   visibility: 'public' | 'university_only';
 }
 
+export interface ClubFormData {
+  name: string;
+  description: string;
+  category: string;
+  logoUrl: string;
+  university: string;
+  contactEmail: string;
+  contactPhone: string;
+  address: string;
+  socialMediaLinks: {
+    website: string;
+    instagram: string;
+    facebook: string;
+    twitter: string;
+    linkedin: string;
+    discord: string;
+  };
+  executiveMembers: string;
+  achievements: string;
+  documents: {
+    constitution: string;
+    codeOfConduct: string;
+    other: string;
+  };
+  missionStatement: string;
+  visionStatement: string;
+  values: string;
+  foundingDate: string;
+  clubType: string;
+  studentCount: string;
+  facultyAdvisor: string;
+  budgetInfo: string;
+  meetingInfo: string;
+  additionalNotes: string;
+}
+
 export interface ClubAdminDataType {
   adminClubs: any[];
   clubEvents: any[];
