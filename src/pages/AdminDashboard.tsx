@@ -99,6 +99,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleClubStatusChange = () => {
+    console.log("Club status changed, refreshing admin data");
     fetchAdminData();
   };
 

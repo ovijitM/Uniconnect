@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Check, X, FileText } from 'lucide-react';
 import StatusBadge from './StatusBadge';
+import { Spinner } from '@/components/ui/spinner';
 
 interface Club {
   id: string;
@@ -32,6 +33,8 @@ const ClubsTableRow: React.FC<ClubsTableRowProps> = ({
   onReject,
   onView
 }) => {
+  const isProcessing = processingId === club.id;
+  
   return (
     <TableRow key={club.id}>
       <TableCell className="font-medium">{club.name}</TableCell>
@@ -61,16 +64,17 @@ const ClubsTableRow: React.FC<ClubsTableRowProps> = ({
                 variant="outline" 
                 size="sm"
                 onClick={() => onApprove(club.id)}
-                disabled={processingId === club.id}
+                disabled={isProcessing}
                 className="bg-green-100 hover:bg-green-200"
               >
-                <Check className="h-4 w-4 mr-1" /> Approve
+                {isProcessing ? <Spinner className="h-4 w-4 mr-1" /> : <Check className="h-4 w-4 mr-1" />}
+                {isProcessing ? 'Processing...' : 'Approve'}
               </Button>
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => onReject(club.id)}
-                disabled={processingId === club.id}
+                disabled={isProcessing}
                 className="bg-red-100 hover:bg-red-200"
               >
                 <X className="h-4 w-4 mr-1" /> Reject
@@ -81,6 +85,7 @@ const ClubsTableRow: React.FC<ClubsTableRowProps> = ({
             variant="outline" 
             size="sm"
             onClick={() => onView(club.id)}
+            disabled={isProcessing}
           >
             View
           </Button>
