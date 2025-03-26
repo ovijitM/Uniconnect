@@ -23,10 +23,10 @@ import { Button } from '@/components/ui/button';
 
 const ClubDetailPage: React.FC = () => {
   const params = useParams<{ clubId: string }>();
-  const clubId = params.clubId; // Access clubId directly, not id
+  const clubId = params.clubId; 
   const { toast } = useToast();
   
-  // Log the URL parameters to debug the issue
+  // Enhanced logging for debugging
   console.log("ClubDetailPage: URL parameters:", params);
   console.log("ClubDetailPage: Using clubId:", clubId);
   
@@ -65,6 +65,12 @@ const ClubDetailPage: React.FC = () => {
     // Force page refresh
     window.location.reload();
   };
+
+  // If there's no clubId, show the not found page immediately
+  if (!clubId) {
+    console.error("ClubDetailPage: No clubId provided in URL parameters");
+    return <ClubDetailNotFound />;
+  }
 
   if (isLoading) {
     return <ClubDetailSkeleton />;

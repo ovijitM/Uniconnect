@@ -12,11 +12,15 @@ interface OrganizerCardProps {
 }
 
 const OrganizerCard: React.FC<OrganizerCardProps> = ({ id, name, logoUrl, description, university }) => {
-  // Add stronger validation to ensure id is valid
-  const validId = id && id !== 'undefined' && id !== 'null' ? id : null;
+  // Enhanced validation for club ID with detailed logging
+  const validId = id && typeof id === 'string' && id.trim() !== '' && id !== 'undefined' && id !== 'null' ? id : null;
   
   // Log the ID to help with debugging
-  console.log("OrganizerCard: rendering with club ID:", id, "isValid:", !!validId);
+  console.log("OrganizerCard: rendering with club ID:", id, "isValid:", !!validId, "name:", name);
+  
+  if (!validId) {
+    console.warn(`OrganizerCard: Invalid club ID for "${name}": ${String(id)}`);
+  }
   
   return (
     <div className="glass-panel rounded-xl p-6">
@@ -46,7 +50,7 @@ const OrganizerCard: React.FC<OrganizerCardProps> = ({ id, name, logoUrl, descri
         {description}
       </p>
       {validId ? (
-        <Link to={`/clubs/${validId}`}>
+        <Link to={`/clubs/${validId}`} onClick={() => console.log("Navigating to club:", `/clubs/${validId}`)}>
           <Button variant="outline" className="w-full">
             View Club Profile
           </Button>

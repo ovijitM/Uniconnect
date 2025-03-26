@@ -12,10 +12,17 @@ interface ClubCardProps {
 }
 
 const ClubCard: React.FC<ClubCardProps> = ({ club, index }) => {
-  console.log("ClubCard rendering with club ID:", club.id);
+  console.log("ClubCard rendering with club ID:", club.id, "Club name:", club.name);
   
-  // Validate club ID
-  const hasValidId = club.id && club.id !== 'undefined' && club.id !== 'null';
+  // Enhanced validation for club ID
+  const hasValidId = Boolean(club.id) && 
+                    typeof club.id === 'string' && 
+                    club.id !== 'undefined' && 
+                    club.id !== 'null';
+  
+  if (!hasValidId) {
+    console.warn(`Invalid club ID for "${club.name}": ${String(club.id)}`);
+  }
   
   return (
     <motion.div
@@ -48,11 +55,21 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, index }) => {
       </div>
       
       <div className="p-4">
-        <Link to={hasValidId ? `/clubs/${club.id}` : "#"} className={`block ${!hasValidId ? 'pointer-events-none' : ''}`}>
-          <h3 className="font-semibold text-lg mb-1 hover:text-primary transition-colors">
+        {hasValidId ? (
+          <Link 
+            to={`/clubs/${club.id}`} 
+            className="block hover:text-primary transition-colors"
+            onClick={() => console.log("Navigating to club detail:", `/clubs/${club.id}`)}
+          >
+            <h3 className="font-semibold text-lg mb-1 hover:text-primary transition-colors">
+              {club.name}
+            </h3>
+          </Link>
+        ) : (
+          <h3 className="font-semibold text-lg mb-1 text-muted-foreground">
             {club.name}
           </h3>
-        </Link>
+        )}
         
         <p className="text-muted-foreground text-sm mb-3 line-clamp-2 h-10">
           {club.description}
