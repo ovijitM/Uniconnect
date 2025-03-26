@@ -52,15 +52,20 @@ export const useClubEvents = () => {
       // Calculate average attendance - fix the property access
       const eventsWithAttendance = eventsData.filter(event => 
         event.event_participants && 
-        event.event_participants[0] && 
-        event.event_participants[0].count !== undefined
+        event.event_participants[0]
       );
       
       if (eventsWithAttendance.length > 0) {
-        const totalAttendance = eventsWithAttendance.reduce(
-          (sum, event) => sum + parseInt(String(event.event_participants[0].count), 10) || 0, 
-          0
-        );
+        let totalAttendance = 0;
+        for (const event of eventsWithAttendance) {
+          if (event.event_participants[0]) {
+            // Convert the count to a number safely
+            const countValue = event.event_participants[0].count;
+            const count = typeof countValue === 'number' ? countValue : 
+                         (typeof countValue === 'string' ? parseInt(countValue, 10) : 0);
+            totalAttendance += isNaN(count) ? 0 : count;
+          }
+        }
         setAverageAttendance(Math.round(totalAttendance / eventsWithAttendance.length));
       }
       

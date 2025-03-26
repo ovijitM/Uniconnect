@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, X } from 'lucide-react';
@@ -85,6 +84,22 @@ const EventsPage: React.FC = () => {
               .eq('id', event.club_id)
               .single();
             
+            let participants = 0;
+            if (event.event_participants && event.event_participants[0]) {
+              const countValue = event.event_participants[0].count;
+              participants = typeof countValue === 'number' ? countValue : 
+                           (typeof countValue === 'string' ? parseInt(countValue, 10) : 0);
+              participants = isNaN(participants) ? 0 : participants;
+            }
+            
+            let memberCount = 0;
+            if (clubData.club_members && clubData.club_members[0]) {
+              const countValue = clubData.club_members[0].count;
+              memberCount = typeof countValue === 'number' ? countValue : 
+                           (typeof countValue === 'string' ? parseInt(countValue, 10) : 0);
+              memberCount = isNaN(memberCount) ? 0 : memberCount;
+            }
+            
             return {
               id: event.id,
               title: event.title,
@@ -95,7 +110,7 @@ const EventsPage: React.FC = () => {
               category: event.category,
               status: (event.status || 'upcoming') as EventStatus,
               visibility: (event.visibility || 'public') as 'public' | 'university_only',
-              participants: event.event_participants && event.event_participants[0] ? parseInt(String(event.event_participants[0].count), 10) || 0 : 0,
+              participants: participants,
               maxParticipants: event.max_participants || undefined,
               organizer: {
                 id: clubData.id,
@@ -104,7 +119,7 @@ const EventsPage: React.FC = () => {
                 logoUrl: clubData.logo_url,
                 category: clubData.category,
                 university: clubData.university,
-                memberCount: clubData.club_members && clubData.club_members[0] ? parseInt(String(clubData.club_members[0].count), 10) || 0 : 0,
+                memberCount: memberCount,
                 events: []
               }
             };

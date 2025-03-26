@@ -132,19 +132,38 @@ export const useClubData = () => {
         if (relatedError) {
           console.error('Error fetching related clubs:', relatedError);
         } else {
-          const formattedRelatedClubs = relatedData.map(club => ({
-            id: club.id,
-            name: club.name,
-            description: club.description,
-            logoUrl: club.logo_url,
-            category: club.category,
-            status: club.status,
-            memberCount: club.club_members && club.club_members[0] ? parseInt(String(club.club_members[0].count), 10) || 0 : 0,
-            events: [],
-            tagline: club.tagline,
-            establishedYear: club.established_year
-          }));
+          const formattedRelatedClubs = relatedData.map(club => {
+            let memberCount = 0;
+            if (club.club_members && club.club_members[0]) {
+              const countValue = club.club_members[0].count;
+              memberCount = typeof countValue === 'number' ? countValue : 
+                           (typeof countValue === 'string' ? parseInt(countValue, 10) : 0);
+              memberCount = isNaN(memberCount) ? 0 : memberCount;
+            }
+            
+            return {
+              id: club.id,
+              name: club.name,
+              description: club.description,
+              logoUrl: club.logo_url,
+              category: club.category,
+              status: club.status,
+              memberCount: memberCount,
+              events: [],
+              tagline: club.tagline,
+              establishedYear: club.established_year
+            };
+          });
           setRelatedClubs(formattedRelatedClubs);
+        }
+        
+        // Process club member count
+        let memberCount = 0;
+        if (clubData.club_members && clubData.club_members[0]) {
+          const countValue = clubData.club_members[0].count;
+          memberCount = typeof countValue === 'number' ? countValue : 
+                       (typeof countValue === 'string' ? parseInt(countValue, 10) : 0);
+          memberCount = isNaN(memberCount) ? 0 : memberCount;
         }
         
         // Format the club data with all new fields
@@ -156,7 +175,7 @@ export const useClubData = () => {
           category: clubData.category,
           status: clubData.status,
           rejectionReason: clubData.rejection_reason,
-          memberCount: clubData.club_members && clubData.club_members[0] ? parseInt(String(clubData.club_members[0].count), 10) || 0 : 0,
+          memberCount: memberCount,
           events: [],
           
           // New fields
@@ -183,46 +202,56 @@ export const useClubData = () => {
         };
         
         // Format the events data with all the new fields and ensure status is of correct type
-        const formattedEvents: Event[] = eventsData.map(event => ({
-          id: event.id,
-          title: event.title,
-          description: event.description,
-          date: event.date,
-          location: event.location,
-          imageUrl: event.image_url,
-          organizer: formattedClub,
-          category: event.category,
-          status: (event.status || 'upcoming') as EventStatus, // Cast to EventStatus
-          participants: event.event_participants && event.event_participants[0] ? parseInt(String(event.event_participants[0].count), 10) || 0 : 0,
-          maxParticipants: event.max_participants || undefined,
+        const formattedEvents: Event[] = eventsData.map(event => {
+          let participants = 0;
+          if (event.event_participants && event.event_participants[0]) {
+            const countValue = event.event_participants[0].count;
+            participants = typeof countValue === 'number' ? countValue : 
+                         (typeof countValue === 'string' ? parseInt(countValue, 10) : 0);
+            participants = isNaN(participants) ? 0 : participants;
+          }
           
-          // New fields
-          visibility: (event.visibility || 'public') as 'public' | 'university_only',
-          eventType: event.event_type,
-          tagline: event.tagline,
-          registrationDeadline: event.registration_deadline,
-          onlinePlatform: event.online_platform,
-          eligibility: event.eligibility,
-          teamSize: event.team_size,
-          registrationLink: event.registration_link,
-          entryFee: event.entry_fee,
-          theme: event.theme,
-          subTracks: event.sub_tracks,
-          prizePool: event.prize_pool,
-          prizeCategories: event.prize_categories,
-          additionalPerks: event.additional_perks,
-          judgingCriteria: event.judging_criteria,
-          judges: event.judges,
-          schedule: event.schedule,
-          deliverables: event.deliverables,
-          submissionPlatform: event.submission_platform,
-          mentors: event.mentors,
-          sponsors: event.sponsors,
-          contactEmail: event.contact_email,
-          communityLink: event.community_link,
-          eventWebsite: event.event_website,
-          eventHashtag: event.event_hashtag
-        }));
+          return {
+            id: event.id,
+            title: event.title,
+            description: event.description,
+            date: event.date,
+            location: event.location,
+            imageUrl: event.image_url,
+            organizer: formattedClub,
+            category: event.category,
+            status: (event.status || 'upcoming') as EventStatus, // Cast to EventStatus
+            participants: participants,
+            maxParticipants: event.max_participants || undefined,
+            
+            // New fields
+            visibility: (event.visibility || 'public') as 'public' | 'university_only',
+            eventType: event.event_type,
+            tagline: event.tagline,
+            registrationDeadline: event.registration_deadline,
+            onlinePlatform: event.online_platform,
+            eligibility: event.eligibility,
+            teamSize: event.team_size,
+            registrationLink: event.registration_link,
+            entryFee: event.entry_fee,
+            theme: event.theme,
+            subTracks: event.sub_tracks,
+            prizePool: event.prize_pool,
+            prizeCategories: event.prize_categories,
+            additionalPerks: event.additional_perks,
+            judgingCriteria: event.judging_criteria,
+            judges: event.judges,
+            schedule: event.schedule,
+            deliverables: event.deliverables,
+            submissionPlatform: event.submission_platform,
+            mentors: event.mentors,
+            sponsors: event.sponsors,
+            contactEmail: event.contact_email,
+            communityLink: event.community_link,
+            eventWebsite: event.event_website,
+            eventHashtag: event.event_hashtag
+          };
+        });
         
         setClub(formattedClub);
         setEvents(formattedEvents);
