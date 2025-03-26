@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -21,7 +20,6 @@ export const useClubAdminDashboard = () => {
     error: profileError 
   } = useStudentProfile(user?.id);
   
-  // Use the existing club admin data hook
   const {
     adminClubs,
     clubEvents,
@@ -38,7 +36,6 @@ export const useClubAdminDashboard = () => {
     selectEventForAttendeeManagement
   } = useClubAdminData(user?.id);
 
-  // Event dialog state
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [eventFormData, setEventFormData] = useState<EventFormData>({
     title: '',
@@ -77,18 +74,15 @@ export const useClubAdminDashboard = () => {
     visibility: 'public'
   });
 
-  // Fetch the user's university on initial load
   useEffect(() => {
     if (user?.id) {
       fetchUserProfile();
     }
   }, [user?.id, fetchUserProfile]);
 
-  // Handle opening event dialog when navigated with state
   useEffect(() => {
     if (state?.openEventDialog) {
       setIsEventDialogOpen(true);
-      // Clear the state to prevent reopening when navigating back
       navigate(location.pathname, { replace: true });
     }
   }, [state, navigate, location.pathname]);
@@ -112,11 +106,7 @@ export const useClubAdminDashboard = () => {
       return;
     }
     
-    // Placeholder for future redirection to a dedicated club creation page
-    toast({
-      title: "Club Creation Coming Soon",
-      description: "Club creation functionality is currently being updated. Please check back later.",
-    });
+    navigate('/club-admin-dashboard/create-club');
   };
 
   const handleEventInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -144,11 +134,9 @@ export const useClubAdminDashboard = () => {
   };
 
   const handleEditEvent = (eventId: string) => {
-    // Find the event data to populate the form
     const event = clubEvents.find(e => e.id === eventId);
     if (event) {
       console.log('Editing event:', event);
-      // Here would be the logic to populate the form data
       setIsEventDialogOpen(true);
     }
   };
