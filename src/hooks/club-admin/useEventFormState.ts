@@ -38,6 +38,7 @@ export const useEventFormState = () => {
     communityLink: '',
     eventWebsite: '',
     eventHashtag: '',
+    howToRegister: '',
     
     // Explicitly set visibility with the correct type
     visibility: 'public'

@@ -18,21 +18,22 @@ export interface EventFormData {
   registrationLink: string;
   entryFee: string;
   theme: string;
-  subTracks: string;  // Changed from string | string[] to just string for consistency
+  subTracks: string;
   prizePool: string;
-  prizeCategories: string;  // Changed from string | string[] to string
-  additionalPerks: string;  // Changed from string | string[] to string
-  judgingCriteria: string;  // Changed from string | string[] to string
-  judges: string;  // Changed from string | string[] to string
-  schedule: string;  // Changed from Record<string, any> | string to string
-  deliverables: string;  // Changed from string | string[] to string
+  prizeCategories: string;
+  additionalPerks: string;
+  judgingCriteria: string;
+  judges: string;
+  schedule: string;
+  deliverables: string;
   submissionPlatform: string;
-  mentors: string;  // Changed from string | string[] to string
-  sponsors: string;  // Changed from string | string[] to string
+  mentors: string;
+  sponsors: string;
   contactEmail: string;
   communityLink: string;
   eventWebsite: string;
   eventHashtag: string;
+  howToRegister: string; // Added this property
   visibility: 'public' | 'university_only';
 }
 

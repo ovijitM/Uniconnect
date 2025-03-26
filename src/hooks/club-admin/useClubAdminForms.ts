@@ -1,10 +1,11 @@
+
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ClubFormData, EventFormData } from './types';
 import { useToast } from '@/hooks/use-toast';
 import { useClubValidation } from './useClubValidation';
 import { useEventValidation } from './useEventValidation';
-import { isNetworkError } from './utils/dataTransformUtils';
+import { isNetworkError, parseArrayField } from './utils/dataTransformUtils';
 
 export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData: () => Promise<void>) => {
   const [eventFormData, setEventFormData] = useState<EventFormData>({
@@ -50,6 +51,29 @@ export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData
     category: '',
     logoUrl: '',
     university: '',
+    tagline: '',
+    establishedYear: '',
+    affiliation: '',
+    whyJoin: '',
+    regularEvents: '',
+    signatureEvents: '',
+    communityEngagement: '',
+    whoCanJoin: '',
+    membershipFee: '',
+    howToJoin: '',
+    presidentName: '',
+    presidentContact: '',
+    executiveMembers: '',
+    advisors: '',
+    phoneNumber: '',
+    website: '',
+    facebookLink: '',
+    instagramLink: '',
+    twitterLink: '',
+    discordLink: '',
+    documentUrl: '',
+    documentName: '',
+    // Additional fields
     contactEmail: '',
     contactPhone: '',
     address: '',
@@ -61,7 +85,6 @@ export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData
       linkedin: '',
       discord: ''
     },
-    executiveMembers: '',
     achievements: '',
     documents: {
       constitution: '',
@@ -259,16 +282,16 @@ export const useClubAdminForms = (userId: string | undefined, fetchClubAdminData
           registration_link: eventFormData.registrationLink || null,
           entry_fee: eventFormData.entryFee || 'Free',
           theme: eventFormData.theme || null,
-          sub_tracks: eventFormData.subTracks ? eventFormData.subTracks.split(',').map(item => item.trim()) : null,
+          sub_tracks: eventFormData.subTracks ? parseArrayField(eventFormData.subTracks) : null,
           prize_pool: eventFormData.prizePool || null,
-          prize_categories: eventFormData.prizeCategories ? eventFormData.prizeCategories.split(',').map(item => item.trim()) : null,
-          additional_perks: eventFormData.additionalPerks ? eventFormData.additionalPerks.split(',').map(item => item.trim()) : null,
-          judging_criteria: eventFormData.judgingCriteria ? eventFormData.judgingCriteria.split(',').map(item => item.trim()) : null,
-          judges: eventFormData.judges ? eventFormData.judges.split(',').map(item => item.trim()) : null,
-          deliverables: eventFormData.deliverables ? eventFormData.deliverables.split(',').map(item => item.trim()) : null,
+          prize_categories: eventFormData.prizeCategories ? parseArrayField(eventFormData.prizeCategories) : null,
+          additional_perks: eventFormData.additionalPerks ? parseArrayField(eventFormData.additionalPerks) : null,
+          judging_criteria: eventFormData.judgingCriteria ? parseArrayField(eventFormData.judgingCriteria) : null,
+          judges: eventFormData.judges ? parseArrayField(eventFormData.judges) : null,
+          deliverables: eventFormData.deliverables ? parseArrayField(eventFormData.deliverables) : null,
           submission_platform: eventFormData.submissionPlatform || null,
-          mentors: eventFormData.mentors ? eventFormData.mentors.split(',').map(item => item.trim()) : null,
-          sponsors: eventFormData.sponsors ? eventFormData.sponsors.split(',').map(item => item.trim()) : null,
+          mentors: eventFormData.mentors ? parseArrayField(eventFormData.mentors) : null,
+          sponsors: eventFormData.sponsors ? parseArrayField(eventFormData.sponsors) : null,
           contact_email: eventFormData.contactEmail || null,
           community_link: eventFormData.communityLink || null,
           event_website: eventFormData.eventWebsite || null,
