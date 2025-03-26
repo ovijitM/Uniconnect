@@ -5,13 +5,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { useClubValidation } from './useClubValidation';
 import { addClubAdmin } from './utils/clubAdminUtils';
+import { parseArrayField, parseExecutiveMembers } from './utils/dataTransformUtils';
 
 export const useClubCreation = () => {
   const { toast } = useToast();
   const { validateClubData } = useClubValidation();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const createClub = async (clubData: ClubFormData, userId: string | undefined, createClubAdmin = true) => {
+  const createClub = async (clubData: ClubFormData, userId: string | undefined) => {
     if (!userId) {
       console.error('No user ID provided');
       toast({
@@ -19,7 +20,7 @@ export const useClubCreation = () => {
         description: 'You must be logged in to create a club',
         variant: 'destructive',
       });
-      return { success: false, error: 'No user ID provided' };
+      return false;
     }
 
     try {
@@ -28,82 +29,56 @@ export const useClubCreation = () => {
       // Validate club data
       const validation = validateClubData(clubData);
       if (!validation.isValid) {
+        console.error('Validation failed:', validation.errorMessage);
         toast({
           title: 'Validation Error',
           description: validation.errorMessage || 'Please check your form data and try again.',
           variant: 'destructive',
         });
         setIsSubmitting(false);
-        return { success: false, error: validation.errorMessage || 'Invalid club data' };
+        return false;
       }
       
       // Check if the user already has a club admin relationship
-      if (createClubAdmin) {
-        console.log('Checking if user already has a club');
+      console.log('Checking if user already has a club');
+      
+      const { data: existingAdminRoles, error: adminCheckError } = await supabase
+        .from('club_admins')
+        .select('club_id')
+        .eq('user_id', userId);
         
-        try {
-          const { data: existingAdminRoles, error: adminCheckError } = await supabase
-            .from('club_admins')
-            .select('club_id')
-            .eq('user_id', userId);
-            
-          if (adminCheckError) {
-            console.error('Error checking existing admin roles:', adminCheckError);
-            toast({
-              title: 'Error',
-              description: 'Failed to check if you already have a club',
-              variant: 'destructive',
-            });
-            setIsSubmitting(false);
-            return { success: false, error: adminCheckError.message };
-          }
-          
-          if (existingAdminRoles && existingAdminRoles.length > 0) {
-            console.log('User already has a club admin role:', existingAdminRoles);
-            toast({
-              title: 'Club Limit Reached',
-              description: 'You can only be an admin for one club. Please manage your existing club.',
-              variant: 'destructive',
-            });
-            setIsSubmitting(false);
-            return { success: false, error: 'User already has a club' };
-          }
-        } catch (checkError) {
-          console.error('Error checking club admin status:', checkError);
-          // Continue with club creation even if check fails
-          // This allows offline club creation to be attempted
-        }
+      if (adminCheckError) {
+        console.error('Error checking existing admin roles:', adminCheckError);
+        toast({
+          title: 'Error',
+          description: 'Failed to check if you already have a club',
+          variant: 'destructive',
+        });
+        setIsSubmitting(false);
+        return false;
+      }
+      
+      if (existingAdminRoles && existingAdminRoles.length > 0) {
+        console.log('User already has a club admin role:', existingAdminRoles);
+        toast({
+          title: 'Club Limit Reached',
+          description: 'You can only be an admin for one club. Please manage your existing club.',
+          variant: 'destructive',
+        });
+        setIsSubmitting(false);
+        return false;
       }
       
       // Create the club
       console.log('Creating club with data:', clubData);
       
-      // Transform any arrays or complex data
-      const regularEvents = clubData.regularEvents 
-        ? typeof clubData.regularEvents === 'string' 
-          ? clubData.regularEvents.split(',').map(event => event.trim()) 
-          : clubData.regularEvents
-        : null;
-      
-      const signatureEvents = clubData.signatureEvents 
-        ? typeof clubData.signatureEvents === 'string' 
-          ? clubData.signatureEvents.split(',').map(event => event.trim()) 
-          : clubData.signatureEvents
-        : null;
-      
-      const executiveMembers = clubData.executiveMembers 
-        ? typeof clubData.executiveMembers === 'string' 
-          ? clubData.executiveMembers.split(',').map(member => member.trim()) 
-          : clubData.executiveMembers
-        : null;
-      
-      const advisors = clubData.advisors 
-        ? typeof clubData.advisors === 'string' 
-          ? clubData.advisors.split(',').map(advisor => advisor.trim()) 
-          : clubData.advisors
-        : null;
-      
       try {
+        // Transform complex data fields
+        const regularEvents = parseArrayField(clubData.regularEvents);
+        const signatureEvents = parseArrayField(clubData.signatureEvents);
+        const executiveMembers = parseExecutiveMembers(clubData.executiveMembers);
+        const advisors = parseArrayField(clubData.advisors);
+        
         const { data, error } = await supabase
           .from('clubs')
           .insert({
@@ -147,13 +122,13 @@ export const useClubCreation = () => {
             variant: 'destructive',
           });
           setIsSubmitting(false);
-          return { success: false, error: error.message };
+          return false;
         }
         
         console.log('Club created successfully:', data);
         
-        // If createClubAdmin is true, create a club admin relationship
-        if (createClubAdmin && data && data.length > 0) {
+        // Create club admin relationship
+        if (data && data.length > 0) {
           const clubId = data[0].id;
           
           try {
@@ -171,12 +146,12 @@ export const useClubCreation = () => {
               variant: 'default',
             });
             setIsSubmitting(false);
-            return { success: true, clubId, warning: 'Admin relationship failed' };
+            return true;
           }
         }
         
         setIsSubmitting(false);
-        return { success: true, clubId: data?.[0]?.id };
+        return true;
       } catch (insertError: any) {
         console.error('Error inserting club data:', insertError);
         toast({
@@ -185,7 +160,7 @@ export const useClubCreation = () => {
           variant: 'destructive',
         });
         setIsSubmitting(false);
-        return { success: false, error: insertError.message };
+        return false;
       }
       
     } catch (error: any) {
@@ -196,7 +171,7 @@ export const useClubCreation = () => {
         variant: 'destructive',
       });
       setIsSubmitting(false);
-      return { success: false, error: error.message };
+      return false;
     }
   };
 

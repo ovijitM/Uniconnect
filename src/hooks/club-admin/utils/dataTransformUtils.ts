@@ -1,3 +1,4 @@
+
 /**
  * Parses a comma-separated string into an array
  */
@@ -38,7 +39,6 @@ export const parseExecutiveMembers = (value: string | undefined | null): Record<
       }
     });
     
-    console.log("Parsed executive members:", members);
     return Object.keys(members).length > 0 ? members : null;
   } catch (error) {
     console.error("Error parsing executive members:", error);
@@ -115,9 +115,22 @@ export const safelyTransformArrayData = (data: string | string[] | null | undefi
  * Check for network connectivity issues
  */
 export const isNetworkError = (error: any): boolean => {
+  if (!error) return false;
+  
   return (
     error.message?.includes('Failed to fetch') || 
     error.message?.includes('Network request failed') ||
-    error.message?.includes('The network connection was lost')
+    error.message?.includes('The network connection was lost') ||
+    error.code === 'ECONNABORTED' ||
+    error.code === 'ECONNREFUSED' ||
+    error.code === 'ECONNRESET' ||
+    error.code === 'ETIMEDOUT'
   );
+};
+
+/**
+ * Add a delay (for retry mechanisms)
+ */
+export const delay = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
 };

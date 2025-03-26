@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useClubAdminData } from '@/hooks/club-admin/useClubAdminData';
 import { useClubAdminForms } from '@/hooks/club-admin/useClubAdminForms';
 import { useStudentProfile } from '@/hooks/student/useStudentProfile';
+import { isNetworkError } from '@/hooks/club-admin/utils/dataTransformUtils';
 
 export const useClubAdminDashboard = () => {
   const { user } = useAuth();
@@ -14,7 +15,15 @@ export const useClubAdminDashboard = () => {
   const { toast } = useToast();
   const state = location.state as { openEventDialog?: boolean } | null;
   const [initialLoadAttempted, setInitialLoadAttempted] = useState(false);
-  const { userUniversity, fetchUserProfile, isLoadingProfile, error: profileError } = useStudentProfile(user?.id);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
+  
+  const { 
+    userUniversity, 
+    fetchUserProfile, 
+    isLoadingProfile, 
+    error: profileError 
+  } = useStudentProfile(user?.id);
   
   // Use the existing club admin data hook
   const {
@@ -55,10 +64,42 @@ export const useClubAdminDashboard = () => {
   useEffect(() => {
     if (user?.id && !initialLoadAttempted) {
       setInitialLoadAttempted(true);
-      fetchUserProfile();
-      checkUserHasClub();
+      
+      const loadProfileAndCheckClubs = async () => {
+        try {
+          await fetchUserProfile();
+          await checkUserHasClub();
+        } catch (error) {
+          console.error("Error during initial profile and club check:", error);
+          
+          // Only retry if it's a network error and we haven't exceeded max retries
+          if (isNetworkError(error) && retryCount < MAX_RETRIES) {
+            const retryDelay = Math.min(1000 * (retryCount + 1), 5000);
+            setRetryCount(prev => prev + 1);
+            
+            toast({
+              title: "Connection Error",
+              description: `Retry ${retryCount + 1}/${MAX_RETRIES}: Attempting to reconnect in ${retryDelay/1000} seconds...`,
+              variant: "destructive",
+            });
+            
+            // Retry after delay
+            setTimeout(() => {
+              setInitialLoadAttempted(false);
+            }, retryDelay);
+          } else if (retryCount >= MAX_RETRIES) {
+            toast({
+              title: "Connection Failed",
+              description: `Failed to load data after ${MAX_RETRIES} attempts. Please check your connection and refresh the page.`,
+              variant: "destructive",
+            });
+          }
+        }
+      };
+      
+      loadProfileAndCheckClubs();
     }
-  }, [user?.id, initialLoadAttempted]);
+  }, [user?.id, initialLoadAttempted, retryCount]);
 
   // Handle opening event dialog when navigated with state
   useEffect(() => {
@@ -161,9 +202,14 @@ export const useClubAdminDashboard = () => {
     selectEventForAttendeeManagement,
     isLoadingProfile,
     profileError,
-    handleRetryProfileFetch,
+    handleRetryProfileFetch: () => {
+      setRetryCount(0);
+      setInitialLoadAttempted(false);
+    },
     handleCreateClubClick,
     hasExistingClub,
-    isCheckingClubs
+    isCheckingClubs,
+    retryCount,
+    MAX_RETRIES
   };
 };
