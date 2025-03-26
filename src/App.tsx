@@ -23,6 +23,7 @@ import ActivityPage from '@/pages/admin/ActivityPage';
 import SettingsPage from '@/pages/admin/SettingsPage';
 import ClubAdminDashboard from '@/pages/club-admin/ClubAdminDashboard';
 import ClubCreatePage from '@/pages/club-admin/CreateClubPage';
+import ClubCreationPage from '@/pages/club-admin/ClubCreationPage';
 import CreateEventPage from '@/pages/club-admin/CreateEventPage';
 import StudentDashboard from '@/pages/student/StudentDashboard';
 
@@ -99,6 +100,11 @@ function App() {
             <Route path="/club-admin-dashboard/create-club" element={
               <RequireAuth allowedRoles={['club_admin']}>
                 <ClubCreatePage />
+              </RequireAuth>
+            } />
+            <Route path="/club-admin-dashboard/create-club-new" element={
+              <RequireAuth allowedRoles={['club_admin']}>
+                <ClubCreationPage />
               </RequireAuth>
             } />
             <Route path="/club-admin-dashboard/create-event" element={

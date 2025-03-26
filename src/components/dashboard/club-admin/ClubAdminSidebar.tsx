@@ -79,8 +79,14 @@ const ClubAdminSidebar: React.FC = () => {
             <SidebarItem
               href="/club-admin-dashboard/create-club"
               icon={<PlusCircle className="mr-2 h-4 w-4" />}
-              title="Create Club"
+              title="Create Club (Dialog)"
               active={pathname === '/club-admin-dashboard/create-club'}
+            />
+            <SidebarItem
+              href="/club-admin-dashboard/create-club-new"
+              icon={<PlusCircle className="mr-2 h-4 w-4" />}
+              title="Create Club (Full Form)"
+              active={pathname === '/club-admin-dashboard/create-club-new'}
             />
           </div>
         </div>
