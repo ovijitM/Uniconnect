@@ -51,7 +51,7 @@ const StudentSidebar: React.FC = () => {
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 border-2 border-primary/20">
-            <AvatarImage src={user?.avatar_url} />
+            <AvatarImage src={user?.profileImage} />
             <AvatarFallback className="bg-primary/10 text-primary">
               {user?.name ? getInitials(user.name) : 'ST'}
             </AvatarFallback>
