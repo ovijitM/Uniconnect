@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { ClubFormData, EventFormData } from './types';
@@ -7,9 +8,9 @@ import { useStudentProfile } from '@/hooks/student/useStudentProfile';
 
 export const useClubAdminForms = (userId: string | undefined, onClubCreationSuccess: () => void) => {
   const { toast } = useToast();
-  const { userUniversity, userUniversityId, fetchUserProfile } = useStudentProfile(userId, true);
-  const { createClub } = useClubCreation();
-  const { createEvent } = useEventCreation();
+  const { userUniversity, userUniversityId, fetchUserProfile } = useStudentProfile(userId);
+  const { createClub } = useClubCreation(userId, onClubCreationSuccess);
+  const { createEvent } = useEventCreation(userId, onClubCreationSuccess);
   
   const [clubFormData, setClubFormData] = useState<ClubFormData>({
     name: '',
@@ -87,7 +88,7 @@ export const useClubAdminForms = (userId: string | undefined, onClubCreationSucc
     if (userId) {
       fetchUserProfile();
     }
-  }, [userId]);
+  }, [userId, fetchUserProfile]);
   
   useEffect(() => {
     if (userUniversity && userUniversityId && !clubFormData.university) {
@@ -97,7 +98,7 @@ export const useClubAdminForms = (userId: string | undefined, onClubCreationSucc
         universityId: userUniversityId
       }));
     }
-  }, [userUniversity, userUniversityId]);
+  }, [userUniversity, userUniversityId, clubFormData.university]);
 
   const handleClubInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -146,52 +147,51 @@ export const useClubAdminForms = (userId: string | undefined, onClubCreationSucc
     setIsSubmitting(true);
     try {
       console.log("Creating club with data:", clubFormData);
-      const result = await createClub(clubFormData, userId, true);
+      // Explicitly pass userId and true for the callback execution
+      await createClub(clubFormData, userId, true);
       
-      if (result && result.success) {
-        toast({
-          title: "Club Created",
-          description: "Your club has been created and is pending approval."
-        });
-        
-        setIsClubDialogOpen(false);
-        
-        setClubFormData({
-          ...clubFormData,
-          name: '',
-          description: '',
-          tagline: '',
-          category: '',
-          logoUrl: '',
-          establishedYear: '',
-          affiliation: '',
-          whyJoin: '',
-          regularEvents: '',
-          signatureEvents: '',
-          communityEngagement: '',
-          whoCanJoin: '',
-          membershipFee: 'Free',
-          howToJoin: '',
-          presidentName: '',
-          presidentContact: '',
-          executiveMembers: '',
-          advisors: '',
-          phoneNumber: '',
-          website: '',
-          facebookLink: '',
-          instagramLink: '',
-          twitterLink: '',
-          discordLink: '',
-          documentUrl: '',
-          documentName: ''
-        });
-        
-        if (onClubCreationSuccess) {
-          console.log("Calling onClubCreationSuccess callback to refresh clubs");
-          setTimeout(() => {
-            onClubCreationSuccess();
-          }, 500);
-        }
+      toast({
+        title: "Club Created",
+        description: "Your club has been created and is pending approval."
+      });
+      
+      setIsClubDialogOpen(false);
+      
+      setClubFormData({
+        ...clubFormData,
+        name: '',
+        description: '',
+        tagline: '',
+        category: '',
+        logoUrl: '',
+        establishedYear: '',
+        affiliation: '',
+        whyJoin: '',
+        regularEvents: '',
+        signatureEvents: '',
+        communityEngagement: '',
+        whoCanJoin: '',
+        membershipFee: 'Free',
+        howToJoin: '',
+        presidentName: '',
+        presidentContact: '',
+        executiveMembers: '',
+        advisors: '',
+        phoneNumber: '',
+        website: '',
+        facebookLink: '',
+        instagramLink: '',
+        twitterLink: '',
+        discordLink: '',
+        documentUrl: '',
+        documentName: ''
+      });
+      
+      if (onClubCreationSuccess) {
+        console.log("Calling onClubCreationSuccess callback to refresh clubs");
+        setTimeout(() => {
+          onClubCreationSuccess();
+        }, 500);
       }
     } catch (error) {
       console.error("Error creating club:", error);
@@ -211,54 +211,54 @@ export const useClubAdminForms = (userId: string | undefined, onClubCreationSucc
     setIsSubmitting(true);
     try {
       console.log("Creating event with data:", eventFormData);
-      const success = await createEvent(eventFormData, userId);
       
-      if (success) {
-        toast({
-          title: "Event Created",
-          description: "Your event has been created successfully."
-        });
-        
-        setIsEventDialogOpen(false);
-        
-        const clubId = eventFormData.clubId;
-        setEventFormData({
-          title: '',
-          tagline: '',
-          description: '',
-          date: '',
-          location: '',
-          category: '',
-          clubId: clubId,
-          maxParticipants: '',
-          registrationDeadline: '',
-          imageUrl: '',
-          eventType: 'in-person',
-          entryFee: 'Free',
-          howToRegister: '',
-          visibility: 'public',
-          onlinePlatform: '',
-          eligibility: '',
-          teamSize: '',
-          registrationLink: '',
-          theme: '',
-          subTracks: '',
-          prizePool: '',
-          prizeCategories: '',
-          additionalPerks: '',
-          judgingCriteria: '',
-          judges: '',
-          schedule: '',
-          deliverables: '',
-          submissionPlatform: '',
-          mentors: '',
-          sponsors: '',
-          contactEmail: '',
-          communityLink: '',
-          eventWebsite: '',
-          eventHashtag: ''
-        });
-      }
+      // Explicitly pass the required arguments
+      await createEvent(eventFormData, setEventFormData, setIsEventDialogOpen);
+      
+      toast({
+        title: "Event Created",
+        description: "Your event has been created successfully."
+      });
+      
+      setIsEventDialogOpen(false);
+      
+      const clubId = eventFormData.clubId;
+      setEventFormData({
+        title: '',
+        tagline: '',
+        description: '',
+        date: '',
+        location: '',
+        category: '',
+        clubId: clubId,
+        maxParticipants: '',
+        registrationDeadline: '',
+        imageUrl: '',
+        eventType: 'in-person',
+        entryFee: 'Free',
+        howToRegister: '',
+        visibility: 'public',
+        onlinePlatform: '',
+        eligibility: '',
+        teamSize: '',
+        registrationLink: '',
+        theme: '',
+        subTracks: '',
+        prizePool: '',
+        prizeCategories: '',
+        additionalPerks: '',
+        judgingCriteria: '',
+        judges: '',
+        schedule: '',
+        deliverables: '',
+        submissionPlatform: '',
+        mentors: '',
+        sponsors: '',
+        contactEmail: '',
+        communityLink: '',
+        eventWebsite: '',
+        eventHashtag: ''
+      });
     } catch (error) {
       console.error("Error creating event:", error);
       toast({

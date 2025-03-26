@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { EventFormData } from './types';
 
@@ -28,7 +29,7 @@ export const useEventFormState = () => {
     additionalPerks: '',
     judgingCriteria: '',
     judges: '',
-    schedule: '', // Added missing schedule field with proper initialization
+    schedule: '',
     deliverables: '',
     submissionPlatform: '',
     mentors: '',
@@ -37,6 +38,7 @@ export const useEventFormState = () => {
     communityLink: '',
     eventWebsite: '',
     eventHashtag: '',
+    howToRegister: '',
     
     // Explicitly set visibility with the correct type
     visibility: 'public'

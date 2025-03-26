@@ -8,11 +8,14 @@ import ClubAdminSidebar from '@/components/dashboard/club-admin/ClubAdminSidebar
 import ClubAdminDashboardContent from '@/components/dashboard/club-admin/dashboard/ClubAdminDashboardContent';
 import { useClubAdminDashboard } from '@/hooks/club-admin/dashboard/useClubAdminDashboard';
 
+// Define the view types
+type ViewType = 'overview' | 'events' | 'clubs' | 'members' | 'attendance' | 'profile';
+
 const ClubAdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
   const { toast } = useToast();
-  const [currentView, setCurrentView] = useState<'overview' | 'events' | 'clubs' | 'members' | 'attendance' | 'profile'>('overview');
+  const [currentView, setCurrentView] = useState<ViewType>('overview');
   
   const {
     adminClubs,
@@ -117,6 +120,8 @@ const ClubAdminDashboard: React.FC = () => {
           handleEventFileUpload={handleEventFileUpload}
           isLoadingProfile={isLoadingProfile}
           profileError={profileError}
+          handleRetryProfileFetch={handleRetryProfileFetch}
+          handleCreateClubClick={handleCreateClubClick}
         />
       </div>
     </DashboardLayout>

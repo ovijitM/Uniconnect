@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -172,6 +173,7 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         communityLink: '',
         eventWebsite: '',
         eventHashtag: '',
+        howToRegister: '',
         visibility: 'public'
       });
       setSelectedCollaborators([]);
