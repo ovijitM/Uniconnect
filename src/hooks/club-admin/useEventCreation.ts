@@ -185,6 +185,7 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
         communityLink: '',
         eventWebsite: '',
         eventHashtag: '',
+        howToRegister: '',
         visibility: 'public'
       });
       setSelectedCollaborators([]);
