@@ -52,17 +52,33 @@ export const useClubEvents = () => {
       // Calculate average attendance - fix the property access
       const eventsWithAttendance = eventsData.filter(event => 
         event.event_participants && 
-        event.event_participants[0]
+        Array.isArray(event.event_participants) && 
+        event.event_participants.length > 0
       );
       
       if (eventsWithAttendance.length > 0) {
         let totalAttendance = 0;
         for (const event of eventsWithAttendance) {
-          if (event.event_participants[0]) {
-            // Convert the count to a number safely
-            const countValue = event.event_participants[0].count;
-            const count = typeof countValue === 'number' ? countValue : 
-                         (typeof countValue === 'string' ? parseInt(countValue, 10) : 0);
+          if (Array.isArray(event.event_participants) && event.event_participants.length > 0) {
+            // Safely extract the count value
+            const countData = event.event_participants[0];
+            
+            // Handle the count value which might be a string, number, or have a count property
+            let count = 0;
+            if (typeof countData === 'number') {
+              count = countData;
+            } else if (typeof countData === 'string') {
+              count = parseInt(countData, 10) || 0;
+            } else if (countData && typeof countData === 'object') {
+              // It might be an object with a count property
+              const rawCount = countData.count;
+              if (typeof rawCount === 'number') {
+                count = rawCount;
+              } else if (typeof rawCount === 'string') {
+                count = parseInt(rawCount, 10) || 0;
+              }
+            }
+            
             totalAttendance += isNaN(count) ? 0 : count;
           }
         }

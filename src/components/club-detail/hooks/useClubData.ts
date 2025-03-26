@@ -134,10 +134,23 @@ export const useClubData = () => {
         } else {
           const formattedRelatedClubs = relatedData.map(club => {
             let memberCount = 0;
-            if (club.club_members && club.club_members[0]) {
-              const countValue = club.club_members[0].count;
-              memberCount = typeof countValue === 'number' ? countValue : 
-                           (typeof countValue === 'string' ? parseInt(countValue, 10) : 0);
+            if (club.club_members && Array.isArray(club.club_members) && club.club_members.length > 0) {
+              const countData = club.club_members[0];
+              
+              // Handle different count formats
+              if (typeof countData === 'number') {
+                memberCount = countData;
+              } else if (typeof countData === 'string') {
+                memberCount = parseInt(countData, 10) || 0;
+              } else if (countData && typeof countData === 'object') {
+                const rawCount = countData.count;
+                if (typeof rawCount === 'number') {
+                  memberCount = rawCount;
+                } else if (typeof rawCount === 'string') {
+                  memberCount = parseInt(rawCount, 10) || 0;
+                }
+              }
+              
               memberCount = isNaN(memberCount) ? 0 : memberCount;
             }
             
@@ -159,10 +172,23 @@ export const useClubData = () => {
         
         // Process club member count
         let memberCount = 0;
-        if (clubData.club_members && clubData.club_members[0]) {
-          const countValue = clubData.club_members[0].count;
-          memberCount = typeof countValue === 'number' ? countValue : 
-                       (typeof countValue === 'string' ? parseInt(countValue, 10) : 0);
+        if (clubData.club_members && Array.isArray(clubData.club_members) && clubData.club_members.length > 0) {
+          const countData = clubData.club_members[0];
+          
+          // Handle different count formats
+          if (typeof countData === 'number') {
+            memberCount = countData;
+          } else if (typeof countData === 'string') {
+            memberCount = parseInt(countData, 10) || 0;
+          } else if (countData && typeof countData === 'object') {
+            const rawCount = countData.count;
+            if (typeof rawCount === 'number') {
+              memberCount = rawCount;
+            } else if (typeof rawCount === 'string') {
+              memberCount = parseInt(rawCount, 10) || 0;
+            }
+          }
+          
           memberCount = isNaN(memberCount) ? 0 : memberCount;
         }
         
@@ -204,10 +230,23 @@ export const useClubData = () => {
         // Format the events data with all the new fields and ensure status is of correct type
         const formattedEvents: Event[] = eventsData.map(event => {
           let participants = 0;
-          if (event.event_participants && event.event_participants[0]) {
-            const countValue = event.event_participants[0].count;
-            participants = typeof countValue === 'number' ? countValue : 
-                         (typeof countValue === 'string' ? parseInt(countValue, 10) : 0);
+          if (event.event_participants && Array.isArray(event.event_participants) && event.event_participants.length > 0) {
+            const countData = event.event_participants[0];
+            
+            // Handle different count formats
+            if (typeof countData === 'number') {
+              participants = countData;
+            } else if (typeof countData === 'string') {
+              participants = parseInt(countData, 10) || 0;
+            } else if (countData && typeof countData === 'object') {
+              const rawCount = countData.count;
+              if (typeof rawCount === 'number') {
+                participants = rawCount;
+              } else if (typeof rawCount === 'string') {
+                participants = parseInt(rawCount, 10) || 0;
+              }
+            }
+            
             participants = isNaN(participants) ? 0 : participants;
           }
           
