@@ -38,9 +38,9 @@ function App() {
             {/* Public routes */}
             <Route path="/" element={<Home />} />
             <Route path="/clubs" element={<Clubs />} />
-            <Route path="/clubs/:id" element={<ClubDetail />} />
+            <Route path="/clubs/:clubId" element={<ClubDetail />} />
             <Route path="/events" element={<Events />} />
-            <Route path="/events/:id" element={<EventDetail />} />
+            <Route path="/events/:eventId" element={<EventDetail />} />
             <Route path="/universities" element={<Universities />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />

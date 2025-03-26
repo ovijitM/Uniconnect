@@ -12,6 +12,9 @@ interface OrganizerCardProps {
 }
 
 const OrganizerCard: React.FC<OrganizerCardProps> = ({ id, name, logoUrl, description, university }) => {
+  // Add validation to ensure id is valid
+  const validId = id && id !== 'undefined' && id !== 'null' ? id : null;
+  
   return (
     <div className="glass-panel rounded-xl p-6">
       <div className="flex items-center gap-4 mb-4">
@@ -35,11 +38,17 @@ const OrganizerCard: React.FC<OrganizerCardProps> = ({ id, name, logoUrl, descri
       <p className="text-sm text-muted-foreground mb-4">
         {description}
       </p>
-      <Link to={`/clubs/${id}`}>
-        <Button variant="outline" className="w-full">
-          View Club Profile
+      {validId ? (
+        <Link to={`/clubs/${validId}`}>
+          <Button variant="outline" className="w-full">
+            View Club Profile
+          </Button>
+        </Link>
+      ) : (
+        <Button variant="outline" className="w-full" disabled>
+          Club Profile Unavailable
         </Button>
-      </Link>
+      )}
     </div>
   );
 };

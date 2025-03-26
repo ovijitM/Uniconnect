@@ -1,4 +1,7 @@
 
+// We need to fix the issue where clubId is missing or not detected
+// Let's update the beginning of the useClubData hook
+
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Club, Event, EventStatus } from '@/types';
@@ -17,8 +20,10 @@ export const useClubData = () => {
   useEffect(() => {
     async function fetchClubData() {
       console.log("useClubData: Starting fetch for clubId:", clubId);
-      if (!clubId) {
-        console.error("No clubId provided");
+      
+      // Better validation for clubId
+      if (!clubId || clubId === 'undefined' || clubId === 'null') {
+        console.error("No valid clubId provided");
         setIsLoading(false);
         setError(new Error("No club ID provided"));
         return;
@@ -77,7 +82,7 @@ export const useClubData = () => {
         console.log("Club data fetched:", clubData);
         
         if (!clubData) {
-          console.error("Club not found");
+          console.error("Club not found for ID:", clubId);
           setError(new Error('Club not found'));
           throw new Error('Club not found');
         }

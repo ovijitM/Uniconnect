@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -21,8 +22,13 @@ import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const ClubDetailPage: React.FC = () => {
-  const { clubId } = useParams<{ clubId: string }>();
+  const params = useParams<{ clubId: string }>();
+  const clubId = params.clubId || params.id; // Try both parameter names
   const { toast } = useToast();
+  
+  // Log the URL parameters to debug the issue
+  console.log("ClubDetailPage: URL parameters:", params);
+  console.log("ClubDetailPage: Using clubId:", clubId);
   
   const {
     club,
@@ -79,6 +85,7 @@ const ClubDetailPage: React.FC = () => {
           <AlertTitle>Error loading club</AlertTitle>
           <AlertDescription className="mt-2">
             There was an error loading the club details. Please try again.
+            {error.message && <p className="text-sm mt-1">{error.message}</p>}
           </AlertDescription>
           <Button 
             variant="outline" 
