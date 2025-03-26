@@ -22,6 +22,10 @@ interface SidebarItemProps {
   disabled?: boolean;
 }
 
+interface ClubAdminSidebarProps {
+  currentView?: 'overview' | 'events' | 'clubs' | 'members' | 'attendance' | 'profile';
+}
+
 const SidebarItem: React.FC<SidebarItemProps> = ({
   href,
   icon,
@@ -58,7 +62,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   );
 };
 
-const ClubAdminSidebar: React.FC = () => {
+const ClubAdminSidebar: React.FC<ClubAdminSidebarProps> = ({ currentView }) => {
   const location = useLocation();
   const pathname = location.pathname;
 
@@ -74,13 +78,13 @@ const ClubAdminSidebar: React.FC = () => {
               href="/club-admin-dashboard"
               icon={<Gauge className="h-4 w-4" />}
               title="Overview"
-              active={pathname === '/club-admin-dashboard'}
+              active={pathname === '/club-admin-dashboard' || currentView === 'overview'}
             />
             <SidebarItem
               href="/club-admin-dashboard/clubs"
               icon={<Building2 className="h-4 w-4" />}
               title="My Clubs"
-              active={pathname.includes('/clubs') && !pathname.includes('/create-club')}
+              active={(pathname.includes('/clubs') && !pathname.includes('/create-club')) || currentView === 'clubs'}
             />
             <SidebarItem
               href="/club-admin-dashboard/create-club-new"
@@ -92,19 +96,19 @@ const ClubAdminSidebar: React.FC = () => {
               href="/club-admin-dashboard/events"
               icon={<Calendar className="h-4 w-4" />}
               title="Events"
-              active={pathname.includes('/events')}
+              active={pathname.includes('/events') || currentView === 'events'}
             />
             <SidebarItem
               href="/club-admin-dashboard/members"
               icon={<Users className="h-4 w-4" />}
               title="Members"
-              active={pathname.includes('/members')}
+              active={pathname.includes('/members') || currentView === 'members'}
             />
             <SidebarItem
               href="/club-admin-dashboard/attendance"
               icon={<UserCheck className="h-4 w-4" />}
               title="Attendance"
-              active={pathname.includes('/attendance')}
+              active={pathname.includes('/attendance') || currentView === 'attendance'}
             />
           </div>
         </div>
@@ -114,7 +118,7 @@ const ClubAdminSidebar: React.FC = () => {
               href="/club-admin-dashboard/profile"
               icon={<Settings className="h-4 w-4" />}
               title="Profile Settings"
-              active={pathname.includes('/profile')}
+              active={pathname.includes('/profile') || currentView === 'profile'}
             />
             <SidebarItem
               href="/"

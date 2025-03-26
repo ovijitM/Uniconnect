@@ -55,7 +55,7 @@ export interface EventFormData {
   additionalPerks: string;
   judgingCriteria: string;
   judges: string;
-  schedule: string; // Added this required field
+  schedule: string;
   deliverables: string;
   submissionPlatform: string;
   mentors: string;
@@ -64,4 +64,5 @@ export interface EventFormData {
   communityLink: string;
   eventWebsite: string;
   eventHashtag: string;
+  howToRegister: string;
 }

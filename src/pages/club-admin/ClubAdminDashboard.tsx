@@ -84,7 +84,7 @@ const ClubAdminDashboard: React.FC = () => {
   }, []);
 
   return (
-    <DashboardLayout sidebar={<ClubAdminSidebar currentView={currentView} />}>
+    <DashboardLayout sidebar={<ClubAdminSidebar />}>
       <div className="container p-6">
         <ClubAdminDashboardContent
           currentView={currentView}

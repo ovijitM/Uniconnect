@@ -7,11 +7,10 @@ import { useStudentProfile } from '@/hooks/student/useStudentProfile';
 
 export const useClubAdminForms = (userId: string | undefined, onClubCreationSuccess: () => void) => {
   const { toast } = useToast();
-  const { userUniversity, userUniversityId, fetchUserProfile } = useStudentProfile(userId);
+  const { userUniversity, userUniversityId, fetchUserProfile } = useStudentProfile(userId, true);
   const { createClub } = useClubCreation();
   const { createEvent } = useEventCreation();
   
-  // Club form state
   const [clubFormData, setClubFormData] = useState<ClubFormData>({
     name: '',
     description: '',
@@ -43,13 +42,11 @@ export const useClubAdminForms = (userId: string | undefined, onClubCreationSucc
     documentName: ''
   });
 
-  // Event form state
   const [eventFormData, setEventFormData] = useState<EventFormData>({
     title: '',
     tagline: '',
     description: '',
     date: '',
-    time: '',
     location: '',
     category: '',
     clubId: '',
@@ -58,21 +55,40 @@ export const useClubAdminForms = (userId: string | undefined, onClubCreationSucc
     imageUrl: '',
     eventType: 'in-person',
     entryFee: 'Free',
-    howToRegister: ''
+    howToRegister: '',
+    visibility: 'public',
+    onlinePlatform: '',
+    eligibility: '',
+    teamSize: '',
+    registrationLink: '',
+    theme: '',
+    subTracks: '',
+    prizePool: '',
+    prizeCategories: '',
+    additionalPerks: '',
+    judgingCriteria: '',
+    judges: '',
+    schedule: '',
+    deliverables: '',
+    submissionPlatform: '',
+    mentors: '',
+    sponsors: '',
+    contactEmail: '',
+    communityLink: '',
+    eventWebsite: '',
+    eventHashtag: ''
   });
   
   const [isClubDialogOpen, setIsClubDialogOpen] = useState(false);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Fetch university data from profile
   useEffect(() => {
     if (userId) {
       fetchUserProfile();
     }
   }, [userId]);
   
-  // Pre-fill university data when it becomes available
   useEffect(() => {
     if (userUniversity && userUniversityId && !clubFormData.university) {
       setClubFormData(prev => ({
@@ -130,9 +146,9 @@ export const useClubAdminForms = (userId: string | undefined, onClubCreationSucc
     setIsSubmitting(true);
     try {
       console.log("Creating club with data:", clubFormData);
-      const success = await createClub(clubFormData, userId);
+      const result = await createClub(clubFormData, userId, true);
       
-      if (success) {
+      if (result && result.success) {
         toast({
           title: "Club Created",
           description: "Your club has been created and is pending approval."
@@ -140,7 +156,6 @@ export const useClubAdminForms = (userId: string | undefined, onClubCreationSucc
         
         setIsClubDialogOpen(false);
         
-        // Reset form
         setClubFormData({
           ...clubFormData,
           name: '',
@@ -148,9 +163,7 @@ export const useClubAdminForms = (userId: string | undefined, onClubCreationSucc
           tagline: '',
           category: '',
           logoUrl: '',
-          // Keep university data
           establishedYear: '',
-          // Reset all other fields
           affiliation: '',
           whyJoin: '',
           regularEvents: '',
@@ -173,12 +186,11 @@ export const useClubAdminForms = (userId: string | undefined, onClubCreationSucc
           documentName: ''
         });
         
-        // Call the success callback to refresh the clubs list
         if (onClubCreationSuccess) {
           console.log("Calling onClubCreationSuccess callback to refresh clubs");
           setTimeout(() => {
             onClubCreationSuccess();
-          }, 500); // Small delay to ensure database has updated
+          }, 500);
         }
       }
     } catch (error) {
@@ -209,23 +221,42 @@ export const useClubAdminForms = (userId: string | undefined, onClubCreationSucc
         
         setIsEventDialogOpen(false);
         
-        // Reset form but keep club id
         const clubId = eventFormData.clubId;
         setEventFormData({
           title: '',
           tagline: '',
           description: '',
           date: '',
-          time: '',
           location: '',
           category: '',
-          clubId: clubId, // Keep the club id
+          clubId: clubId,
           maxParticipants: '',
           registrationDeadline: '',
           imageUrl: '',
           eventType: 'in-person',
           entryFee: 'Free',
-          howToRegister: ''
+          howToRegister: '',
+          visibility: 'public',
+          onlinePlatform: '',
+          eligibility: '',
+          teamSize: '',
+          registrationLink: '',
+          theme: '',
+          subTracks: '',
+          prizePool: '',
+          prizeCategories: '',
+          additionalPerks: '',
+          judgingCriteria: '',
+          judges: '',
+          schedule: '',
+          deliverables: '',
+          submissionPlatform: '',
+          mentors: '',
+          sponsors: '',
+          contactEmail: '',
+          communityLink: '',
+          eventWebsite: '',
+          eventHashtag: ''
         });
       }
     } catch (error) {
