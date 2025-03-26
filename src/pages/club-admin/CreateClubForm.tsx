@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
-import { ClubFormTabs, ClubFormButtons, clubCategories } from './components/club-form';
+import { ClubFormTabs, ClubFormButtons, clubCategories, clubFormFieldNames } from './components/club-form';
 
 const CreateClubForm: React.FC = () => {
   const navigate = useNavigate();
@@ -218,7 +218,6 @@ const CreateClubForm: React.FC = () => {
           discord_link: formData.social.discord || null,
           document_url: formData.documentUrl || null,
           document_name: formData.documentName || null,
-          // Add missing fields from other tabs
           student_count: formData.studentCount ? parseInt(formData.studentCount) : null,
           faculty_advisor: formData.facultyAdvisor || null,
           meeting_info: formData.meetingInfo || null
