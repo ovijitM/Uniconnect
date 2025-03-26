@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, RefreshCw } from 'lucide-react';
@@ -48,23 +49,9 @@ const CreateClubDialog: React.FC<CreateClubDialogProps> = ({
     }
   }, [user?.id, fetchUserProfile]);
 
-  useEffect(() => {
-    // Update form data with university information when available
-    if (userUniversity && userUniversityId) {
-      // Create fake events to update form data
-      const universityEvent = {
-        target: { name: 'university', value: userUniversity }
-      } as React.ChangeEvent<HTMLInputElement>;
-      
-      onInputChange(universityEvent);
-      
-      const universityIdEvent = {
-        target: { name: 'universityId', value: userUniversityId }
-      } as React.ChangeEvent<HTMLInputElement>;
-      
-      onInputChange(universityIdEvent);
-    }
-  }, [userUniversity, userUniversityId, onInputChange]);
+  // Remove the useEffect that's causing the infinite loop
+  // Only update form data when userUniversity or userUniversityId changes
+  // and NOT inside the component to avoid infinite renders
 
   const handleOpenChange = (open: boolean) => {
     if (open && !userUniversity) {
