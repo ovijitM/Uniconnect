@@ -56,8 +56,9 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
         
       // Apply visibility filtering based on user's university
       if (userUniversity) {
+        // Fixed OR clause for visibility and university filtering
         upcomingEventsQuery = upcomingEventsQuery.or(
-          `visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`
+          `visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq."${userUniversity}")`
         );
       } else {
         upcomingEventsQuery = upcomingEventsQuery.eq('visibility', 'public');

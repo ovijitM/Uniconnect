@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, X } from 'lucide-react';
@@ -59,7 +60,10 @@ const EventsPage: React.FC = () => {
           `);
           
         if (user && userUniversity) {
-          eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
+          // Fixed OR clause for visibility and university filtering
+          eventsQuery = eventsQuery.or(
+            `visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq."${userUniversity}")`
+          );
         } else {
           eventsQuery = eventsQuery.eq('visibility', 'public');
         }
