@@ -90,7 +90,7 @@ const DocumentManager: React.FC<DocumentManagerProps> = ({
       </CardHeader>
       <CardContent className="space-y-6">
         <FileUpload 
-          onFileUpload={handleFileUpload}
+          onUploadComplete={handleFileUpload}
           maxSize={10}
           buttonText="Upload New Document"
         />

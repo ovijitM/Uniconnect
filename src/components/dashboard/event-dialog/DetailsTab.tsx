@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -162,8 +163,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
         <label htmlFor="eventDocument" className="text-sm font-medium">Event Document</label>
         <p className="text-xs text-muted-foreground mb-2">Upload any detailed guidelines, rules, or additional information</p>
         <FileUpload 
-          onFileUpload={handleFileUpload}
-          defaultValue={formData.documentUrl}
+          onUploadComplete={handleFileUpload}
           buttonText="Upload Event Document"
           uploadType="document"
         />
