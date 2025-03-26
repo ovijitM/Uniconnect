@@ -18,9 +18,9 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
   onInputChange,
   onFileUpload
 }) => {
-  const handleLogoUpload = (url: string) => {
+  const handleLogoUpload = (url: string, fileName: string) => {
     if (onFileUpload) {
-      onFileUpload(url, 'club-logo.jpg', 'logo');
+      onFileUpload(url, fileName, 'logo');
     }
   };
 
@@ -155,7 +155,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
             />
             <button 
               type="button"
-              onClick={() => handleLogoUpload('')}
+              onClick={() => handleLogoUpload('', '')}
               className="text-sm text-destructive hover:underline"
             >
               Change Logo
@@ -163,15 +163,14 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
           </div>
         ) : (
           <FileUpload 
-            onUpload={handleLogoUpload} 
+            onUploadComplete={handleLogoUpload}
             acceptedFileTypes={['image/jpeg', 'image/png', 'image/gif']}
-            maxSizeInMB={5}
-            uploadText="Upload Club Logo"
+            maxFileSize={5}
+            buttonText="Upload Club Logo"
+            helperText="Upload a square image, minimum 200x200 pixels"
+            uploadType="logo"
           />
         )}
-        <p className="text-sm text-muted-foreground">
-          Upload a square image, minimum 200x200 pixels
-        </p>
       </div>
     </div>
   );

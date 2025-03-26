@@ -61,10 +61,12 @@ const DocumentUploadTab: React.FC<DocumentUploadTabProps> = ({
           </div>
         ) : (
           <FileUpload 
-            onUpload={(url, fileName) => handleDocumentUpload(url, fileName)} 
+            onUploadComplete={(url, fileName) => handleDocumentUpload(url, fileName)}
             acceptedFileTypes={['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']}
-            maxSizeInMB={10}
-            uploadText="Upload Document"
+            maxFileSize={10}
+            buttonText="Upload Document"
+            helperText="Upload your club constitution, bylaws, or other important documents"
+            uploadType="document"
           />
         )}
       </div>
