@@ -15,45 +15,12 @@ import BasicInfoTab from './BasicInfoTab';
 import DetailsTab from './DetailsTab';
 import LogisticsTab from './LogisticsTab';
 import EventCollaboratorsTab from './EventCollaboratorsTab';
+import { EventFormData } from '@/hooks/club-admin/types';
 
 interface EventDialogWrapperProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  formData: {
-    title: string;
-    description: string;
-    date: string;
-    location: string;
-    category: string;
-    maxParticipants: string;
-    clubId: string;
-    tagline: string; // Changed from optional to required
-    eventType?: string;
-    registrationDeadline?: string;
-    onlinePlatform?: string;
-    eligibility?: string;
-    teamSize?: string;
-    registrationLink?: string;
-    entryFee?: string;
-    theme?: string;
-    subTracks?: string;
-    prizePool?: string;
-    prizeCategories?: string;
-    additionalPerks?: string;
-    judgingCriteria?: string;
-    judges?: string;
-    deliverables?: string;
-    submissionPlatform?: string;
-    mentors?: string;
-    sponsors?: string;
-    contactEmail?: string;
-    communityLink?: string;
-    eventWebsite?: string;
-    eventHashtag?: string;
-    documentUrl?: string;
-    documentName?: string;
-    visibility: 'public' | 'university_only'; // Required field
-  };
+  formData: EventFormData;
   clubs: any[];
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   onSubmit: () => void;

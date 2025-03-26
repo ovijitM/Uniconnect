@@ -11,9 +11,8 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCollaborators, setSelectedCollaborators] = useState<string[]>([]);
 
-  const convertToArray = (value: string | string[] | null | undefined): string[] | null => {
-    if (!value) return null;
-    if (Array.isArray(value)) return value.filter(Boolean);
+  const convertToArray = (value: string): string[] | null => {
+    if (!value || value.trim() === '') return null;
     return value.split(',').map(item => item.trim()).filter(Boolean);
   };
 
@@ -67,14 +66,14 @@ export const useEventCreation = (userId: string | undefined, onSuccess: () => vo
       
       // Parse JSON schedule if it's a string
       let scheduleData = null;
-      if (typeof eventFormData.schedule === 'string' && eventFormData.schedule.trim()) {
+      if (eventFormData.schedule && eventFormData.schedule.trim()) {
         try {
           scheduleData = JSON.parse(eventFormData.schedule);
         } catch (error) {
           console.error('Error parsing schedule JSON:', error);
+          // If parsing fails, use the string directly
+          scheduleData = eventFormData.schedule;
         }
-      } else if (typeof eventFormData.schedule === 'object') {
-        scheduleData = eventFormData.schedule;
       }
       
       const { data, error } = await supabase

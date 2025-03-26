@@ -1,4 +1,3 @@
-
 /**
  * Parses a comma-separated string into an array
  */
@@ -6,10 +5,13 @@ export const parseArrayField = (value: string | undefined | null): string[] | nu
   if (!value) return null;
   
   try {
-    return value
-      .split(',')
-      .map(item => item.trim())
-      .filter(item => item.length > 0);
+    if (typeof value === 'string') {
+      return value
+        .split(',')
+        .map(item => item.trim())
+        .filter(item => item.length > 0);
+    }
+    return null;
   } catch (error) {
     console.error("Error parsing array field:", error);
     return null;
@@ -97,15 +99,11 @@ export const validateRequiredFields = (formData: any, requiredFields: string[]):
 /**
  * Safely transform form data for API submission
  */
-export const safelyTransformArrayData = (data: string | string[] | null | undefined): string[] | null => {
+export const safelyTransformArrayData = (data: string | null | undefined): string[] | null => {
   if (!data) return null;
   
   if (typeof data === 'string') {
     return parseArrayField(data);
-  }
-  
-  if (Array.isArray(data)) {
-    return data.filter(item => item && item.trim().length > 0);
   }
   
   return null;

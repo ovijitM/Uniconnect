@@ -18,17 +18,17 @@ export interface EventFormData {
   registrationLink: string;
   entryFee: string;
   theme: string;
-  subTracks: string | string[];
+  subTracks: string;  // Changed from string | string[] to just string for consistency
   prizePool: string;
-  prizeCategories: string | string[];
-  additionalPerks: string | string[];
-  judgingCriteria: string | string[];
-  judges: string | string[];
-  schedule: Record<string, any> | string;
-  deliverables: string | string[];
+  prizeCategories: string;  // Changed from string | string[] to string
+  additionalPerks: string;  // Changed from string | string[] to string
+  judgingCriteria: string;  // Changed from string | string[] to string
+  judges: string;  // Changed from string | string[] to string
+  schedule: string;  // Changed from Record<string, any> | string to string
+  deliverables: string;  // Changed from string | string[] to string
   submissionPlatform: string;
-  mentors: string | string[];
-  sponsors: string | string[];
+  mentors: string;  // Changed from string | string[] to string
+  sponsors: string;  // Changed from string | string[] to string
   contactEmail: string;
   communityLink: string;
   eventWebsite: string;
@@ -36,7 +36,7 @@ export interface EventFormData {
   visibility: 'public' | 'university_only';
 }
 
-// Club form data type
+// Club form data type with all required properties
 export interface ClubFormData {
   name: string;
   description: string;
@@ -47,8 +47,8 @@ export interface ClubFormData {
   establishedYear: string;
   affiliation: string;
   whyJoin: string;
-  regularEvents: string[] | string;
-  signatureEvents: string[] | string;
+  regularEvents: string;
+  signatureEvents: string;
   communityEngagement: string;
   whoCanJoin: string;
   membershipFee: string;
@@ -56,7 +56,7 @@ export interface ClubFormData {
   presidentName: string;
   presidentContact: string;
   executiveMembers: string;
-  advisors: string[] | string;
+  advisors: string;
   phoneNumber: string;
   website: string;
   facebookLink: string;
