@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Club } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { transformClubData } from '@/components/club-detail/hooks/transformers/clubTransformer';
 
 export const fetchAllClubs = async (
   userId: string | undefined,
@@ -27,7 +28,15 @@ export const fetchAllClubs = async (
     const { data: allClubs, error: allClubsError } = await clubsQuery;
     
     if (allClubsError) throw allClubsError;
-    return allClubs || [];
+    
+    // Transform raw club data to match the Club type
+    return (allClubs || []).map(club => {
+      return transformClubData({
+        ...club,
+        logo_url: club.logo_url,
+        club_members: [0] // Default to 0 members, we'll fetch actual counts separately if needed
+      });
+    });
   } catch (error) {
     console.error('Error fetching club data:', error);
     toast({

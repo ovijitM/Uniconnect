@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Club } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { transformClubData } from '@/components/club-detail/hooks/transformers/clubTransformer';
 
 export const fetchJoinedClubs = async (
   userId: string | undefined,
@@ -33,8 +34,17 @@ export const fetchJoinedClubs = async (
       if (joinedClubsError) throw joinedClubsError;
       console.log('Joined clubs data:', joinedClubsData);
       
+      // Transform raw club data to match the Club type
+      const transformedClubs = (joinedClubsData || []).map(club => 
+        transformClubData({
+          ...club,
+          logo_url: club.logo_url,
+          club_members: [0] // Default to 0 members, we'll fetch actual counts separately if needed
+        })
+      );
+      
       return {
-        joinedClubs: joinedClubsData || [],
+        joinedClubs: transformedClubs,
         joinedClubIds: clubIds
       };
     }
