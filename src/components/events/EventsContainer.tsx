@@ -30,7 +30,7 @@ const EventsContainer = () => {
         setError(null);
         
         // We'll fetch events based on user university if available
-        const userUniversity = user?.user_metadata?.university || null;
+        const userUniversity = user?.university || null;
         const data = await fetchEvents(userUniversity);
         
         console.log("Fetched events:", data);

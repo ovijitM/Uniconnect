@@ -55,8 +55,8 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
         events: [] // Required by Event type
       },
       category: event.category || 'General',
-      status: event.status || 'upcoming',
-      participants: event.participants || 0,
+      status: (event.status as 'upcoming' | 'ongoing' | 'past') || 'upcoming',
+      participants: 0, // Default since it doesn't exist in database
       maxParticipants: event.max_participants,
       visibility: event.visibility || 'public',
       eventType: event.event_type || 'in-person',
