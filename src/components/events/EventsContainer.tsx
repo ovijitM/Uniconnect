@@ -29,8 +29,10 @@ const EventsContainer = () => {
         setIsLoading(true);
         setError(null);
         
-        // We'll fetch events based on user university if available
+        // Get user university from the profile
         const userUniversity = user?.university || null;
+        console.log("User university for events filter:", userUniversity);
+        
         const data = await fetchEvents(userUniversity);
         
         console.log("Fetched events:", data);

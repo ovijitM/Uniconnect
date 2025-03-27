@@ -22,7 +22,7 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
     if (userUniversity) {
       console.log("Filtering events by university:", userUniversity);
       
-      // Fixed OR syntax for Supabase
+      // Fixed OR syntax for Supabase - using parentheses and proper string formatting
       eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
     } else {
       console.log("No university, fetching public events only");
@@ -35,6 +35,8 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
       console.error("Error fetching events:", error);
       throw error;
     }
+
+    console.log("Raw events data from database:", data);
     
     // Transform the data to match the Event type
     return (data || []).map(event => ({
