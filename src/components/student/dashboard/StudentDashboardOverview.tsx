@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, Users, Clock, Info, ArrowRight } from 'lucide-react';
+import { Calendar, Users, Clock, Info, ArrowRight, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import AvailableClubs from '@/components/student/AvailableClubs';
 import UpcomingEventsStudent from '@/components/student/UpcomingEventsStudent';
 import StudentClubs from '@/components/student/StudentClubs';
@@ -19,9 +20,11 @@ interface StudentDashboardOverviewProps {
   joinedClubIds: string[];
   registeredEventIds: string[];
   isLoading: boolean;
+  error: string | null;
   onJoinClub: (clubId: string) => Promise<void>;
   onLeaveClub: (clubId: string) => Promise<void>;
   registerForEvent: (eventId: string) => void;
+  refreshData?: () => void;
 }
 
 const StudentDashboardOverview: React.FC<StudentDashboardOverviewProps> = ({
@@ -33,11 +36,42 @@ const StudentDashboardOverview: React.FC<StudentDashboardOverviewProps> = ({
   joinedClubIds,
   registeredEventIds,
   isLoading,
+  error,
   onJoinClub,
   onLeaveClub,
-  registerForEvent
+  registerForEvent,
+  refreshData
 }) => {
   const navigate = useNavigate();
+  
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="mb-8 bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+          <h1 className="text-3xl font-bold mb-2">Welcome back, {user.name}</h1>
+          <p className="text-muted-foreground">Your student dashboard at a glance</p>
+        </div>
+        
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error loading data</AlertTitle>
+          <AlertDescription>
+            {error}
+            {refreshData && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2" 
+                onClick={() => refreshData()}
+              >
+                Try Again
+              </Button>
+            )}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
   
   return (
     <>

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -6,39 +7,61 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
   const [events, setEvents] = useState<any[]>([]);
   const [registeredEvents, setRegisteredEvents] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchEvents = async (userUniversity?: string | null) => {
-    if (!userId) return;
+    if (!userId) {
+      console.log("Cannot fetch events: No user ID provided");
+      return;
+    }
     
     setIsLoadingEvents(true);
+    setError(null);
+    
     try {
-      // Fetch events the student has registered for
+      console.log("Fetching events for user:", userId);
+      
+      // First fetch events the student has registered for
       const { data: participationData, error: participationError } = await supabase
         .from('event_participants')
         .select('event_id')
         .eq('user_id', userId);
       
-      if (participationError) throw participationError;
+      if (participationError) {
+        console.error("Error fetching event participants:", participationError);
+        throw participationError;
+      }
       
       const eventIds = participationData?.map(item => item.event_id) || [];
+      console.log(`Found ${eventIds.length} registered events`);
       
-      // Fetch detailed event information
-      let { data: eventsData, error: eventsError } = await supabase
-        .from('events')
-        .select(`
-          *,
-          clubs:clubs!events_club_id_fkey (
-            id,
-            name,
-            university
-          )
-        `)
-        .in('id', eventIds.length ? eventIds : ['00000000-0000-0000-0000-000000000000']) // Use a dummy ID if no events
-        .order('date', { ascending: true });
-      
-      if (eventsError) throw eventsError;
-      setRegisteredEvents(eventsData || []);
+      // Fetch detailed event information for registered events
+      if (eventIds.length > 0) {
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('events')
+          .select(`
+            *,
+            clubs:clubs!events_club_id_fkey (
+              id,
+              name,
+              university
+            )
+          `)
+          .in('id', eventIds)
+          .order('date', { ascending: true });
+        
+        if (eventsError) {
+          console.error("Error fetching registered events:", eventsError);
+          throw eventsError;
+        }
+        
+        console.log(`Successfully loaded ${eventsData?.length || 0} registered events`);
+        setRegisteredEvents(eventsData || []);
+      } else {
+        console.log("No registered events found");
+        setRegisteredEvents([]);
+      }
       
       // Fetch upcoming events visible to the student
       let upcomingEventsQuery = supabase
@@ -55,9 +78,11 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
         
       // Apply visibility filtering based on user's university
       if (userUniversity) {
+        console.log("Filtering events by university:", userUniversity);
         // Fixed OR clause syntax
         upcomingEventsQuery = upcomingEventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${JSON.stringify(userUniversity)})`);
       } else {
+        console.log("No university, fetching public events only");
         upcomingEventsQuery = upcomingEventsQuery.eq('visibility', 'public');
       }
       
@@ -65,10 +90,18 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
       const { data: upcomingEvents, error: upcomingEventsError } = await upcomingEventsQuery
         .order('date', { ascending: true });
       
-      if (upcomingEventsError) throw upcomingEventsError;
+      if (upcomingEventsError) {
+        console.error("Error fetching upcoming events:", upcomingEventsError);
+        throw upcomingEventsError;
+      }
+      
+      console.log(`Successfully loaded ${upcomingEvents?.length || 0} upcoming events`);
       setEvents(upcomingEvents || []);
-    } catch (error) {
+      setError(null);
+      
+    } catch (error: any) {
       console.error('Error fetching student events:', error);
+      setError(error.message || 'Failed to load event data');
       toast({
         title: 'Error',
         description: 'Failed to load event data',
@@ -80,22 +113,33 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
   };
 
   const registerForEvent = async (eventId: string) => {
-    if (!userId) return;
+    if (!userId) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please log in to register for events',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     try {
+      console.log("Attempting to register for event:", eventId);
+      
       // Check if already registered
       const { data: existing, error: checkError } = await supabase
         .from('event_participants')
         .select('*')
         .eq('user_id', userId)
         .eq('event_id', eventId)
-        .single();
+        .maybeSingle();
       
       if (checkError && checkError.code !== 'PGRST116') {
+        console.error("Error checking registration:", checkError);
         throw checkError;
       }
       
       if (existing) {
+        console.log("Already registered for this event");
         toast({
           title: 'Already registered',
           description: 'You are already registered for this event',
@@ -112,7 +156,10 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
           event_id: eventId
         });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error registering for event:", error);
+        throw error;
+      }
       
       toast({
         title: 'Success',
@@ -127,11 +174,11 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
       }
       
       if (onSuccess) onSuccess();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error registering for event:', error);
       toast({
         title: 'Error',
-        description: 'Failed to register for event',
+        description: error.message || 'Failed to register for event',
         variant: 'destructive',
       });
     }
@@ -141,13 +188,18 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
     if (!userId) return;
     
     try {
+      console.log("Attempting to unregister from event:", eventId);
+      
       const { error } = await supabase
         .from('event_participants')
         .delete()
         .eq('user_id', userId)
         .eq('event_id', eventId);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error unregistering from event:", error);
+        throw error;
+      }
       
       toast({
         title: 'Success',
@@ -159,11 +211,11 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
       setRegisteredEvents(prev => prev.filter(event => event.id !== eventId));
       
       if (onSuccess) onSuccess();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error unregistering from event:', error);
       toast({
         title: 'Error',
-        description: 'Failed to unregister from event',
+        description: error.message || 'Failed to unregister from event',
         variant: 'destructive',
       });
     }
@@ -173,6 +225,7 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
     events,
     registeredEvents,
     isLoadingEvents,
+    error,
     fetchEvents,
     registerForEvent,
     unregisterFromEvent
