@@ -16,6 +16,8 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
     if (!userId) return;
     
     try {
+      console.log("Fetching joined clubs for user:", userId);
+      
       // Fetch clubs the student has joined
       const { data: membershipData, error: membershipError } = await supabase
         .from('club_members')
@@ -183,12 +185,12 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       
       if (error) throw error;
       
-      // Refresh joined clubs to ensure UI is updated
-      await fetchJoinedClubs();
-      
-      // Immediately update local state
+      // Immediately update local state for UI
       setJoinedClubs(prev => prev.filter(club => club.id !== clubId));
       setJoinedClubIds(prev => prev.filter(id => id !== clubId));
+      
+      // Fetch joined clubs to ensure UI is in sync with DB
+      await fetchJoinedClubs();
       
       toast({
         title: 'Success',
