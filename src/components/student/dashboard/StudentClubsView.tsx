@@ -39,7 +39,7 @@ const StudentClubsView: React.FC<StudentClubsViewProps> = ({
     <div className="space-y-6">
       <div className="mb-8 bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
         <h1 className="text-2xl font-bold mb-2">My Clubs</h1>
-        <p className="text-muted-foreground">Manage your club memberships</p>
+        <p className="text-muted-foreground">Manage your club memberships from any university</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

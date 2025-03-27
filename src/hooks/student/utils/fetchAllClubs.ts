@@ -12,20 +12,13 @@ export const fetchAllClubs = async (
   if (!userId) return [];
   
   try {
-    console.log('Fetching clubs for user:', userId, 'university:', userUniversity);
+    console.log('Fetching all clubs for user:', userId);
     
-    // Fetch all available clubs
-    let clubsQuery = supabase
+    // Fetch all approved clubs without university filter
+    const { data: allClubs, error: allClubsError } = await supabase
       .from('clubs')
       .select('*')
       .eq('status', 'approved');
-    
-    // Filter by university if provided
-    if (userUniversity) {
-      clubsQuery = clubsQuery.or(`university.eq.${userUniversity},university.is.null`);
-    }
-    
-    const { data: allClubs, error: allClubsError } = await clubsQuery;
     
     if (allClubsError) {
       console.error('Supabase error fetching clubs:', allClubsError);

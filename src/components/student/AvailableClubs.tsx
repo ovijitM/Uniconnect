@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Tag, Loader2, Check, ArrowRight } from 'lucide-react';
+import { Users, Tag, Loader2, Check, ArrowRight, School } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -65,7 +65,7 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
         <div className="flex justify-between items-center">
           <div>
             <CardTitle>Available Clubs</CardTitle>
-            <CardDescription>Clubs you can join</CardDescription>
+            <CardDescription>Clubs you can join from any university</CardDescription>
           </div>
           {filteredClubs.length > 4 && (
             <Button 
@@ -98,11 +98,17 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
                   <p className="text-sm text-muted-foreground line-clamp-1">
                     {club.description}
                   </p>
-                  <div className="mt-1">
+                  <div className="mt-1 flex items-center gap-2 flex-wrap">
                     <Badge variant="outline" className="mr-1">
                       <Tag className="h-3 w-3 mr-1" />
                       {club.category}
                     </Badge>
+                    {club.university && (
+                      <Badge variant="secondary" className="flex items-center gap-1">
+                        <School className="h-3 w-3" />
+                        {club.university}
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 <Button 
