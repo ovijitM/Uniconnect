@@ -33,13 +33,13 @@ export const fetchAllClubs = async (
     }
     
     // Transform raw club data to match the Club type
-    return (allClubs || []).map(club => {
-      return transformClubData({
+    return (allClubs || []).map(club => 
+      transformClubData({
         ...club,
         logo_url: club.logo_url,
         club_members: [0] // Default to 0 members, we'll fetch actual counts separately if needed
-      });
-    });
+      })
+    );
   } catch (error) {
     console.error('Error fetching club data:', error);
     // Don't show toast here - let the caller handle it for better UX

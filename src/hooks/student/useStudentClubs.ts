@@ -14,6 +14,7 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
     clubs: [],
     joinedClubs: [],
     joinedClubIds: [],
+    error: null
   });
   
   const { toast } = useToast();
@@ -22,18 +23,26 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
   const fetchJoinedClubsCallback = useCallback(async () => {
     if (!userId) return;
     
-    const result = await fetchJoinedClubs(userId, toast);
-    setState(prev => ({
-      ...prev,
-      joinedClubs: result.joinedClubs,
-      joinedClubIds: result.joinedClubIds
-    }));
+    try {
+      const result = await fetchJoinedClubs(userId, toast);
+      setState(prev => ({
+        ...prev,
+        joinedClubs: result.joinedClubs,
+        joinedClubIds: result.joinedClubIds
+      }));
+    } catch (error: any) {
+      console.error('Error fetching joined clubs:', error);
+      setState(prev => ({
+        ...prev,
+        error: error?.message || 'Failed to fetch joined clubs'
+      }));
+    }
   }, [userId, toast]);
 
   const fetchClubs = async (userUniversity?: string | null) => {
     if (!userId) return;
     
-    setState(prev => ({ ...prev, isLoadingClubs: true }));
+    setState(prev => ({ ...prev, isLoadingClubs: true, error: null }));
     try {
       // First fetch joined clubs to update IDs
       await fetchJoinedClubsCallback();
@@ -45,8 +54,13 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
         clubs: allClubs,
         isLoadingClubs: false
       }));
-    } catch (error) {
-      setState(prev => ({ ...prev, isLoadingClubs: false }));
+    } catch (error: any) {
+      console.error('Error fetching clubs:', error);
+      setState(prev => ({ 
+        ...prev, 
+        isLoadingClubs: false,
+        error: error?.message || 'Failed to fetch clubs'
+      }));
     }
   };
 
@@ -68,6 +82,10 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       }
     } catch (error: any) {
       console.error('Error joining club:', error);
+      setState(prev => ({
+        ...prev,
+        error: error?.message || 'Failed to join club'
+      }));
       throw error; // Re-throw to allow the component to handle the error
     }
   };
@@ -85,8 +103,12 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       
       // Fetch joined clubs to ensure UI is in sync with DB
       await fetchJoinedClubsCallback();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in handleLeaveClub:', error);
+      setState(prev => ({
+        ...prev,
+        error: error?.message || 'Failed to leave club'
+      }));
     }
   };
 
@@ -108,6 +130,7 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
     joinedClubs: state.joinedClubs,
     joinedClubIds: state.joinedClubIds,
     isLoadingClubs: state.isLoadingClubs,
+    error: state.error,
     fetchClubs,
     joinClub: handleJoinClub,
     leaveClub: handleLeaveClub
