@@ -1,234 +1,115 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { fetchJoinedClubs } from './utils/fetchJoinedClubs';
+import { fetchAllClubs } from './utils/fetchAllClubs';
+import { joinClub, leaveClub } from './utils/clubMembershipActions';
+import { StudentClubsState } from './types/studentClubTypes';
+import { Club } from '@/types';
 
 export const useStudentClubs = (userId: string | undefined, onSuccess?: () => void) => {
-  const [isLoadingClubs, setIsLoadingClubs] = useState(false);
-  const [clubs, setClubs] = useState<any[]>([]);
-  const [joinedClubs, setJoinedClubs] = useState<any[]>([]);
-  const [joinedClubIds, setJoinedClubIds] = useState<string[]>([]);
+  const [state, setState] = useState<StudentClubsState>({
+    isLoadingClubs: false,
+    clubs: [],
+    joinedClubs: [],
+    joinedClubIds: [],
+  });
+  
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const fetchJoinedClubs = useCallback(async () => {
+  const fetchJoinedClubsCallback = useCallback(async () => {
     if (!userId) return;
     
-    try {
-      console.log("Fetching joined clubs for user:", userId);
-      
-      // Fetch clubs the student has joined
-      const { data: membershipData, error: membershipError } = await supabase
-        .from('club_members')
-        .select('club_id')
-        .eq('user_id', userId);
-
-      if (membershipError) throw membershipError;
-      
-      const clubIds = membershipData?.map(item => item.club_id) || [];
-      setJoinedClubIds(clubIds);
-      console.log('Joined club IDs:', clubIds);
-      
-      // Fetch detailed club information for joined clubs
-      if (clubIds.length > 0) {
-        const { data: joinedClubsData, error: joinedClubsError } = await supabase
-          .from('clubs')
-          .select('*')
-          .in('id', clubIds);
-          
-        if (joinedClubsError) throw joinedClubsError;
-        console.log('Joined clubs data:', joinedClubsData);
-        setJoinedClubs(joinedClubsData || []);
-      } else {
-        setJoinedClubs([]);
-      }
-    } catch (error) {
-      console.error('Error fetching joined clubs:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load joined clubs',
-        variant: 'destructive',
-      });
-    }
+    const result = await fetchJoinedClubs(userId, toast);
+    setState(prev => ({
+      ...prev,
+      joinedClubs: result.joinedClubs,
+      joinedClubIds: result.joinedClubIds
+    }));
   }, [userId, toast]);
 
   const fetchClubs = async (userUniversity?: string | null) => {
     if (!userId) return;
     
-    setIsLoadingClubs(true);
+    setState(prev => ({ ...prev, isLoadingClubs: true }));
     try {
-      console.log('Fetching clubs for user:', userId);
-      
       // First fetch joined clubs to update IDs
-      await fetchJoinedClubs();
+      await fetchJoinedClubsCallback();
       
       // Fetch all available clubs
-      let clubsQuery = supabase
-        .from('clubs')
-        .select('*')
-        .eq('status', 'approved');
-      
-      // Filter by university if provided
-      if (userUniversity) {
-        clubsQuery = clubsQuery.or(`university.eq.${userUniversity},university.is.null`);
-      }
-      
-      const { data: allClubs, error: allClubsError } = await clubsQuery;
-      
-      if (allClubsError) throw allClubsError;
-      setClubs(allClubs || []);
+      const allClubs = await fetchAllClubs(userId, userUniversity, toast);
+      setState(prev => ({
+        ...prev,
+        clubs: allClubs,
+        isLoadingClubs: false
+      }));
     } catch (error) {
-      console.error('Error fetching club data:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load club data',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoadingClubs(false);
+      setState(prev => ({ ...prev, isLoadingClubs: false }));
     }
   };
 
-  const joinClub = async (clubId: string) => {
-    if (!user || !userId) {
-      toast({
-        title: 'Authentication Required',
-        description: 'Please log in to join clubs',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
+  const handleJoinClub = async (clubId: string) => {
     try {
-      console.log("Attempting to join club:", clubId, "for user:", userId);
-      
-      // Check if already a member
-      const { data: existing, error: checkError } = await supabase
-        .from('club_members')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('club_id', clubId)
-        .maybeSingle();
-      
-      if (checkError) {
-        console.error('Error checking membership:', checkError);
-        throw checkError;
-      }
-      
-      if (existing) {
-        toast({
-          title: 'Already a member',
-          description: 'You are already a member of this club',
-          variant: 'default',
-        });
-        return;
-      }
-      
-      // Join the club - ensure we're inserting with correct user_id
-      const { error } = await supabase
-        .from('club_members')
-        .insert({
-          user_id: userId,
-          club_id: clubId
-        });
-      
-      if (error) {
-        console.error('Error joining club:', error);
-        
-        if (error.code === '23505') {
-          toast({
-            title: 'Already a member',
-            description: 'You are already a member of this club',
-            variant: 'default',
-          });
-        } else if (error.message?.includes('row-level security policy')) {
-          throw new Error('Permission denied. You may not have the right privileges to join this club.');
-        } else {
-          throw error;
-        }
-        return;
-      }
+      await joinClub(userId!, clubId, toast, { onSuccess });
       
       // After successfully joining, refresh joined clubs
-      await fetchJoinedClubs();
+      await fetchJoinedClubsCallback();
       
       // Also update local state for immediate UI feedback
-      const clubToAdd = clubs.find(c => c.id === clubId);
+      const clubToAdd = state.clubs.find(c => c.id === clubId);
       if (clubToAdd) {
-        setJoinedClubs(prev => [...prev, clubToAdd]);
-        setJoinedClubIds(prev => [...prev, clubId]);
+        setState(prev => ({
+          ...prev,
+          joinedClubs: [...prev.joinedClubs, clubToAdd],
+          joinedClubIds: [...prev.joinedClubIds, clubId]
+        }));
       }
-      
-      toast({
-        title: 'Success',
-        description: 'You have joined the club successfully',
-        variant: 'default',
-      });
-      
-      if (onSuccess) onSuccess();
     } catch (error: any) {
       console.error('Error joining club:', error);
       throw error; // Re-throw to allow the component to handle the error
     }
   };
 
-  const leaveClub = async (clubId: string) => {
-    if (!userId) return;
-    
+  const handleLeaveClub = async (clubId: string) => {
     try {
-      const { error } = await supabase
-        .from('club_members')
-        .delete()
-        .eq('user_id', userId)
-        .eq('club_id', clubId);
-      
-      if (error) throw error;
+      await leaveClub(userId, clubId, toast, { onSuccess });
       
       // Immediately update local state for UI
-      setJoinedClubs(prev => prev.filter(club => club.id !== clubId));
-      setJoinedClubIds(prev => prev.filter(id => id !== clubId));
+      setState(prev => ({
+        ...prev,
+        joinedClubs: prev.joinedClubs.filter(club => club.id !== clubId),
+        joinedClubIds: prev.joinedClubIds.filter(id => id !== clubId)
+      }));
       
       // Fetch joined clubs to ensure UI is in sync with DB
-      await fetchJoinedClubs();
-      
-      toast({
-        title: 'Success',
-        description: 'You have left the club',
-        variant: 'default',
-      });
-      
-      if (onSuccess) onSuccess();
+      await fetchJoinedClubsCallback();
     } catch (error) {
-      console.error('Error leaving club:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to leave club',
-        variant: 'destructive',
-      });
+      console.error('Error in handleLeaveClub:', error);
     }
   };
 
   // Run fetchJoinedClubs initially to populate the joined clubs state
   useEffect(() => {
     if (userId) {
-      fetchJoinedClubs();
+      fetchJoinedClubsCallback();
     }
-  }, [userId, fetchJoinedClubs]);
+  }, [userId, fetchJoinedClubsCallback]);
 
   // Add useEffect to log joinedClubs whenever it changes
   useEffect(() => {
-    console.log('Current joined clubs:', joinedClubs);
-    console.log('Current joined club IDs:', joinedClubIds);
-  }, [joinedClubs, joinedClubIds]);
+    console.log('Current joined clubs:', state.joinedClubs);
+    console.log('Current joined club IDs:', state.joinedClubIds);
+  }, [state.joinedClubs, state.joinedClubIds]);
 
   return {
-    clubs,
-    joinedClubs,
-    joinedClubIds,
-    isLoadingClubs,
+    clubs: state.clubs,
+    joinedClubs: state.joinedClubs,
+    joinedClubIds: state.joinedClubIds,
+    isLoadingClubs: state.isLoadingClubs,
     fetchClubs,
-    joinClub,
-    leaveClub
+    joinClub: handleJoinClub,
+    leaveClub: handleLeaveClub
   };
 };
