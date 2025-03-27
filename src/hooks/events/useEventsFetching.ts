@@ -58,7 +58,7 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
       status: (event.status as 'upcoming' | 'ongoing' | 'past') || 'upcoming',
       participants: 0, // Default since it doesn't exist in database
       maxParticipants: event.max_participants,
-      visibility: event.visibility || 'public',
+      visibility: (event.visibility as 'public' | 'university_only') || 'public',
       eventType: event.event_type || 'in-person',
       tagline: event.tagline
     }));
