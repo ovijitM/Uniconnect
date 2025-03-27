@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Users, Tag, Loader2, Check, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 interface AvailableClubsProps {
@@ -20,12 +20,14 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
   isLoading, 
   onJoinClub 
 }) => {
-  // The filtering is now done in the parent component
-  const availableClubs = clubs;
   const navigate = useNavigate();
   
   // Add local state to track which club is being joined
   const [joiningClubId, setJoiningClubId] = useState<string | null>(null);
+  const { toast } = useToast();
+  
+  console.log("AvailableClubs - Clubs:", clubs);
+  console.log("AvailableClubs - JoinedClubIds:", joinedClubIds);
   
   const handleJoinClub = async (clubId: string) => {
     if (joiningClubId) return; // Prevent multiple clicks
@@ -58,7 +60,7 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
             <CardTitle>Available Clubs</CardTitle>
             <CardDescription>Clubs you can join</CardDescription>
           </div>
-          {availableClubs.length > 4 && (
+          {clubs.length > 4 && (
             <Button 
               variant="ghost" 
               size="sm" 
@@ -77,9 +79,9 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
               <div key={i} className="h-16 bg-gray-200 rounded-lg animate-pulse" />
             ))}
           </div>
-        ) : availableClubs.length > 0 ? (
+        ) : clubs.length > 0 ? (
           <div className="space-y-3">
-            {availableClubs.map(club => (
+            {clubs.map(club => (
               <div key={club.id} className="flex items-center p-3 hover:bg-secondary/20 rounded-lg transition-colors">
                 <div className="bg-primary/10 p-2 rounded-full mr-3">
                   <Users className="h-5 w-5 text-primary" />
@@ -100,12 +102,17 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
                   variant="outline" 
                   size="sm"
                   onClick={() => handleJoinClub(club.id)}
-                  disabled={joiningClubId === club.id}
+                  disabled={joiningClubId === club.id || joinedClubIds.includes(club.id)}
                 >
                   {joiningClubId === club.id ? (
                     <>
                       <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                       Joining...
+                    </>
+                  ) : joinedClubIds.includes(club.id) ? (
+                    <>
+                      <Check className="h-3 w-3 mr-1" />
+                      Joined
                     </>
                   ) : 'Join'}
                 </Button>

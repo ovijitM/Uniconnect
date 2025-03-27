@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +8,7 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
   const [isLoadingClubs, setIsLoadingClubs] = useState(false);
   const [clubs, setClubs] = useState<any[]>([]);
   const [joinedClubs, setJoinedClubs] = useState<any[]>([]);
+  const [joinedClubIds, setJoinedClubIds] = useState<string[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -16,6 +17,8 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
     
     setIsLoadingClubs(true);
     try {
+      console.log('Fetching clubs for user:', userId);
+      
       // Fetch clubs the student has joined
       const { data: membershipData, error: membershipError } = await supabase
         .from('club_members')
@@ -25,23 +28,22 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       if (membershipError) throw membershipError;
       
       const clubIds = membershipData?.map(item => item.club_id) || [];
+      setJoinedClubIds(clubIds);
+      console.log('Joined club IDs:', clubIds);
       
       // Fetch detailed club information for joined clubs
-      let joinedClubsQuery = supabase
-        .from('clubs')
-        .select('*');
-        
       if (clubIds.length > 0) {
-        joinedClubsQuery = joinedClubsQuery.in('id', clubIds);
-      } else {
-        // If no clubs joined, use a dummy ID to return empty result
-        joinedClubsQuery = joinedClubsQuery.in('id', ['00000000-0000-0000-0000-000000000000']);
-      }
-      
-      let { data: joinedClubsData, error: joinedClubsError } = await joinedClubsQuery;
+        const { data: joinedClubsData, error: joinedClubsError } = await supabase
+          .from('clubs')
+          .select('*')
+          .in('id', clubIds);
           
-      if (joinedClubsError) throw joinedClubsError;
-      setJoinedClubs(joinedClubsData || []);
+        if (joinedClubsError) throw joinedClubsError;
+        console.log('Joined clubs data:', joinedClubsData);
+        setJoinedClubs(joinedClubsData || []);
+      } else {
+        setJoinedClubs([]);
+      }
       
       // Fetch all available clubs
       let clubsQuery = supabase
@@ -130,11 +132,18 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
         return;
       }
       
-      // Update the local state
-      const club = clubs.find(c => c.id === clubId);
-      if (club) {
-        setJoinedClubs(prev => [...prev, club]);
+      // Immediately update the local state
+      const clubToAdd = clubs.find(c => c.id === clubId);
+      if (clubToAdd) {
+        setJoinedClubs(prev => [...prev, clubToAdd]);
+        setJoinedClubIds(prev => [...prev, clubId]);
       }
+      
+      toast({
+        title: 'Success',
+        description: 'You have joined the club successfully',
+        variant: 'default',
+      });
       
       if (onSuccess) onSuccess();
     } catch (error: any) {
@@ -155,14 +164,15 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       
       if (error) throw error;
       
+      // Immediately update local state
+      setJoinedClubs(prev => prev.filter(club => club.id !== clubId));
+      setJoinedClubIds(prev => prev.filter(id => id !== clubId));
+      
       toast({
         title: 'Success',
         description: 'You have left the club',
         variant: 'default',
       });
-      
-      // Update the local state
-      setJoinedClubs(prev => prev.filter(club => club.id !== clubId));
       
       if (onSuccess) onSuccess();
     } catch (error) {
@@ -175,9 +185,16 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
     }
   };
 
+  // Add useEffect to log joinedClubs whenever it changes
+  useEffect(() => {
+    console.log('Current joined clubs:', joinedClubs);
+    console.log('Current joined club IDs:', joinedClubIds);
+  }, [joinedClubs, joinedClubIds]);
+
   return {
     clubs,
     joinedClubs,
+    joinedClubIds,
     isLoadingClubs,
     fetchClubs,
     joinClub,

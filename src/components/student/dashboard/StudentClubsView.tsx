@@ -20,6 +20,13 @@ const StudentClubsView: React.FC<StudentClubsViewProps> = ({
   onJoinClub,
   onLeaveClub
 }) => {
+  console.log("StudentClubsView - Joined Clubs:", joinedClubs);
+  console.log("StudentClubsView - Available Clubs:", clubs.filter(club => !joinedClubIds.includes(club.id)));
+  console.log("StudentClubsView - Joined Club IDs:", joinedClubIds);
+
+  // Filter clubs to only show those that are not joined
+  const availableClubs = clubs.filter(club => !joinedClubIds.includes(club.id));
+
   return (
     <div className="space-y-6">
       <div className="mb-8 bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
@@ -39,7 +46,7 @@ const StudentClubsView: React.FC<StudentClubsViewProps> = ({
         <div className="space-y-2">
           <h2 className="text-xl font-semibold px-2">Available Clubs</h2>
           <AvailableClubs 
-            clubs={clubs.filter(club => !joinedClubIds.includes(club.id))}
+            clubs={availableClubs}
             joinedClubIds={joinedClubIds}
             isLoading={isLoading}
             onJoinClub={onJoinClub}

@@ -18,6 +18,8 @@ const StudentClubs: React.FC<StudentClubsProps> = ({ clubs, isLoading, onLeaveCl
   const { toast } = useToast();
   const [leavingClubId, setLeavingClubId] = useState<string | null>(null);
   
+  console.log("StudentClubs - Clubs:", clubs);
+  
   const handleLeaveClub = async (clubId: string, clubName: string) => {
     if (!onLeaveClub) {
       toast({

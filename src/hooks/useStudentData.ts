@@ -18,6 +18,7 @@ export const useStudentData = () => {
   const { 
     clubs, 
     joinedClubs, 
+    joinedClubIds,
     fetchClubs, 
     joinClub: joinClubAction, 
     leaveClub: leaveClubAction,
@@ -47,15 +48,13 @@ export const useStudentData = () => {
   // Wrapper for joinClub to ensure state is refreshed
   const joinClub = async (clubId: string) => {
     await joinClubAction(clubId);
-    // Refresh the data after joining a club
-    await fetchClubs(userUniversity);
+    // No need to refetch clubs since we're updating the local state in the hook
   };
   
   // Wrapper for leaveClub to ensure state is refreshed
   const leaveClub = async (clubId: string) => {
     await leaveClubAction(clubId);
-    // Refresh the data after leaving a club
-    await fetchClubs(userUniversity);
+    // No need to refetch clubs since we're updating the local state in the hook
   };
 
   useEffect(() => {
@@ -77,6 +76,7 @@ export const useStudentData = () => {
     clubs,
     events,
     joinedClubs,
+    joinedClubIds,
     registeredEvents,
     userUniversity,
     updateUserUniversity,
