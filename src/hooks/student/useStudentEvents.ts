@@ -7,6 +7,7 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
   const [events, setEvents] = useState<any[]>([]);
   const [registeredEvents, setRegisteredEvents] = useState<any[]>([]);
+  const [registeredEventIds, setRegisteredEventIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -35,6 +36,7 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
       
       const eventIds = participationData?.map(item => item.event_id) || [];
       console.log(`Found ${eventIds.length} registered events`);
+      setRegisteredEventIds(eventIds);
       
       // Fetch detailed event information for registered events
       if (eventIds.length > 0) {
@@ -171,6 +173,7 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
       const event = events.find(e => e.id === eventId);
       if (event) {
         setRegisteredEvents(prev => [...prev, event]);
+        setRegisteredEventIds(prev => [...prev, eventId]);
       }
       
       if (onSuccess) onSuccess();
@@ -209,6 +212,7 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
       
       // Update the local state
       setRegisteredEvents(prev => prev.filter(event => event.id !== eventId));
+      setRegisteredEventIds(prev => prev.filter(id => id !== eventId));
       
       if (onSuccess) onSuccess();
     } catch (error: any) {
@@ -224,6 +228,7 @@ export const useStudentEvents = (userId: string | undefined, onSuccess?: () => v
   return {
     events,
     registeredEvents,
+    registeredEventIds,
     isLoadingEvents,
     error,
     fetchEvents,
