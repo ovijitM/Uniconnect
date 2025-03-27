@@ -19,7 +19,10 @@ export const fetchJoinedClubs = async (
       .select('club_id')
       .eq('user_id', userId);
 
-    if (membershipError) throw membershipError;
+    if (membershipError) {
+      console.error('Supabase error fetching memberships:', membershipError);
+      throw new Error(`Failed to fetch memberships: ${membershipError.message}`);
+    }
     
     const clubIds = membershipData?.map(item => item.club_id) || [];
     console.log('Joined club IDs:', clubIds);
@@ -31,7 +34,11 @@ export const fetchJoinedClubs = async (
         .select('*')
         .in('id', clubIds);
         
-      if (joinedClubsError) throw joinedClubsError;
+      if (joinedClubsError) {
+        console.error('Supabase error fetching joined clubs:', joinedClubsError);
+        throw new Error(`Failed to fetch joined clubs: ${joinedClubsError.message}`);
+      }
+      
       console.log('Joined clubs data:', joinedClubsData);
       
       // Transform raw club data to match the Club type
@@ -55,11 +62,7 @@ export const fetchJoinedClubs = async (
     };
   } catch (error) {
     console.error('Error fetching joined clubs:', error);
-    toast({
-      title: 'Error',
-      description: 'Failed to load joined clubs',
-      variant: 'destructive',
-    });
-    return { joinedClubs: [], joinedClubIds: [] };
+    // Don't show toast here - let the caller handle it for better UX
+    throw error; // Re-throw to allow the calling function to handle it
   }
 };

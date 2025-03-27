@@ -12,7 +12,7 @@ export const fetchAllClubs = async (
   if (!userId) return [];
   
   try {
-    console.log('Fetching clubs for user:', userId);
+    console.log('Fetching clubs for user:', userId, 'university:', userUniversity);
     
     // Fetch all available clubs
     let clubsQuery = supabase
@@ -27,7 +27,10 @@ export const fetchAllClubs = async (
     
     const { data: allClubs, error: allClubsError } = await clubsQuery;
     
-    if (allClubsError) throw allClubsError;
+    if (allClubsError) {
+      console.error('Supabase error fetching clubs:', allClubsError);
+      throw new Error(`Failed to fetch clubs: ${allClubsError.message}`);
+    }
     
     // Transform raw club data to match the Club type
     return (allClubs || []).map(club => {
@@ -39,11 +42,7 @@ export const fetchAllClubs = async (
     });
   } catch (error) {
     console.error('Error fetching club data:', error);
-    toast({
-      title: 'Error',
-      description: 'Failed to load club data',
-      variant: 'destructive',
-    });
-    return [];
+    // Don't show toast here - let the caller handle it for better UX
+    throw error; // Re-throw to allow the calling function to handle it
   }
 };

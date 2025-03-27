@@ -11,6 +11,7 @@ import StudentClubsView from '@/components/student/dashboard/StudentClubsView';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 const StudentDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -20,7 +21,8 @@ const StudentDashboard: React.FC = () => {
     clubs, 
     events, 
     joinedClubs, 
-    registeredEvents, 
+    registeredEvents,
+    registeredEventIds,
     joinClub, 
     leaveClub,
     registerForEvent,
@@ -38,7 +40,6 @@ const StudentDashboard: React.FC = () => {
   if (user.role !== 'student') return <Navigate to={`/${user.role.replace('_', '-')}-dashboard`} />;
 
   const joinedClubIds = joinedClubs.map(club => club.id);
-  const registeredEventIds = registeredEvents.map(event => event.id);
 
   // Create a wrapper function that properly handles the Promise<void> return type for joinClub
   const handleJoinClub = async (clubId: string): Promise<void> => {
@@ -116,7 +117,7 @@ const StudentDashboard: React.FC = () => {
         joinedClubs={joinedClubs}
         registeredEvents={registeredEvents}
         joinedClubIds={joinedClubIds}
-        registeredEventIds={registeredEventIds}
+        registeredEventIds={registeredEventIds || []}
         isLoading={isLoading}
         error={error}
         onJoinClub={handleJoinClub}
@@ -129,9 +130,15 @@ const StudentDashboard: React.FC = () => {
 
   return (
     <DashboardLayout sidebar={<StudentSidebar />}>
-      <div className="container max-w-full px-0">
-        {renderContent()}
-      </div>
+      <ErrorBoundary
+        onReset={() => {
+          if (refreshData) refreshData();
+        }}
+      >
+        <div className="container max-w-full px-0">
+          {renderContent()}
+        </div>
+      </ErrorBoundary>
     </DashboardLayout>
   );
 };

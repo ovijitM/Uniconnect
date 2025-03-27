@@ -6,6 +6,7 @@ export interface StudentClubsState {
   clubs: Club[];
   joinedClubs: Club[];
   joinedClubIds: string[];
+  error: string | null;
 }
 
 export interface JoinClubOptions {

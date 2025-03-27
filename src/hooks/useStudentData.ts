@@ -15,6 +15,8 @@ export const useStudentData = () => {
   const { 
     userUniversity, 
     fetchUserProfile,
+    isLoadingProfile,
+    error: profileError,
     updateUserUniversity 
   } = useStudentProfile(user?.id);
   
@@ -25,16 +27,19 @@ export const useStudentData = () => {
     fetchClubs, 
     joinClub: joinClubAction, 
     leaveClub: leaveClubAction,
-    isLoadingClubs
+    isLoadingClubs,
+    error: clubsError
   } = useStudentClubs(user?.id, fetchData);
   
   const { 
     events, 
     registeredEvents, 
+    registeredEventIds,
     fetchEvents, 
     registerForEvent, 
     unregisterFromEvent,
-    isLoadingEvents
+    isLoadingEvents,
+    error: eventsError
   } = useStudentEvents(user?.id, fetchData);
 
   async function fetchData() {
@@ -50,18 +55,38 @@ export const useStudentData = () => {
       
       await fetchUserProfile();
       
+      if (profileError) {
+        console.warn("Profile error detected:", profileError);
+        // Don't return here, still try to fetch other data
+      }
+      
       if (userUniversity) {
         console.log("Fetching data for university:", userUniversity);
-        await Promise.all([
-          fetchClubs(userUniversity),
-          fetchEvents(userUniversity)
-        ]);
+        try {
+          await fetchClubs(userUniversity);
+        } catch (clubErr: any) {
+          console.error('Error fetching clubs:', clubErr);
+          // Continue to fetch events even if clubs fail
+        }
+        
+        try {
+          await fetchEvents(userUniversity);
+        } catch (eventErr: any) {
+          console.error('Error fetching events:', eventErr);
+        }
       } else {
         console.log("No university set for user, fetching public data only");
-        await Promise.all([
-          fetchClubs(null),
-          fetchEvents(null)
-        ]);
+        try {
+          await fetchClubs(null);
+        } catch (clubErr: any) {
+          console.error('Error fetching clubs:', clubErr);
+        }
+        
+        try {
+          await fetchEvents(null);
+        } catch (eventErr: any) {
+          console.error('Error fetching events:', eventErr);
+        }
       }
     } catch (err: any) {
       console.error('Error in fetchData:', err);
@@ -75,6 +100,16 @@ export const useStudentData = () => {
       setIsLoading(false);
     }
   }
+  
+  // Determine overall error state
+  useEffect(() => {
+    const combinedError = profileError || clubsError || eventsError;
+    if (combinedError && !isLoading && !isLoadingProfile && !isLoadingClubs && !isLoadingEvents) {
+      setError(combinedError);
+    } else if (!isLoading && !isLoadingProfile && !isLoadingClubs && !isLoadingEvents) {
+      setError(null);
+    }
+  }, [profileError, clubsError, eventsError, isLoading, isLoadingProfile, isLoadingClubs, isLoadingEvents]);
   
   // Wrapper for joinClub to ensure state is refreshed
   const joinClub = async (clubId: string) => {
@@ -110,13 +145,17 @@ export const useStudentData = () => {
 
   useEffect(() => {
     if (user) {
+      console.log("User detected, fetching initial data");
       fetchData();
+    } else {
+      console.log("No user detected, skipping data fetch");
+      setIsLoading(false);
     }
-  }, [user]);
+  }, [user?.id]); // Only depend on user.id, not the entire user object
 
   // Refetch data when university changes
   useEffect(() => {
-    if (user && userUniversity) {
+    if (user?.id && userUniversity) {
       console.log("University changed, refreshing data:", userUniversity);
       fetchClubs(userUniversity);
       fetchEvents(userUniversity);
@@ -124,13 +163,14 @@ export const useStudentData = () => {
   }, [userUniversity]);
 
   return {
-    isLoading: isLoading || isLoadingClubs || isLoadingEvents,
+    isLoading: isLoading || isLoadingClubs || isLoadingEvents || isLoadingProfile,
     error,
     clubs,
     events,
     joinedClubs,
     joinedClubIds,
     registeredEvents,
+    registeredEventIds,
     userUniversity,
     updateUserUniversity,
     joinClub,
