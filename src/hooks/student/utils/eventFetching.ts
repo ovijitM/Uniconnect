@@ -70,9 +70,9 @@ export const fetchUpcomingEvents = async (
   if (userUniversity) {
     console.log("Filtering events by university:", userUniversity);
     
-    // Fix: Use proper Supabase filter syntax for complex conditions
-    eventsQuery = eventsQuery.or('visibility.eq.public')
-      .or(`and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
+    // Fix: Use proper Supabase filter syntax for complex conditions with or()
+    eventsQuery = eventsQuery
+      .or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
   } else {
     console.log("No university, fetching public events only");
     eventsQuery = eventsQuery.eq('visibility', 'public');

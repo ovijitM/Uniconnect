@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, X } from 'lucide-react';
@@ -41,6 +42,7 @@ const EventsPage: React.FC = () => {
           }
         }
         
+        // Start with a basic query to get events
         let eventsQuery = supabase
           .from('events')
           .select(`
@@ -58,8 +60,11 @@ const EventsPage: React.FC = () => {
             event_participants(count)
           `);
           
+        // Apply visibility filtering based on user's university
         if (user && userUniversity) {
-          eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${JSON.stringify(userUniversity)})`);
+          // Fixed: Use proper OR condition with separate calls
+          eventsQuery = eventsQuery
+            .or('visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.' + userUniversity + ')');
         } else {
           eventsQuery = eventsQuery.eq('visibility', 'public');
         }
@@ -68,6 +73,7 @@ const EventsPage: React.FC = () => {
         
         if (eventsError) throw eventsError;
         
+        // For each event, fetch club data
         const eventsWithOrganizers = await Promise.all(
           eventsData.map(async (event) => {
             const { data: clubData } = await supabase
@@ -105,7 +111,7 @@ const EventsPage: React.FC = () => {
             }
             
             let memberCount = 0;
-            if (clubData.club_members && Array.isArray(clubData.club_members) && clubData.club_members.length > 0) {
+            if (clubData?.club_members && Array.isArray(clubData.club_members) && clubData.club_members.length > 0) {
               const countData = clubData.club_members[0];
               
               if (typeof countData === 'number') {
@@ -136,7 +142,7 @@ const EventsPage: React.FC = () => {
               visibility: (event.visibility || 'public') as 'public' | 'university_only',
               participants: participants,
               maxParticipants: event.max_participants || undefined,
-              organizer: {
+              organizer: clubData ? {
                 id: clubData.id,
                 name: clubData.name,
                 description: clubData.description,
@@ -144,6 +150,15 @@ const EventsPage: React.FC = () => {
                 category: clubData.category,
                 university: clubData.university,
                 memberCount: memberCount,
+                events: []
+              } : {
+                id: '',
+                name: 'Unknown Club',
+                description: '',
+                logoUrl: '',
+                category: '',
+                university: '',
+                memberCount: 0,
                 events: []
               }
             };
