@@ -11,7 +11,7 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 import { fetchEvents } from '@/hooks/events/useEventsFetching';
 
 const EventsContainer = () => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
@@ -29,9 +29,11 @@ const EventsContainer = () => {
         setIsLoading(true);
         setError(null);
         
-        const userUniversity = profile?.university || null;
+        // We'll fetch events based on user university if available
+        const userUniversity = user?.user_metadata?.university || null;
         const data = await fetchEvents(userUniversity);
         
+        console.log("Fetched events:", data);
         setEvents(data);
         setFilteredEvents(data);
       } catch (error) {
@@ -48,7 +50,7 @@ const EventsContainer = () => {
     };
 
     loadEvents();
-  }, [profile, toast]);
+  }, [user, toast]);
 
   useEffect(() => {
     let filtered = [...events];
@@ -112,6 +114,8 @@ const EventsContainer = () => {
       </div>
     );
   }
+
+  console.log("Filtered events length:", filteredEvents.length);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

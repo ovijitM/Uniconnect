@@ -22,7 +22,7 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
     if (userUniversity) {
       console.log("Filtering events by university:", userUniversity);
       
-      // Using proper OR syntax for Supabase
+      // Fixed OR syntax for Supabase
       eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
     } else {
       console.log("No university, fetching public events only");
@@ -47,11 +47,16 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
       organizer: {
         id: event.club_id,
         name: event.clubs?.name || 'Unknown Organizer',
-        university: event.clubs?.university || 'Unknown University'
+        university: event.clubs?.university || 'Unknown University',
+        description: '', // Required by Event type
+        logoUrl: '', // Required by Event type
+        category: '', // Required by Event type
+        memberCount: 0, // Required by Event type
+        events: [] // Required by Event type
       },
       category: event.category || 'General',
       status: event.status || 'upcoming',
-      participants: event.participants_count || 0,
+      participants: event.participants || 0,
       maxParticipants: event.max_participants,
       visibility: event.visibility || 'public',
       eventType: event.event_type || 'in-person',
