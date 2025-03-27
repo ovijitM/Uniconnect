@@ -32,10 +32,17 @@ const EventsContainer = () => {
         // Get user university from the profile
         const userUniversity = user?.university || null;
         console.log("User university for events filter:", userUniversity);
+        console.log("Current user object:", user);
         
         const data = await fetchEvents(userUniversity);
         
         console.log("Fetched events:", data);
+        console.log("Number of events fetched:", data.length);
+        
+        if (data.length === 0) {
+          console.log("No events were fetched. This might indicate an issue with the database or query.");
+        }
+        
         setEvents(data);
         setFilteredEvents(data);
       } catch (error) {
@@ -53,6 +60,26 @@ const EventsContainer = () => {
 
     loadEvents();
   }, [user, toast]);
+
+  // If we have no events after loading, retry once with no filtering
+  useEffect(() => {
+    if (!isLoading && events.length === 0 && !error) {
+      console.log("No events found with university filtering. Trying to fetch all public events as fallback.");
+      
+      const fetchAllPublicEvents = async () => {
+        try {
+          const data = await fetchEvents(null); // Fetch all public events
+          console.log("Fallback fetch - public events:", data);
+          setEvents(data);
+          setFilteredEvents(data);
+        } catch (e) {
+          console.error("Fallback fetch failed:", e);
+        }
+      };
+      
+      fetchAllPublicEvents();
+    }
+  }, [isLoading, events.length, error]);
 
   useEffect(() => {
     let filtered = [...events];

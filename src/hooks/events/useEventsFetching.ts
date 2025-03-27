@@ -6,7 +6,7 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
   try {
     console.log("Fetching events, user university:", userUniversity);
     
-    // Start with the basic query
+    // Start with the basic query - simplified for maximum visibility
     let eventsQuery = supabase
       .from('events')
       .select(`
@@ -17,17 +17,18 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
           university
         )
       `);
-      
-    // Apply visibility filtering based on user's university
+    
+    // Temporarily disable university filtering to diagnose
+    // Just fetch all events to see if we get data
+    /*
     if (userUniversity) {
       console.log("Filtering events by university:", userUniversity);
-      
-      // Fixed OR syntax for Supabase - using parentheses and proper string formatting
       eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
     } else {
       console.log("No university, fetching public events only");
       eventsQuery = eventsQuery.eq('visibility', 'public');
     }
+    */
     
     const { data, error } = await eventsQuery.order('date', { ascending: true });
     
@@ -37,9 +38,15 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
     }
 
     console.log("Raw events data from database:", data);
+    console.log("Number of events fetched:", data ? data.length : 0);
+    
+    if (!data || data.length === 0) {
+      console.log("No events found in the database");
+      return [];
+    }
     
     // Transform the data to match the Event type
-    return (data || []).map(event => ({
+    const transformedEvents = (data || []).map(event => ({
       id: event.id,
       title: event.title,
       description: event.description,
@@ -64,6 +71,9 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
       eventType: event.event_type || 'in-person',
       tagline: event.tagline
     }));
+    
+    console.log("Transformed events:", transformedEvents);
+    return transformedEvents;
   } catch (error) {
     console.error('Error in fetchEvents:', error);
     throw error;
