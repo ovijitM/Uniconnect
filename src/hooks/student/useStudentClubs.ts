@@ -24,7 +24,11 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
     if (!userId) return;
     
     try {
+      console.log("Fetching joined clubs for user:", userId);
       const result = await fetchJoinedClubs(userId, toast);
+      console.log("Fetched joined clubs:", result.joinedClubs);
+      console.log("Fetched joined club IDs:", result.joinedClubIds);
+      
       setState(prev => ({
         ...prev,
         joinedClubs: result.joinedClubs,
@@ -115,6 +119,7 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
   // Run fetchJoinedClubs initially to populate the joined clubs state
   useEffect(() => {
     if (userId) {
+      console.log("Initial fetch of joined clubs for user:", userId);
       fetchJoinedClubsCallback();
     }
   }, [userId, fetchJoinedClubsCallback]);
