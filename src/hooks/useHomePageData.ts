@@ -80,8 +80,8 @@ export const useHomePageData = () => {
               establishedYear: club.established_year,
               affiliation: club.affiliation,
               whyJoin: club.why_join,
-              regularEvents: club.regular_events,
-              signatureEvents: club.signature_events,
+              regularEvents: Array.isArray(club.regular_events) ? club.regular_events : [],
+              signatureEvents: Array.isArray(club.signature_events) ? club.signature_events : [],
               communityEngagement: club.community_engagement,
               whoCanJoin: club.who_can_join,
               membershipFee: club.membership_fee,
@@ -90,7 +90,7 @@ export const useHomePageData = () => {
               presidentChairContact: club.president_chair_contact,
               executiveMembers: club.executive_members,
               executiveMembersRoles: club.executive_members_roles,
-              facultyAdvisors: club.faculty_advisors,
+              facultyAdvisors: Array.isArray(club.faculty_advisors) ? club.faculty_advisors : [],
               primaryFacultyAdvisor: club.primary_faculty_advisor,
               phoneNumber: club.phone_number,
               website: club.website,
@@ -107,13 +107,11 @@ export const useHomePageData = () => {
         // Filter out any null values that might have been created due to invalid club data
         const validClubs = clubsWithCounts.filter(club => club !== null) as Club[];
         
-        // Fetch events - simplified query to ensure we get data
+        // Fetch events with proper club details
         console.log("Fetching events...");
-        let eventsQuery = supabase
+        const { data: eventsData, error: eventsError } = await supabase
           .from('events')
-          .select(`*, clubs:clubs!events_club_id_fkey (*)`);
-        
-        const { data: eventsData, error: eventsError } = await eventsQuery;
+          .select('*, clubs:club_id(*)');
         
         if (eventsError) {
           console.error("Error fetching events:", eventsError);
@@ -123,64 +121,66 @@ export const useHomePageData = () => {
         console.log(`Fetched ${eventsData?.length || 0} events`);
         console.log("Raw events data:", eventsData);
         
-        // Process events with all required details
-        const eventsWithDetails = (eventsData || []).map((event) => {
+        // Process events
+        const validEvents: Event[] = [];
+        
+        for (const event of eventsData || []) {
           if (!event || typeof event !== 'object') {
             console.error("Invalid event data:", event);
-            return null;
+            continue;
           }
           
-          // Ensure clubData is not empty and has valid properties
-          // TypeScript is detecting that clubData might be an empty object
+          // Get the associated club data
           const clubData = event.clubs || {};
           
-          // Create a placeholder club with default values for safety
-          const safeClubData: Partial<Club> = {
-            id: '',
-            name: 'Unknown Organizer',
-            description: '',
-            logoUrl: '',
-            category: '',
+          // Create a properly typed club object with safe defaults
+          const safeClub: Club = {
+            id: typeof clubData.id === 'string' ? clubData.id : '',
+            name: typeof clubData.name === 'string' ? clubData.name : 'Unknown Organizer',
+            description: typeof clubData.description === 'string' ? clubData.description : '',
+            logoUrl: typeof clubData.logo_url === 'string' ? clubData.logo_url : '',
+            category: typeof clubData.category === 'string' ? clubData.category : '',
             memberCount: 0,
+            status: 'approved',
             events: [],
-            university: '',
+            university: typeof clubData.university === 'string' ? clubData.university : '',
+            universityId: typeof clubData.university_id === 'string' ? clubData.university_id : undefined,
+            tagline: typeof clubData.tagline === 'string' ? clubData.tagline : undefined,
+            establishedYear: typeof clubData.established_year === 'number' ? clubData.established_year : undefined,
+            affiliation: typeof clubData.affiliation === 'string' ? clubData.affiliation : undefined,
+            whyJoin: typeof clubData.why_join === 'string' ? clubData.why_join : undefined,
+            regularEvents: Array.isArray(clubData.regular_events) ? clubData.regular_events : [],
+            signatureEvents: Array.isArray(clubData.signature_events) ? clubData.signature_events : [],
+            communityEngagement: typeof clubData.community_engagement === 'string' ? clubData.community_engagement : undefined,
+            whoCanJoin: typeof clubData.who_can_join === 'string' ? clubData.who_can_join : undefined,
+            membershipFee: typeof clubData.membership_fee === 'string' ? clubData.membership_fee : undefined,
+            howToJoin: typeof clubData.how_to_join === 'string' ? clubData.how_to_join : undefined,
+            presidentChairName: typeof clubData.president_chair_name === 'string' ? clubData.president_chair_name : undefined,
+            presidentChairContact: typeof clubData.president_chair_contact === 'string' ? clubData.president_chair_contact : undefined,
+            executiveMembers: clubData.executive_members,
+            executiveMembersRoles: clubData.executive_members_roles,
+            facultyAdvisors: Array.isArray(clubData.faculty_advisors) ? clubData.faculty_advisors : [],
+            primaryFacultyAdvisor: typeof clubData.primary_faculty_advisor === 'string' ? clubData.primary_faculty_advisor : undefined,
+            phoneNumber: typeof clubData.phone_number === 'string' ? clubData.phone_number : undefined,
+            website: typeof clubData.website === 'string' ? clubData.website : undefined,
+            facebookLink: typeof clubData.facebook_link === 'string' ? clubData.facebook_link : undefined,
+            instagramLink: typeof clubData.instagram_link === 'string' ? clubData.instagram_link : undefined,
+            twitterLink: typeof clubData.twitter_link === 'string' ? clubData.twitter_link : undefined,
+            discordLink: typeof clubData.discord_link === 'string' ? clubData.discord_link : undefined
           };
           
-          // Only assign properties if they exist in clubData
-          if (typeof clubData === 'object' && clubData !== null) {
-            if ('id' in clubData) safeClubData.id = clubData.id;
-            if ('name' in clubData) safeClubData.name = clubData.name;
-            if ('description' in clubData) safeClubData.description = clubData.description;
-            if ('logo_url' in clubData) safeClubData.logoUrl = clubData.logo_url;
-            if ('category' in clubData) safeClubData.category = clubData.category;
-            if ('university' in clubData) safeClubData.university = clubData.university;
-            if ('established_year' in clubData) safeClubData.establishedYear = clubData.established_year;
-            if ('affiliation' in clubData) safeClubData.affiliation = clubData.affiliation;
-            if ('why_join' in clubData) safeClubData.whyJoin = clubData.why_join;
-            if ('regular_events' in clubData) safeClubData.regularEvents = clubData.regular_events;
-            if ('signature_events' in clubData) safeClubData.signatureEvents = clubData.signature_events;
-            if ('community_engagement' in clubData) safeClubData.communityEngagement = clubData.community_engagement;
-            if ('who_can_join' in clubData) safeClubData.whoCanJoin = clubData.who_can_join;
-            if ('membership_fee' in clubData) safeClubData.membershipFee = clubData.membership_fee;
-            if ('how_to_join' in clubData) safeClubData.howToJoin = clubData.how_to_join;
-            if ('president_chair_name' in clubData) safeClubData.presidentChairName = clubData.president_chair_name;
-            if ('president_chair_contact' in clubData) safeClubData.presidentChairContact = clubData.president_chair_contact;
-            if ('executive_members' in clubData) safeClubData.executiveMembers = clubData.executive_members;
-            if ('executive_members_roles' in clubData) safeClubData.executiveMembersRoles = clubData.executive_members_roles;
-            if ('faculty_advisors' in clubData) safeClubData.facultyAdvisors = clubData.faculty_advisors;
-            if ('primary_faculty_advisor' in clubData) safeClubData.primaryFacultyAdvisor = clubData.primary_faculty_advisor;
-            if ('phone_number' in clubData) safeClubData.phoneNumber = clubData.phone_number;
-            if ('website' in clubData) safeClubData.website = clubData.website;
-            if ('facebook_link' in clubData) safeClubData.facebookLink = clubData.facebook_link;
-            if ('instagram_link' in clubData) safeClubData.instagramLink = clubData.instagram_link;
-            if ('twitter_link' in clubData) safeClubData.twitterLink = clubData.twitter_link;
-            if ('discord_link' in clubData) safeClubData.discordLink = clubData.discord_link;
-            if ('university_id' in clubData) safeClubData.universityId = clubData.university_id;
-          } else {
-            console.warn("Club data is missing or invalid for event:", event.title);
+          // Get participants count
+          const { count: participantsCount, error: countError } = await supabase
+            .from('event_participants')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_id', event.id);
+            
+          if (countError) {
+            console.error(`Error getting participants count for event ${event.id}:`, countError);
           }
           
-          return {
+          // Create a valid Event object
+          validEvents.push({
             id: event.id,
             title: event.title,
             description: event.description,
@@ -189,17 +189,14 @@ export const useHomePageData = () => {
             imageUrl: event.image_url || '/placeholder.svg',
             category: event.category || 'General',
             status: (event.status || 'upcoming') as EventStatus,
-            participants: 0, // Default value
+            participants: participantsCount || 0,
             maxParticipants: event.max_participants,
             eventType: event.event_type || 'in-person',
             tagline: event.tagline,
             visibility: (event.visibility || 'public') as 'public' | 'university_only',
-            organizer: safeClubData as Club
-          } as Event;
-        });
-        
-        // Filter out any null values from invalid event data
-        const validEvents = eventsWithDetails.filter(event => event !== null) as Event[];
+            organizer: safeClub
+          });
+        }
         
         console.log("Processed events:", validEvents);
         
