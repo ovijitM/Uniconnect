@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Event, Club, EventStatus } from '@/types';
@@ -50,6 +51,12 @@ export const useHomePageData = () => {
         // Prepare clubs with member counts
         const clubsWithCounts = await Promise.all(
           (clubsData || []).map(async (club) => {
+            // TypeScript guard to ensure club is not empty
+            if (!club || typeof club !== 'object') {
+              console.error("Invalid club data:", club);
+              return null;
+            }
+            
             // Get member count for each club
             const { count, error: countError } = await supabase
               .from('club_members')
@@ -93,9 +100,12 @@ export const useHomePageData = () => {
               discordLink: club.discord_link,
               university: club.university,
               universityId: club.university_id
-            };
+            } as Club;
           })
         );
+        
+        // Filter out any null values that might have been created due to invalid club data
+        const validClubs = clubsWithCounts.filter(club => club !== null) as Club[];
         
         // Fetch events - simplified query to ensure we get data
         console.log("Fetching events...");
@@ -115,6 +125,11 @@ export const useHomePageData = () => {
         
         // Process events with all required details
         const eventsWithDetails = (eventsData || []).map((event) => {
+          if (!event || typeof event !== 'object') {
+            console.error("Invalid event data:", event);
+            return null;
+          }
+          
           const clubData = event.clubs || {};
           
           return {
@@ -163,16 +178,19 @@ export const useHomePageData = () => {
               discordLink: clubData.discord_link,
               universityId: clubData.university_id
             }
-          };
+          } as Event;
         });
         
-        console.log("Processed events:", eventsWithDetails);
+        // Filter out any null values from invalid event data
+        const validEvents = eventsWithDetails.filter(event => event !== null) as Event[];
         
-        setClubs(clubsWithCounts);
-        setEvents(eventsWithDetails);
+        console.log("Processed events:", validEvents);
+        
+        setClubs(validClubs);
+        setEvents(validEvents);
         
         // Set featured event (first upcoming event)
-        const upcomingEvents = eventsWithDetails.filter(event => event.status === 'upcoming');
+        const upcomingEvents = validEvents.filter(event => event.status === 'upcoming');
         if (upcomingEvents.length > 0) {
           setFeaturedEvent(upcomingEvents[0]);
           console.log("Set featured event:", upcomingEvents[0].title);
