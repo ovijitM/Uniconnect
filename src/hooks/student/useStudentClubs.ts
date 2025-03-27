@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,13 +12,10 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const fetchClubs = async (userUniversity?: string | null) => {
+  const fetchJoinedClubs = useCallback(async () => {
     if (!userId) return;
     
-    setIsLoadingClubs(true);
     try {
-      console.log('Fetching clubs for user:', userId);
-      
       // Fetch clubs the student has joined
       const { data: membershipData, error: membershipError } = await supabase
         .from('club_members')
@@ -44,6 +41,25 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       } else {
         setJoinedClubs([]);
       }
+    } catch (error) {
+      console.error('Error fetching joined clubs:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load joined clubs',
+        variant: 'destructive',
+      });
+    }
+  }, [userId, toast]);
+
+  const fetchClubs = async (userUniversity?: string | null) => {
+    if (!userId) return;
+    
+    setIsLoadingClubs(true);
+    try {
+      console.log('Fetching clubs for user:', userId);
+      
+      // First fetch joined clubs to update IDs
+      await fetchJoinedClubs();
       
       // Fetch all available clubs
       let clubsQuery = supabase
@@ -132,7 +148,10 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
         return;
       }
       
-      // Immediately update the local state
+      // After successfully joining, refresh joined clubs
+      await fetchJoinedClubs();
+      
+      // Also update local state for immediate UI feedback
       const clubToAdd = clubs.find(c => c.id === clubId);
       if (clubToAdd) {
         setJoinedClubs(prev => [...prev, clubToAdd]);
@@ -164,6 +183,9 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       
       if (error) throw error;
       
+      // Refresh joined clubs to ensure UI is updated
+      await fetchJoinedClubs();
+      
       // Immediately update local state
       setJoinedClubs(prev => prev.filter(club => club.id !== clubId));
       setJoinedClubIds(prev => prev.filter(id => id !== clubId));
@@ -184,6 +206,13 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       });
     }
   };
+
+  // Run fetchJoinedClubs initially to populate the joined clubs state
+  useEffect(() => {
+    if (userId) {
+      fetchJoinedClubs();
+    }
+  }, [userId, fetchJoinedClubs]);
 
   // Add useEffect to log joinedClubs whenever it changes
   useEffect(() => {

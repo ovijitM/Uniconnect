@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import StudentClubs from '@/components/student/StudentClubs';
 import AvailableClubs from '@/components/student/AvailableClubs';
 
@@ -26,6 +26,14 @@ const StudentClubsView: React.FC<StudentClubsViewProps> = ({
 
   // Filter clubs to only show those that are not joined
   const availableClubs = clubs.filter(club => !joinedClubIds.includes(club.id));
+
+  useEffect(() => {
+    // Log specific details to help debug
+    console.log("StudentClubsView - Club IDs check:");
+    clubs.forEach(club => {
+      console.log(`Club ${club.name} (${club.id}) - Joined: ${joinedClubIds.includes(club.id)}`);
+    });
+  }, [clubs, joinedClubIds]);
 
   return (
     <div className="space-y-6">

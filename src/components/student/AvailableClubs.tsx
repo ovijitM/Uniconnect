@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Tag, Loader2, Check, ArrowRight } from 'lucide-react';
@@ -28,6 +28,13 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
   
   console.log("AvailableClubs - Clubs:", clubs);
   console.log("AvailableClubs - JoinedClubIds:", joinedClubIds);
+  
+  // Ensure we only display clubs that haven't been joined
+  const filteredClubs = clubs.filter(club => !joinedClubIds.includes(club.id));
+  
+  useEffect(() => {
+    console.log("AvailableClubs - Filtered Clubs:", filteredClubs);
+  }, [filteredClubs]);
   
   const handleJoinClub = async (clubId: string) => {
     if (joiningClubId) return; // Prevent multiple clicks
@@ -60,7 +67,7 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
             <CardTitle>Available Clubs</CardTitle>
             <CardDescription>Clubs you can join</CardDescription>
           </div>
-          {clubs.length > 4 && (
+          {filteredClubs.length > 4 && (
             <Button 
               variant="ghost" 
               size="sm" 
@@ -79,9 +86,9 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
               <div key={i} className="h-16 bg-gray-200 rounded-lg animate-pulse" />
             ))}
           </div>
-        ) : clubs.length > 0 ? (
+        ) : filteredClubs.length > 0 ? (
           <div className="space-y-3">
-            {clubs.map(club => (
+            {filteredClubs.map(club => (
               <div key={club.id} className="flex items-center p-3 hover:bg-secondary/20 rounded-lg transition-colors">
                 <div className="bg-primary/10 p-2 rounded-full mr-3">
                   <Users className="h-5 w-5 text-primary" />
