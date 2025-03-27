@@ -15,6 +15,8 @@ interface FeaturedEventSectionProps {
 }
 
 const FeaturedEventSection: React.FC<FeaturedEventSectionProps> = ({ featuredEvent, isLoading }) => {
+  console.log("FeaturedEventSection - featuredEvent:", featuredEvent?.title || "None");
+  
   const { isLoaded, currentSrc } = useLazyImage(featuredEvent?.imageUrl || '');
   
   if (isLoading) {
@@ -112,7 +114,7 @@ const FeaturedEventSection: React.FC<FeaturedEventSectionProps> = ({ featuredEve
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mr-3">
-                {featuredEvent.organizer.logoUrl && (
+                {featuredEvent.organizer?.logoUrl && (
                   <img
                     src={featuredEvent.organizer.logoUrl}
                     alt={featuredEvent.organizer.name}
@@ -121,7 +123,7 @@ const FeaturedEventSection: React.FC<FeaturedEventSectionProps> = ({ featuredEve
                 )}
               </div>
               <div>
-                <p className="text-sm font-medium">{featuredEvent.organizer.name}</p>
+                <p className="text-sm font-medium">{featuredEvent.organizer?.name || 'Unknown Organizer'}</p>
                 <p className="text-xs text-muted-foreground">Organizer</p>
               </div>
             </div>

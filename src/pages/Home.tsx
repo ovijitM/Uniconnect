@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Layout from '@/components/Layout';
 import HeroSection from '@/components/home/HeroSection';
 import FeaturedEventSection from '@/components/home/FeaturedEventSection';
@@ -11,6 +11,16 @@ import { useHomePageData } from '@/hooks/useHomePageData';
 
 const Home: React.FC = () => {
   const { events, clubs, featuredEvent, isLoading } = useHomePageData();
+  
+  // Log home page data for debugging
+  useEffect(() => {
+    console.log("Home page rendered with:", {
+      eventsCount: events.length,
+      clubsCount: clubs.length,
+      hasFeaturedEvent: !!featuredEvent,
+      isLoading
+    });
+  }, [events, clubs, featuredEvent, isLoading]);
 
   return (
     <Layout>

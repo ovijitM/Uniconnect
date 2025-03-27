@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Event, Club, EventStatus } from '@/types';
@@ -17,9 +16,11 @@ export const useHomePageData = () => {
     async function fetchData() {
       try {
         setIsLoading(true);
+        console.log("Starting to fetch home page data");
         
         let userUniversity = null;
         if (user) {
+          console.log("Fetching university for user:", user.id);
           const { data: profileData } = await supabase
             .from('profiles')
             .select('university')
@@ -28,24 +29,36 @@ export const useHomePageData = () => {
             
           if (profileData) {
             userUniversity = profileData.university;
+            console.log("Found user university:", userUniversity);
           }
         }
         
-        // Fetch approved clubs with all relevant fields
+        // Fetch approved clubs
+        console.log("Fetching clubs...");
         const { data: clubsData, error: clubsError } = await supabase
           .from('clubs')
           .select('*')
           .eq('status', 'approved');
         
-        if (clubsError) throw clubsError;
+        if (clubsError) {
+          console.error("Error fetching clubs:", clubsError);
+          throw clubsError;
+        }
         
-        // For each club, fetch its member count and prepare the data
+        console.log(`Fetched ${clubsData?.length || 0} clubs`);
+        
+        // Prepare clubs with member counts
         const clubsWithCounts = await Promise.all(
-          clubsData.map(async (club) => {
+          (clubsData || []).map(async (club) => {
+            // Get member count for each club
             const { count, error: countError } = await supabase
               .from('club_members')
               .select('*', { count: 'exact', head: true })
               .eq('club_id', club.id);
+            
+            if (countError) {
+              console.error(`Error getting member count for club ${club.id}:`, countError);
+            }
             
             return {
               id: club.id,
@@ -84,126 +97,90 @@ export const useHomePageData = () => {
           })
         );
         
-        // Fetch events, considering visibility settings based on user's university
+        // Fetch events - simplified query to ensure we get data
+        console.log("Fetching events...");
         let eventsQuery = supabase
           .from('events')
-          .select('*, clubs(*)')
-          .eq('clubs.status', 'approved');
+          .select(`*, clubs:clubs!events_club_id_fkey (*)`);
         
-        // Handle visibility based on user's university
-        if (user && userUniversity) {
-          eventsQuery = eventsQuery.or(
-            `visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${JSON.stringify(userUniversity)})`
-          );
-        } else {
-          eventsQuery = eventsQuery.eq('visibility', 'public');
+        const { data: eventsData, error: eventsError } = await eventsQuery;
+        
+        if (eventsError) {
+          console.error("Error fetching events:", eventsError);
+          throw eventsError;
         }
         
-        const { data: eventsData, error: eventsError } = await eventsQuery.order('date');
+        console.log(`Fetched ${eventsData?.length || 0} events`);
+        console.log("Raw events data:", eventsData);
         
-        if (eventsError) throw eventsError;
+        // Process events with all required details
+        const eventsWithDetails = (eventsData || []).map((event) => {
+          const clubData = event.clubs || {};
+          
+          return {
+            id: event.id,
+            title: event.title,
+            description: event.description,
+            date: event.date,
+            location: event.location,
+            imageUrl: event.image_url || '/placeholder.svg',
+            category: event.category || 'General',
+            status: (event.status || 'upcoming') as EventStatus,
+            participants: 0, // Default value
+            maxParticipants: event.max_participants,
+            eventType: event.event_type || 'in-person',
+            tagline: event.tagline,
+            visibility: (event.visibility || 'public') as 'public' | 'university_only',
+            organizer: {
+              id: clubData.id || '',
+              name: clubData.name || 'Unknown Organizer',
+              description: clubData.description || '',
+              logoUrl: clubData.logo_url || '',
+              category: clubData.category || '',
+              memberCount: 0,
+              events: [],
+              university: clubData.university || '',
+              establishedYear: clubData.established_year,
+              affiliation: clubData.affiliation,
+              whyJoin: clubData.why_join,
+              regularEvents: clubData.regular_events,
+              signatureEvents: clubData.signature_events,
+              communityEngagement: clubData.community_engagement,
+              whoCanJoin: clubData.who_can_join,
+              membershipFee: clubData.membership_fee,
+              howToJoin: clubData.how_to_join,
+              presidentChairName: clubData.president_chair_name,
+              presidentChairContact: clubData.president_chair_contact,
+              executiveMembers: clubData.executive_members,
+              executiveMembersRoles: clubData.executive_members_roles,
+              facultyAdvisors: clubData.faculty_advisors,
+              primaryFacultyAdvisor: clubData.primary_faculty_advisor,
+              phoneNumber: clubData.phone_number,
+              website: clubData.website,
+              facebookLink: clubData.facebook_link,
+              instagramLink: clubData.instagram_link,
+              twitterLink: clubData.twitter_link,
+              discordLink: clubData.discord_link,
+              universityId: clubData.university_id
+            }
+          };
+        });
         
-        // Process each event and its relationship with clubs
-        const eventsWithDetails = await Promise.all(
-          eventsData.map(async (event) => {
-            // Get participant count
-            const { count: participantsCount } = await supabase
-              .from('event_participants')
-              .select('*', { count: 'exact', head: true })
-              .eq('event_id', event.id);
-            
-            const clubData = event.clubs;
-            
-            // Get member count for the organizing club
-            const { count: memberCount } = await supabase
-              .from('club_members')
-              .select('*', { count: 'exact', head: true })
-              .eq('club_id', clubData.id);
-            
-            return {
-              id: event.id,
-              title: event.title,
-              description: event.description,
-              date: event.date,
-              location: event.location,
-              imageUrl: event.image_url,
-              category: event.category,
-              status: (event.status || 'upcoming') as EventStatus,
-              participants: participantsCount || 0,
-              maxParticipants: event.max_participants || undefined,
-              eventType: event.event_type,
-              tagline: event.tagline,
-              visibility: (event.visibility || 'public') as 'public' | 'university_only',
-              registrationDeadline: event.registration_deadline,
-              onlinePlatform: event.online_platform,
-              eligibility: event.eligibility,
-              teamSize: event.team_size,
-              registrationLink: event.registration_link,
-              entryFee: event.entry_fee,
-              theme: event.theme,
-              subTracks: event.sub_tracks,
-              prizePool: event.prize_pool,
-              prizeCategories: event.prize_categories,
-              additionalPerks: event.additional_perks,
-              judgingCriteria: event.judging_criteria,
-              judges: event.judges,
-              schedule: event.schedule,
-              deliverables: event.deliverables,
-              submissionPlatform: event.submission_platform,
-              mentors: event.mentors,
-              sponsors: event.sponsors,
-              contactEmail: event.contact_email,
-              communityLink: event.community_link,
-              eventWebsite: event.event_website,
-              eventHashtag: event.event_hashtag,
-              organizer: {
-                id: clubData.id,
-                name: clubData.name,
-                description: clubData.description,
-                logoUrl: clubData.logo_url,
-                category: clubData.category,
-                memberCount: memberCount || 0,
-                status: clubData.status,
-                events: [],
-                tagline: clubData.tagline,
-                establishedYear: clubData.established_year,
-                affiliation: clubData.affiliation,
-                whyJoin: clubData.why_join,
-                regularEvents: clubData.regular_events,
-                signatureEvents: clubData.signature_events,
-                communityEngagement: clubData.community_engagement,
-                whoCanJoin: clubData.who_can_join,
-                membershipFee: clubData.membership_fee,
-                howToJoin: clubData.how_to_join,
-                presidentChairName: clubData.president_chair_name,
-                presidentChairContact: clubData.president_chair_contact,
-                executiveMembers: clubData.executive_members,
-                executiveMembersRoles: clubData.executive_members_roles,
-                facultyAdvisors: clubData.faculty_advisors,
-                primaryFacultyAdvisor: clubData.primary_faculty_advisor,
-                phoneNumber: clubData.phone_number,
-                website: clubData.website,
-                facebookLink: clubData.facebook_link,
-                instagramLink: clubData.instagram_link,
-                twitterLink: clubData.twitter_link,
-                discordLink: clubData.discord_link,
-                university: clubData.university,
-                universityId: clubData.university_id
-              }
-            };
-          })
-        );
+        console.log("Processed events:", eventsWithDetails);
         
         setClubs(clubsWithCounts);
         setEvents(eventsWithDetails);
         
-        // Set the first upcoming event as the featured event
+        // Set featured event (first upcoming event)
         const upcomingEvents = eventsWithDetails.filter(event => event.status === 'upcoming');
         if (upcomingEvents.length > 0) {
           setFeaturedEvent(upcomingEvents[0]);
+          console.log("Set featured event:", upcomingEvents[0].title);
+        } else {
+          console.log("No upcoming events found for featured event");
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching home page data:', error);
         toast({
           title: 'Error loading data',
           description: 'Failed to load content. Please try again later.',

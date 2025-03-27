@@ -13,8 +13,12 @@ interface FeaturedClubsSectionProps {
 }
 
 const FeaturedClubsSection: React.FC<FeaturedClubsSectionProps> = ({ clubs, isLoading }) => {
-  // Filter out only approved clubs
+  // Filter out only approved clubs and add logging
   const approvedClubs = clubs.filter(club => club.status === 'approved');
+  
+  console.log("FeaturedClubsSection - Total clubs:", clubs.length);
+  console.log("FeaturedClubsSection - Approved clubs:", approvedClubs.length);
+  console.log("FeaturedClubsSection - Club IDs:", approvedClubs.map(c => c.id));
 
   return (
     <div>
@@ -27,6 +31,7 @@ const FeaturedClubsSection: React.FC<FeaturedClubsSectionProps> = ({ clubs, isLo
           </Button>
         </Link>
       </div>
+      
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (

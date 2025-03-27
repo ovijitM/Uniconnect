@@ -14,6 +14,10 @@ interface UpcomingEventsSectionProps {
 
 const UpcomingEventsSection: React.FC<UpcomingEventsSectionProps> = ({ events, isLoading }) => {
   const upcomingEvents = events.filter(event => event.status === 'upcoming');
+  
+  console.log("UpcomingEventsSection - Total events:", events.length);
+  console.log("UpcomingEventsSection - Upcoming events:", upcomingEvents.length);
+  console.log("UpcomingEventsSection - Event IDs:", upcomingEvents.map(e => e.id));
 
   return (
     <div className="mb-12">
@@ -26,6 +30,7 @@ const UpcomingEventsSection: React.FC<UpcomingEventsSectionProps> = ({ events, i
           </Button>
         </Link>
       </div>
+      
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(3)].map((_, i) => (
