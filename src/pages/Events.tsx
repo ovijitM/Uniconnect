@@ -1,36 +1,17 @@
 
-  useEffect(() => {
-    let filtered = [...events];
-    
-    if (searchTerm) {
-      filtered = filtered.filter(event => 
-        event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.organizer.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    if (selectedStatus !== 'all') {
-      filtered = filtered.filter(event => event.status === selectedStatus);
-    }
-    
-    if (selectedCategories.length > 0) {
-      filtered = filtered.filter(event => selectedCategories.includes(event.category));
-    }
-    
-    setFilteredEvents(filtered);
-  }, [events, searchTerm, selectedStatus, selectedCategories]);
+import React from 'react';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import EventsContainer from '@/components/events/EventsContainer';
+import Layout from '@/components/Layout';
 
-  const toggleCategory = (category: string) => {
-    if (selectedCategories.includes(category)) {
-      setSelectedCategories(selectedCategories.filter(c => c !== category));
-    } else {
-      setSelectedCategories([...selectedCategories, category]);
-    }
-  };
+const Events = () => {
+  return (
+    <Layout>
+      <ErrorBoundary>
+        <EventsContainer />
+      </ErrorBoundary>
+    </Layout>
+  );
+};
 
-  const clearFilters = () => {
-    setSearchTerm('');
-    setSelectedStatus('all');
-    setSelectedCategories([]);
-  };
+export default Events;
