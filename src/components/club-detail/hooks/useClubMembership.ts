@@ -21,6 +21,8 @@ export const useClubMembership = (
       if (!user || !clubId) return;
       
       try {
+        console.log(`Checking membership for user ${user.id} in club ${clubId}`);
+        
         const { data: membershipData, error: membershipError } = await supabase
           .from('club_members')
           .select('*')
@@ -28,7 +30,9 @@ export const useClubMembership = (
           .eq('user_id', user.id)
           .maybeSingle();
         
-        setIsMember(!!membershipData);
+        const isUserMember = !!membershipData;
+        console.log(`User membership status for club ${clubId}: ${isUserMember ? 'Member' : 'Not member'}`);
+        setIsMember(isUserMember);
         
         if (membershipError && membershipError.code !== 'PGRST116') { // PGRST116 means no rows returned
           console.error('Error checking membership:', membershipError);
@@ -93,6 +97,7 @@ export const useClubMembership = (
           description: "You're already a member of this club",
           variant: "default",
         });
+        setIsMember(true); // Ensure UI is updated even if already a member
         setIsJoining(false);
         return;
       }
@@ -115,6 +120,7 @@ export const useClubMembership = (
             description: "You're already a member of this club",
             variant: "default",
           });
+          setIsMember(true); // Update state to reflect membership
         } else if (error.message?.includes('row-level security policy')) {
           toast({
             title: "Permission denied",

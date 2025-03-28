@@ -1,12 +1,13 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Calendar, Mail, ExternalLink, Loader2 } from 'lucide-react';
+import { Users, Calendar, Mail, ExternalLink, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Club } from '@/types';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { Badge } from '@/components/ui/badge';
 
 interface ClubSidebarProps {
   club: Club;
@@ -26,14 +27,22 @@ const ClubSidebar: React.FC<ClubSidebarProps> = ({
   relatedClubs 
 }) => {
   
+  console.log("ClubSidebar rendered with isMember:", isMember);
+  
   const renderJoinButton = () => {
     if (club.status === 'approved') {
       if (isMember) {
         return (
-          <Button className="w-full mb-4" variant="outline" disabled>
-            <Users className="mr-2 h-4 w-4" />
-            You are a member
-          </Button>
+          <div className="w-full mb-4">
+            <Button className="w-full" variant="outline" disabled>
+              <Check className="mr-2 h-4 w-4 text-green-500" />
+              You are a member
+            </Button>
+            <Badge variant="secondary" className="mt-2 flex items-center justify-center gap-1 w-full">
+              <Check className="h-3 w-3" />
+              Joined
+            </Badge>
+          </div>
         );
       } else {
         return (
