@@ -22,6 +22,7 @@ import ActivityPage from '@/pages/admin/ActivityPage';
 import SettingsPage from '@/pages/admin/SettingsPage';
 import ClubAdminDashboard from '@/pages/club-admin/ClubAdminDashboard';
 import CreateClubForm from '@/pages/club-admin/CreateClubForm';
+// Use the StudentDashboard from the correct path
 import StudentDashboard from '@/pages/student/StudentDashboard';
 
 // Context providers

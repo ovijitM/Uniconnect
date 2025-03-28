@@ -8,9 +8,12 @@ import FeaturedClubsSection from '@/components/home/FeaturedClubsSection';
 import PopularCategoriesSection from '@/components/home/PopularCategoriesSection';
 import CallToActionSection from '@/components/home/CallToActionSection';
 import { useHomePageData } from '@/hooks/useHomePageData';
+import { useAuth } from '@/contexts/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 const Home: React.FC = () => {
   const { events, clubs, featuredEvent, isLoading } = useHomePageData();
+  const { user } = useAuth();
   
   // Log home page data for debugging
   useEffect(() => {
@@ -21,6 +24,19 @@ const Home: React.FC = () => {
       isLoading
     });
   }, [events, clubs, featuredEvent, isLoading]);
+
+  // Redirect logged in users to their appropriate dashboard
+  if (user) {
+    const dashboardRoute = 
+      user.role === 'admin' ? '/admin-dashboard' :
+      user.role === 'club_admin' ? '/club-admin-dashboard' :
+      user.role === 'student' ? '/student-dashboard' : null;
+      
+    if (dashboardRoute) {
+      console.log(`Redirecting ${user.role} to ${dashboardRoute}`);
+      return <Navigate to={dashboardRoute} />;
+    }
+  }
 
   return (
     <Layout>
