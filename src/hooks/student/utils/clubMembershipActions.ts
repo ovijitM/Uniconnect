@@ -29,7 +29,7 @@ export const joinClub = async (
       .eq('club_id', clubId)
       .maybeSingle();
     
-    if (checkError) {
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
       console.error('Error checking membership:', checkError);
       throw checkError;
     }

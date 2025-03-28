@@ -34,12 +34,15 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
         joinedClubs: result.joinedClubs,
         joinedClubIds: result.joinedClubIds
       }));
+      
+      return result;
     } catch (error: any) {
       console.error('Error fetching joined clubs:', error);
       setState(prev => ({
         ...prev,
         error: error?.message || 'Failed to fetch joined clubs'
       }));
+      return { joinedClubs: [], joinedClubIds: [] };
     }
   }, [userId, toast]);
 
@@ -49,13 +52,18 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
     setState(prev => ({ ...prev, isLoadingClubs: true, error: null }));
     try {
       // First fetch joined clubs to update IDs
-      await fetchJoinedClubsCallback();
+      const joinedClubsResult = await fetchJoinedClubsCallback();
       
       // Fetch all available clubs
       const allClubs = await fetchAllClubs(userId, userUniversity, toast);
+      
+      // Use the freshly fetched joinedClubIds to filter availableClubs
+      const joinedIds = joinedClubsResult?.joinedClubIds || state.joinedClubIds;
+      
       setState(prev => ({
         ...prev,
         clubs: allClubs,
+        joinedClubIds: joinedIds,
         isLoadingClubs: false
       }));
     } catch (error: any) {

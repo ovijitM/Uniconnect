@@ -26,8 +26,7 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
   
   // Update local state when props change
   useEffect(() => {
-    console.log("AvailableClubs - JoinedClubIds:", joinedClubIds);
-    console.log("AvailableClubs - Filtered Clubs:", clubs);
+    console.log("AvailableClubs - JoinedClubIds from props:", joinedClubIds);
     setLocalJoinedIds(joinedClubIds || []);
   }, [joinedClubIds]);
   

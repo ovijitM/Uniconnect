@@ -21,6 +21,7 @@ const StudentDashboard: React.FC = () => {
     clubs, 
     events, 
     joinedClubs, 
+    joinedClubIds,
     registeredEvents,
     registeredEventIds,
     joinClub, 
@@ -38,8 +39,6 @@ const StudentDashboard: React.FC = () => {
   // Redirect if not logged in or not a student
   if (!user) return <Navigate to="/login" />;
   if (user.role !== 'student') return <Navigate to={`/${user.role.replace('_', '-')}-dashboard`} />;
-
-  const joinedClubIds = joinedClubs.map(club => club.id);
 
   // Create a wrapper function that properly handles the Promise<void> return type for joinClub
   const handleJoinClub = async (clubId: string): Promise<void> => {
