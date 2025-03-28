@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, ExternalLink, Loader2, PlusCircle } from 'lucide-react';
+import { Users, ExternalLink, Loader2, PlusCircle, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +37,16 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
         title: "Action not available",
         description: "Unable to join clubs at this time.",
         variant: "destructive",
+      });
+      return;
+    }
+    
+    // Prevent joining if already a member
+    if (isClubJoined(clubId)) {
+      toast({
+        title: "Already a member",
+        description: `You are already a member of ${clubName}`,
+        variant: "default",
       });
       return;
     }
@@ -106,17 +116,19 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
                       {joiningClubId === club.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <PlusCircle className="h-4 w-4" />
+                        <PlusCircle className="h-4 w-4 mr-1" />
                       )}
+                      <span>Join</span>
                     </Button>
                   ) : (
                     <Button 
                       variant="outline"
                       size="sm"
-                      className="text-muted-foreground"
+                      className="text-green-500"
                       disabled
                     >
-                      Joined
+                      <Check className="h-4 w-4 mr-1" />
+                      <span>Joined</span>
                     </Button>
                   )}
                   <Button 
