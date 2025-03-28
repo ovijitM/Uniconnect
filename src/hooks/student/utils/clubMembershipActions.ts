@@ -35,11 +35,15 @@ export const joinClub = async (
     }
     
     if (existing) {
+      console.log("User is already a member of club:", clubId);
       toast({
         title: 'Already a member',
         description: 'You are already a member of this club',
         variant: 'default',
       });
+      
+      // Return success even though no new membership was created
+      if (options?.onSuccess) options.onSuccess();
       return;
     }
     
@@ -55,11 +59,14 @@ export const joinClub = async (
       console.error('Error joining club:', error);
       
       if (error.code === '23505') {
+        console.log("Duplicate key error - already a member");
         toast({
           title: 'Already a member',
           description: 'You are already a member of this club',
           variant: 'default',
         });
+        // Call onSuccess even for "already a member" case
+        if (options?.onSuccess) options.onSuccess();
       } else if (error.message?.includes('row-level security policy')) {
         throw new Error('Permission denied. You may not have the right privileges to join this club.');
       } else {
@@ -68,6 +75,7 @@ export const joinClub = async (
       return;
     }
     
+    console.log("Successfully joined club:", clubId);
     toast({
       title: 'Success',
       description: 'You have joined the club successfully',
@@ -87,9 +95,17 @@ export const leaveClub = async (
   toast: ReturnType<typeof useToast>['toast'],
   options?: LeaveClubOptions
 ): Promise<void> => {
-  if (!userId) return;
+  if (!userId) {
+    toast({
+      title: 'Authentication Required',
+      description: 'Please log in to leave clubs',
+      variant: 'destructive',
+    });
+    return;
+  }
   
   try {
+    console.log("Attempting to leave club:", clubId, "for user:", userId);
     const { error } = await supabase
       .from('club_members')
       .delete()
@@ -98,6 +114,7 @@ export const leaveClub = async (
     
     if (error) throw error;
     
+    console.log("Successfully left club:", clubId);
     toast({
       title: 'Success',
       description: 'You have left the club',

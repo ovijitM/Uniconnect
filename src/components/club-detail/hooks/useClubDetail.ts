@@ -5,7 +5,7 @@ import { useClubAdmin } from './useClubAdmin';
 
 export const useClubDetail = (clubId?: string) => {
   const { club, setClub, events, isLoading, relatedClubs, error } = useClubData(clubId);
-  const { isMember, isJoining, handleJoinClub } = useClubMembership(club, setClub);
+  const { isMember, isJoining, handleJoinClub, checkMembership } = useClubMembership(club, setClub);
   const { isAdmin, isClubAdmin } = useClubAdmin();
 
   return {
@@ -18,6 +18,7 @@ export const useClubDetail = (clubId?: string) => {
     isAdmin,
     isClubAdmin,
     handleJoinClub,
+    checkMembership,
     error
   };
 };

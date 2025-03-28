@@ -21,10 +21,12 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
   const { user } = useAuth();
 
   const fetchJoinedClubsCallback = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) return { joinedClubs: [], joinedClubIds: [] };
     
     try {
       console.log("Fetching joined clubs for user:", userId);
+      setState(prev => ({ ...prev, isLoadingClubs: true }));
+      
       const result = await fetchJoinedClubs(userId, toast);
       console.log("Fetched joined clubs:", result.joinedClubs);
       console.log("Fetched joined club IDs:", result.joinedClubIds);
@@ -32,7 +34,8 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       setState(prev => ({
         ...prev,
         joinedClubs: result.joinedClubs,
-        joinedClubIds: result.joinedClubIds
+        joinedClubIds: result.joinedClubIds,
+        isLoadingClubs: false
       }));
       
       return result;
@@ -40,7 +43,8 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       console.error('Error fetching joined clubs:', error);
       setState(prev => ({
         ...prev,
-        error: error?.message || 'Failed to fetch joined clubs'
+        error: error?.message || 'Failed to fetch joined clubs',
+        isLoadingClubs: false
       }));
       return { joinedClubs: [], joinedClubIds: [] };
     }
@@ -78,14 +82,23 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
 
   const handleJoinClub = async (clubId: string) => {
     try {
-      await joinClub(userId!, clubId, toast, { onSuccess });
+      console.log(`Starting join club process for club ${clubId}`);
       
-      // After successfully joining, refresh joined clubs
-      await fetchJoinedClubsCallback();
+      // Define a callback for when the join is successful
+      const handleJoinSuccess = async () => {
+        console.log(`Join club success callback triggered for club ${clubId}`);
+        if (onSuccess) onSuccess();
+        
+        // Refresh the joined clubs immediately
+        await fetchJoinedClubsCallback();
+      };
       
-      // Also update local state for immediate UI feedback
+      await joinClub(userId!, clubId, toast, { onSuccess: handleJoinSuccess });
+      
+      // Immediately update UI before database refresh completes
       const clubToAdd = state.clubs.find(c => c.id === clubId);
       if (clubToAdd) {
+        console.log(`Updating local state for joined club ${clubId}`);
         setState(prev => ({
           ...prev,
           joinedClubs: [...prev.joinedClubs, clubToAdd],
@@ -104,7 +117,18 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
 
   const handleLeaveClub = async (clubId: string) => {
     try {
-      await leaveClub(userId, clubId, toast, { onSuccess });
+      console.log(`Starting leave club process for club ${clubId}`);
+      
+      // Define a callback for when the leave is successful
+      const handleLeaveSuccess = async () => {
+        console.log(`Leave club success callback triggered for club ${clubId}`);
+        if (onSuccess) onSuccess();
+        
+        // Refresh the joined clubs immediately
+        await fetchJoinedClubsCallback();
+      };
+      
+      await leaveClub(userId, clubId, toast, { onSuccess: handleLeaveSuccess });
       
       // Immediately update local state for UI
       setState(prev => ({
@@ -112,9 +136,6 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
         joinedClubs: prev.joinedClubs.filter(club => club.id !== clubId),
         joinedClubIds: prev.joinedClubIds.filter(id => id !== clubId)
       }));
-      
-      // Fetch joined clubs to ensure UI is in sync with DB
-      await fetchJoinedClubsCallback();
     } catch (error: any) {
       console.error('Error in handleLeaveClub:', error);
       setState(prev => ({
@@ -146,6 +167,7 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
     error: state.error,
     fetchClubs,
     joinClub: handleJoinClub,
-    leaveClub: handleLeaveClub
+    leaveClub: handleLeaveClub,
+    refreshJoinedClubs: fetchJoinedClubsCallback
   };
 };

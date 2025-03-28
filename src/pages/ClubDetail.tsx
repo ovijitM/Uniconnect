@@ -40,8 +40,9 @@ const ClubDetailPage: React.FC = () => {
     isAdmin,
     isClubAdmin,
     handleJoinClub,
+    checkMembership,
     error
-  } = useClubDetail(clubId); // Pass clubId explicitly to useClubDetail
+  } = useClubDetail(clubId);
 
   const {
     incomingRequests,
@@ -58,8 +59,17 @@ const ClubDetailPage: React.FC = () => {
     isLoading, 
     clubExists: !!club, 
     memberCount: club?.memberCount,
+    isMember,
     error: error ? { message: error.message, name: error.name } : null 
   });
+
+  // Refresh membership status when club ID changes or when page loads
+  useEffect(() => {
+    if (clubId && checkMembership) {
+      console.log(`Checking membership status for club ${clubId} on page load/change`);
+      checkMembership();
+    }
+  }, [clubId, checkMembership]);
 
   const handleRetry = () => {
     // Force page refresh

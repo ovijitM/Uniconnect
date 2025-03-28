@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,34 +16,39 @@ export const useClubMembership = (
   const { toast } = useToast();
   const { user } = useAuth();
 
-  useEffect(() => {
-    async function checkMembership() {
-      if (!user || !clubId) return;
-      
-      try {
-        console.log(`Checking membership for user ${user.id} in club ${clubId}`);
-        
-        const { data: membershipData, error: membershipError } = await supabase
-          .from('club_members')
-          .select('*')
-          .eq('club_id', clubId)
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        const isUserMember = !!membershipData;
-        console.log(`User membership status for club ${clubId}: ${isUserMember ? 'Member' : 'Not member'}`);
-        setIsMember(isUserMember);
-        
-        if (membershipError && membershipError.code !== 'PGRST116') { // PGRST116 means no rows returned
-          console.error('Error checking membership:', membershipError);
-        }
-      } catch (error) {
-        console.error('Error in checkMembership:', error);
-      }
-    }
+  // Create a memoized membership checking function
+  const checkMembership = useCallback(async () => {
+    if (!user || !clubId) return false;
     
-    checkMembership();
+    try {
+      console.log(`Checking membership for user ${user.id} in club ${clubId}`);
+      
+      const { data: membershipData, error: membershipError } = await supabase
+        .from('club_members')
+        .select('*')
+        .eq('club_id', clubId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      const isUserMember = !!membershipData;
+      console.log(`User membership status for club ${clubId}: ${isUserMember ? 'Member' : 'Not member'}`);
+      setIsMember(isUserMember);
+      
+      if (membershipError && membershipError.code !== 'PGRST116') { // PGRST116 means no rows returned
+        console.error('Error checking membership:', membershipError);
+      }
+      
+      return isUserMember;
+    } catch (error) {
+      console.error('Error in checkMembership:', error);
+      return false;
+    }
   }, [user, clubId]);
+
+  // Check membership on component mount and when dependencies change
+  useEffect(() => {
+    checkMembership();
+  }, [checkMembership]);
 
   const handleJoinClub = async () => {
     try {
@@ -79,19 +84,9 @@ export const useClubMembership = (
       }
       
       // Check if already a member
-      const { data: existing, error: checkError } = await supabase
-        .from('club_members')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('club_id', clubId)
-        .maybeSingle();
+      const isMemberNow = await checkMembership();
       
-      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
-        console.error('Error checking existing membership:', checkError);
-        throw checkError;
-      }
-      
-      if (existing) {
+      if (isMemberNow) {
         toast({
           title: "Already a member",
           description: "You're already a member of this club",
@@ -157,12 +152,16 @@ export const useClubMembership = (
       });
     } finally {
       setIsJoining(false);
+      
+      // Recheck membership status after join attempt
+      checkMembership();
     }
   };
 
   return {
     isMember,
     isJoining,
-    handleJoinClub
+    handleJoinClub,
+    checkMembership
   };
 };

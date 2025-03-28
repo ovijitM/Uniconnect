@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Calendar, Mail, ExternalLink, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,11 @@ const ClubSidebar: React.FC<ClubSidebarProps> = ({
 }) => {
   
   console.log("ClubSidebar rendered with isMember:", isMember);
+  
+  // Log membership status changes for debugging
+  useEffect(() => {
+    console.log(`Membership status for club ${club.id} changed to: ${isMember ? 'Member' : 'Not a member'}`);
+  }, [isMember, club.id]);
   
   const renderJoinButton = () => {
     if (club.status === 'approved') {
