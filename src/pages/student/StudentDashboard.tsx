@@ -12,6 +12,10 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Create a client
+const queryClient = new QueryClient();
 
 const StudentDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -128,17 +132,19 @@ const StudentDashboard: React.FC = () => {
   };
 
   return (
-    <DashboardLayout sidebar={<StudentSidebar />}>
-      <ErrorBoundary
-        onReset={() => {
-          if (refreshData) refreshData();
-        }}
-      >
-        <div className="container max-w-full px-0">
-          {renderContent()}
-        </div>
-      </ErrorBoundary>
-    </DashboardLayout>
+    <QueryClientProvider client={queryClient}>
+      <DashboardLayout sidebar={<StudentSidebar />}>
+        <ErrorBoundary
+          onReset={() => {
+            if (refreshData) refreshData();
+          }}
+        >
+          <div className="container max-w-full px-0">
+            {renderContent()}
+          </div>
+        </ErrorBoundary>
+      </DashboardLayout>
+    </QueryClientProvider>
   );
 };
 
