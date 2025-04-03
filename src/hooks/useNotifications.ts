@@ -2,8 +2,17 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+interface Notification {
+  id: string;
+  title: string;
+  content: string;
+  read: boolean;
+  created_at: string;
+  user_id: string;
+}
+
 export const useNotifications = (userId: string | undefined) => {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +64,7 @@ export const useNotifications = (userId: string | undefined) => {
         filter: `user_id=eq.${userId}`
       }, (payload) => {
         // Add the new notification to state
-        setNotifications(current => [payload.new, ...current]);
+        setNotifications(current => [payload.new as Notification, ...current]);
         setUnreadCount(count => count + 1);
       })
       .subscribe();

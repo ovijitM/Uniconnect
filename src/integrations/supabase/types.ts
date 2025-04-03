@@ -170,6 +170,44 @@ export type Database = {
           },
         ]
       }
+      club_posts: {
+        Row: {
+          club_id: string | null
+          comments_count: number
+          content: string
+          created_at: string
+          id: string
+          likes_count: number
+          user_id: string | null
+        }
+        Insert: {
+          club_id?: string | null
+          comments_count?: number
+          content: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+          user_id?: string | null
+        }
+        Update: {
+          club_id?: string | null
+          comments_count?: number
+          content?: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_posts_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clubs: {
         Row: {
           affiliation: string | null
@@ -507,6 +545,35 @@ export type Database = {
           },
         ]
       }
+      post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "club_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -575,11 +642,44 @@ export type Database = {
         }
         Relationships: []
       }
+      user_notifications: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      decrement_post_likes: {
+        Args: {
+          post_id: string
+        }
+        Returns: undefined
+      }
       get_event_avg_rating: {
         Args: {
           event_id: string
@@ -591,6 +691,12 @@ export type Database = {
           user_id: string
         }
         Returns: Database["public"]["Enums"]["user_role"]
+      }
+      increment_post_likes: {
+        Args: {
+          post_id: string
+        }
+        Returns: undefined
       }
       insert_club: {
         Args: {

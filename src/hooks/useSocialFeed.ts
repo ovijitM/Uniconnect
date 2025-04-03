@@ -3,8 +3,27 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+interface Post {
+  id: string;
+  content: string;
+  created_at: string;
+  club_id: string;
+  user_id: string;
+  likes_count: number;
+  comments_count: number;
+  clubs?: {
+    name: string;
+    logo_url: string | null;
+  };
+  user?: {
+    id: string;
+    name: string;
+    avatar_url: string | null;
+  };
+}
+
 export const useSocialFeed = (userId: string | undefined) => {
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
