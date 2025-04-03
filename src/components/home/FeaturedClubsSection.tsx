@@ -26,7 +26,7 @@ const FeaturedClubsSection: React.FC<FeaturedClubsSectionProps> = ({
     return (
       <div className="space-y-4">
         <h2 className="text-2xl font-bold mb-6">Featured Clubs</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="border rounded-lg overflow-hidden">
               <Skeleton className="h-40 w-full" />
@@ -44,7 +44,7 @@ const FeaturedClubsSection: React.FC<FeaturedClubsSectionProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-2">
         <h2 className="text-2xl font-bold">Featured Clubs</h2>
         <Button 
           variant="ghost" 
@@ -56,7 +56,7 @@ const FeaturedClubsSection: React.FC<FeaturedClubsSectionProps> = ({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {clubs.map(club => (
           <ClubCard 
             key={club.id} 

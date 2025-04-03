@@ -12,7 +12,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       <motion.main 
-        className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+        className="flex-1 w-full max-w-full mx-auto"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
@@ -20,8 +20,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {children}
       </motion.main>
       <footer className="border-t border-border mt-16">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="max-w-7xl mx-auto py-8 md:py-12 px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="col-span-1 md:col-span-2">
               <h3 className="text-lg font-semibold mb-4">University Clubs Platform</h3>
               <p className="text-muted-foreground mb-4 max-w-md">

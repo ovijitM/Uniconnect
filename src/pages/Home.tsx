@@ -63,13 +63,15 @@ const Home = () => {
 
   return (
     <Layout>
-      <div className="flex flex-col gap-16 py-8">
+      <div className="flex flex-col gap-8 md:gap-16 py-4 md:py-8">
         <HeroSection />
         
-        <FeaturedEventSection 
-          featuredEvent={featuredEvent} 
-          isLoading={isLoading} 
-        />
+        <div className="container px-4 mx-auto">
+          <FeaturedEventSection 
+            featuredEvent={featuredEvent} 
+            isLoading={isLoading} 
+          />
+        </div>
         
         {/* Only show recommendations for logged in users */}
         {user && (
@@ -92,7 +94,7 @@ const Home = () => {
           />
         </div>
         
-        <div className="bg-gray-50 dark:bg-gray-900 py-16">
+        <div className="bg-gray-50 dark:bg-gray-900 py-12 md:py-16">
           <div className="container px-4 mx-auto">
             <PopularCategoriesSection 
               categories={categories} 

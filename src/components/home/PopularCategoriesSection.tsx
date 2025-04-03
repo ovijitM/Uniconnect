@@ -52,7 +52,7 @@ const PopularCategoriesSection: React.FC<PopularCategoriesSectionProps> = ({
     return (
       <div className="bg-card rounded-xl p-6 border">
         <Skeleton className="h-8 w-48 mb-4" />
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[...Array(8)].map((_, i) => (
             <Skeleton key={i} className="h-12 w-full rounded-md" />
           ))}
@@ -77,9 +77,9 @@ const PopularCategoriesSection: React.FC<PopularCategoriesSectionProps> = ({
       )].slice(0, 10);
 
   return (
-    <div className="bg-card rounded-xl p-6 border">
+    <div className="bg-card rounded-xl p-4 sm:p-6 border">
       <h2 className="text-xl font-semibold mb-4">Popular Categories</h2>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {displayCategories.map((category, index) => {
           const icon = categoryIcons[category.toLowerCase()] || <Globe className="h-5 w-5" />;
           

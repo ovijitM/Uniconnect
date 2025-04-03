@@ -37,9 +37,9 @@ const ClubCard: React.FC<ClubCardProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-      className="rounded-lg overflow-hidden bg-card border shadow-sm hover:shadow-md transition-all duration-300"
+      className="rounded-lg overflow-hidden bg-card border shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col"
     >
-      <div className="h-48 relative">
+      <div className="h-36 sm:h-48 relative">
         {club.logoUrl ? (
           <img
             src={club.logoUrl}
@@ -62,19 +62,19 @@ const ClubCard: React.FC<ClubCardProps> = ({
         </Badge>
       </div>
       
-      <div className="p-4">
+      <div className="p-4 flex-1 flex flex-col">
         {hasValidId ? (
           <Link 
             to={`/clubs/${club.id}`} 
             className="block hover:text-primary transition-colors"
             onClick={() => console.log("Navigating to club detail:", `/clubs/${club.id}`)}
           >
-            <h3 className="font-semibold text-lg mb-1 hover:text-primary transition-colors">
+            <h3 className="font-semibold text-lg mb-1 hover:text-primary transition-colors line-clamp-1">
               {club.name}
             </h3>
           </Link>
         ) : (
-          <h3 className="font-semibold text-lg mb-1 text-muted-foreground">
+          <h3 className="font-semibold text-lg mb-1 text-muted-foreground line-clamp-1">
             {club.name}
           </h3>
         )}
@@ -83,15 +83,15 @@ const ClubCard: React.FC<ClubCardProps> = ({
           {club.description}
         </p>
         
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3 mt-auto">
           <div className="flex items-center gap-1">
             <Users className="h-3 w-3" />
             <span>{club.memberCount || 0} members</span>
           </div>
           
           {club.university && (
-            <div className="flex items-center gap-1">
-              <span>{club.university}</span>
+            <div className="flex items-center gap-1 max-w-[50%] truncate">
+              <span className="truncate">{club.university}</span>
             </div>
           )}
         </div>

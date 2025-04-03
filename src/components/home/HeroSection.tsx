@@ -22,7 +22,7 @@ const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600"
           >
             Connect, Collaborate, Create with University Clubs
           </motion.h1>
@@ -31,7 +31,7 @@ const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl"
+            className="text-base md:text-lg lg:text-xl text-muted-foreground mb-6 md:mb-8 max-w-2xl px-4"
           >
             Discover exciting events, join thriving communities, and make the most of your university experience through campus clubs and organizations.
           </motion.p>
@@ -40,7 +40,7 @@ const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
-            className="flex flex-col md:flex-row gap-4 w-full max-w-2xl mb-8"
+            className="flex flex-col sm:flex-row gap-4 w-full max-w-2xl mb-6 md:mb-8 px-4"
           >
             <div className="relative flex-grow">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
@@ -49,7 +49,7 @@ const HeroSection: React.FC = () => {
                 className="pl-10 h-12 w-full"
               />
             </div>
-            <Button size="lg" className="h-12">
+            <Button size="lg" className="h-12 whitespace-nowrap">
               Find Events
             </Button>
           </motion.div>
@@ -58,7 +58,7 @@ const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.8 }}
-            className="flex flex-wrap justify-center gap-8 mb-8"
+            className="flex flex-wrap justify-center gap-4 sm:gap-8 mb-6 md:mb-8"
           >
             <div className="flex items-center">
               <Calendar className="text-primary mr-2 h-5 w-5" />
@@ -77,13 +77,13 @@ const HeroSection: React.FC = () => {
             className="flex flex-col sm:flex-row gap-4"
           >
             <Link to="/events">
-              <Button size="lg" className="group">
+              <Button size="lg" className="group w-full sm:w-auto">
                 Browse Events
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
             <Link to="/clubs">
-              <Button variant="outline" size="lg" className="group">
+              <Button variant="outline" size="lg" className="group w-full sm:w-auto">
                 Explore Clubs
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
