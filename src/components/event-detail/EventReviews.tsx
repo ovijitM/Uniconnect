@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useEventReviews } from '@/hooks/event-detail/useEventReviews';
+import useEventReviews from '@/hooks/event-detail/useEventReviews';
 import { useAuth } from '@/contexts/AuthContext';
 import EventReviewForm from './EventReviewForm';
 import EventReviewsList from './EventReviewsList';

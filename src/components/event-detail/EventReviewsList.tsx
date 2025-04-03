@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { EventReview } from '@/hooks/event-detail/useEventReviews';
+import { EventReview } from '@/hooks/event-detail/types/reviewTypes';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { ReviewsListContent } from './reviews';
 

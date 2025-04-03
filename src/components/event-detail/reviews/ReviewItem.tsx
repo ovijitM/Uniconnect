@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { EventReview } from '@/hooks/event-detail/useEventReviews';
+import { EventReview } from '@/hooks/event-detail/types/reviewTypes';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import { StarRating } from '@/components/ui/star-rating';

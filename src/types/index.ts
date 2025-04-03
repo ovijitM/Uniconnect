@@ -125,3 +125,5 @@ export interface University {
   description?: string;
   createdAt: string;
 }
+
+export type { EventReview } from '@/hooks/event-detail/types/reviewTypes';

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { EventReview } from '@/hooks/event-detail/useEventReviews';
+import { EventReview } from '@/hooks/event-detail/types/reviewTypes';
 import { StarRating } from '@/components/ui/star-rating';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';

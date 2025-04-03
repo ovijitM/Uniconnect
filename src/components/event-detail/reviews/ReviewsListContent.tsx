@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { EventReview } from '@/hooks/event-detail/useEventReviews';
+import { EventReview } from '@/hooks/event-detail/types/reviewTypes';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import ReviewItem from './ReviewItem';
