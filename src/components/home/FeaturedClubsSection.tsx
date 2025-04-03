@@ -1,55 +1,71 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
 import { Club } from '@/types';
-import { Button } from '@/components/ui/button';
-import ClubCard from '@/components/ClubCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import ClubCard from '@/components/ClubCard';
+import { ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface FeaturedClubsSectionProps {
   clubs: Club[];
   isLoading: boolean;
+  onJoinClub?: (clubId: string) => Promise<void>;
+  joinedClubIds?: string[];
 }
 
-const FeaturedClubsSection: React.FC<FeaturedClubsSectionProps> = ({ clubs, isLoading }) => {
-  // Filter out only approved clubs and add logging
-  const approvedClubs = clubs.filter(club => club.status === 'approved');
-  
-  console.log("FeaturedClubsSection - Total clubs:", clubs.length);
-  console.log("FeaturedClubsSection - Approved clubs:", approvedClubs.length);
-  console.log("FeaturedClubsSection - Club IDs:", approvedClubs.map(c => c.id));
+const FeaturedClubsSection: React.FC<FeaturedClubsSectionProps> = ({ 
+  clubs, 
+  isLoading,
+  onJoinClub,
+  joinedClubIds = []
+}) => {
+  const navigate = useNavigate();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold mb-6">Featured Clubs</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="border rounded-lg overflow-hidden">
+              <Skeleton className="h-40 w-full" />
+              <div className="p-4 space-y-2">
+                <Skeleton className="h-6 w-2/3" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-medium">Featured Clubs</h2>
-        <Link to="/clubs">
-          <Button variant="ghost" className="group">
-            View All
-            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Button>
-        </Link>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Featured Clubs</h2>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate('/clubs')}
+          className="text-sm font-medium"
+        >
+          View All <ArrowRight className="ml-1 h-4 w-4" />
+        </Button>
       </div>
-      
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-48 w-full rounded-xl" />
-          ))}
-        </div>
-      ) : approvedClubs.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {approvedClubs.slice(0, 4).map((club, index) => (
-            <ClubCard key={club.id} club={club} index={index} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-8 bg-secondary/30 rounded-xl">
-          <h3 className="text-lg font-medium mb-2">No clubs available</h3>
-          <p className="text-muted-foreground">Check back later for new clubs.</p>
-        </div>
-      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {clubs.map(club => (
+          <ClubCard 
+            key={club.id} 
+            club={club}
+            onJoin={onJoinClub}
+            isJoined={joinedClubIds.includes(club.id)}
+          />
+        ))}
+      </div>
     </div>
   );
 };

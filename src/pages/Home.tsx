@@ -3,57 +3,111 @@ import React, { useEffect } from 'react';
 import Layout from '@/components/Layout';
 import HeroSection from '@/components/home/HeroSection';
 import FeaturedEventSection from '@/components/home/FeaturedEventSection';
-import UpcomingEventsSection from '@/components/home/UpcomingEventsSection';
 import FeaturedClubsSection from '@/components/home/FeaturedClubsSection';
 import PopularCategoriesSection from '@/components/home/PopularCategoriesSection';
+import UpcomingEventsSection from '@/components/home/UpcomingEventsSection';
 import CallToActionSection from '@/components/home/CallToActionSection';
+import RecommendedClubsSection from '@/components/home/RecommendedClubsSection';
 import { useHomePageData } from '@/hooks/useHomePageData';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { useStudentClubs } from '@/hooks/student/useStudentClubs';
+import { useClubRecommendations } from '@/hooks/student/useClubRecommendations';
+import { joinClub } from '@/hooks/student/utils/clubMembershipActions';
+import { useToast } from '@/hooks/use-toast';
 
-const Home: React.FC = () => {
-  const { events, clubs, featuredEvent, isLoading } = useHomePageData();
+const Home = () => {
+  const { isLoading, featuredEvent, featuredClubs, categories, upcomingEvents } = useHomePageData();
   const { user } = useAuth();
+  const { toast } = useToast();
   
-  // Log home page data for debugging
-  useEffect(() => {
-    console.log("Home page rendered with:", {
-      eventsCount: events.length,
-      clubsCount: clubs.length,
-      hasFeaturedEvent: !!featuredEvent,
-      isLoading
-    });
-  }, [events, clubs, featuredEvent, isLoading]);
+  // Only fetch joined clubs if user is logged in
+  const { 
+    joinedClubs, 
+    joinedClubIds, 
+    fetchClubs 
+  } = useStudentClubs(user?.id);
+  
+  // Get personalized recommendations
+  const { 
+    recommendations, 
+    isLoading: isLoadingRecommendations 
+  } = useClubRecommendations(joinedClubIds);
 
-  // Redirect logged in users to their appropriate dashboard
-  if (user) {
-    const dashboardRoute = 
-      user.role === 'admin' ? '/admin-dashboard' :
-      user.role === 'club_admin' ? '/club-admin-dashboard' :
-      user.role === 'student' ? '/student-dashboard' : null;
-      
-    if (dashboardRoute) {
-      console.log(`Redirecting ${user.role} to ${dashboardRoute}`);
-      return <Navigate to={dashboardRoute} />;
+  // Handle joining a club
+  const handleJoinClub = async (clubId: string) => {
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please log in to join clubs',
+        variant: 'destructive',
+      });
+      return;
     }
-  }
+
+    try {
+      await joinClub(user.id, clubId, toast, {
+        onSuccess: () => {
+          // Refresh the clubs data after joining
+          fetchClubs();
+        }
+      });
+    } catch (error: any) {
+      console.error('Error joining club:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to join club',
+        variant: 'destructive',
+      });
+    }
+  };
 
   return (
     <Layout>
-      <div className="space-y-16 py-6">
+      <div className="flex flex-col gap-16 py-8">
         <HeroSection />
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <FeaturedEventSection featuredEvent={featuredEvent} isLoading={isLoading} />
+        <FeaturedEventSection 
+          event={featuredEvent} 
+          isLoading={isLoading} 
+        />
+        
+        {/* Only show recommendations for logged in users */}
+        {user && (
+          <div className="container px-4 mx-auto">
+            <RecommendedClubsSection
+              recommendations={recommendations}
+              isLoading={isLoadingRecommendations}
+              onJoinClub={handleJoinClub}
+              joinedClubIds={joinedClubIds}
+            />
           </div>
-          <div className="lg:col-span-1">
-            <PopularCategoriesSection categories={clubs.map(club => club.category)} />
+        )}
+        
+        <div className="container px-4 mx-auto">
+          <FeaturedClubsSection 
+            clubs={featuredClubs} 
+            isLoading={isLoading}
+            onJoinClub={handleJoinClub}
+            joinedClubIds={joinedClubIds}
+          />
+        </div>
+        
+        <div className="bg-gray-50 dark:bg-gray-900 py-16">
+          <div className="container px-4 mx-auto">
+            <PopularCategoriesSection 
+              categories={categories} 
+              isLoading={isLoading} 
+            />
           </div>
         </div>
         
-        <UpcomingEventsSection events={events} isLoading={isLoading} />
-        <FeaturedClubsSection clubs={clubs} isLoading={isLoading} />
+        <div className="container px-4 mx-auto">
+          <UpcomingEventsSection 
+            events={upcomingEvents} 
+            isLoading={isLoading} 
+          />
+        </div>
+        
         <CallToActionSection />
       </div>
     </Layout>
