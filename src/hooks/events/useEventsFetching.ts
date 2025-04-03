@@ -6,7 +6,7 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
   try {
     console.log("Fetching events, user university:", userUniversity);
     
-    // Start with the basic query - simplified for maximum visibility
+    // Start with the basic query
     let eventsQuery = supabase
       .from('events')
       .select(`
@@ -18,17 +18,15 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
         )
       `);
     
-    // Temporarily disable university filtering to diagnose
-    // Just fetch all events to see if we get data
-    /*
+    // Apply visibility filters correctly
     if (userUniversity) {
       console.log("Filtering events by university:", userUniversity);
+      // Using the proper filter syntax with .or() and nested conditions
       eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
     } else {
       console.log("No university, fetching public events only");
       eventsQuery = eventsQuery.eq('visibility', 'public');
     }
-    */
     
     const { data, error } = await eventsQuery.order('date', { ascending: true });
     

@@ -23,18 +23,18 @@ const Home = () => {
   const { 
     joinedClubs, 
     joinedClubIds, 
-    fetchClubs,
+    fetchClubs: refreshJoinedClubs,
     isLoadingClubs
   } = useStudentClubs(user?.id);
   
-  // Get personalized recommendations - moved outside of component to avoid hook ordering issues
+  // Get personalized recommendations
   const [recommendations, setRecommendations] = React.useState([]);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = React.useState(false);
   
   // Fetch recommendations when joinedClubIds changes
   useEffect(() => {
     const fetchRecommendations = async () => {
-      if (!joinedClubIds || joinedClubIds.length === 0) {
+      if (!user || !joinedClubIds) {
         setRecommendations([]);
         return;
       }
@@ -43,7 +43,10 @@ const Home = () => {
       try {
         // This would be replaced with actual recommendation logic
         // For now, just use clubs that aren't already joined
-        const recommendedClubs = clubs.filter(club => !joinedClubIds.includes(club.id)).slice(0, 3);
+        const recommendedClubs = clubs
+          .filter(club => !joinedClubIds.includes(club.id))
+          .slice(0, 3);
+        
         setRecommendations(recommendedClubs);
       } catch (error) {
         console.error("Error fetching recommendations:", error);
@@ -52,8 +55,10 @@ const Home = () => {
       }
     };
     
-    fetchRecommendations();
-  }, [joinedClubIds, clubs]);
+    if (clubs.length > 0) {
+      fetchRecommendations();
+    }
+  }, [joinedClubIds, clubs, user]);
 
   // Handle joining a club
   const handleJoinClub = async (clubId: string) => {
@@ -71,7 +76,7 @@ const Home = () => {
         onSuccess: () => {
           // Refresh the clubs data after joining
           console.log("Club join successful, refreshing clubs data");
-          fetchClubs();
+          refreshJoinedClubs();
         }
       });
     } catch (error: any) {
@@ -103,7 +108,7 @@ const Home = () => {
               recommendations={recommendations}
               isLoading={isLoadingRecommendations}
               onJoinClub={handleJoinClub}
-              joinedClubIds={joinedClubIds}
+              joinedClubIds={joinedClubIds || []}
             />
           </div>
         )}
@@ -113,7 +118,7 @@ const Home = () => {
             clubs={featuredClubs} 
             isLoading={isLoading}
             onJoinClub={handleJoinClub}
-            joinedClubIds={joinedClubIds}
+            joinedClubIds={joinedClubIds || []}
           />
         </div>
         

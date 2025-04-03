@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { JoinClubOptions, LeaveClubOptions } from '../types/studentClubTypes';
@@ -50,7 +49,7 @@ export const joinClub = async (
       return true;
     }
     
-    // Join the club - ensure we're inserting with correct user_id
+    // Join the club
     const { error } = await supabase
       .from('club_members')
       .insert({
