@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Event, Club, EventStatus } from '@/types';
@@ -116,9 +115,17 @@ export const useHomePageData = () => {
         
         // Fetch events with proper club details
         console.log("Fetching events...");
-        const { data: eventsData, error: eventsError } = await supabase
+        const eventsQuery = supabase
           .from('events')
           .select('*, clubs:club_id(*)');
+        
+        if (userUniversity) {
+          eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq."${userUniversity}")`);
+        } else {
+          eventsQuery = eventsQuery.eq('visibility', 'public');
+        }
+        
+        const { data: eventsData, error: eventsError } = await eventsQuery;
         
         if (eventsError) {
           console.error("Error fetching events:", eventsError);

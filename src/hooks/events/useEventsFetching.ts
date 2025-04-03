@@ -18,11 +18,11 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
         )
       `);
     
-    // Apply visibility filters correctly
+    // Apply visibility filters correctly with proper Supabase filter syntax
     if (userUniversity) {
       console.log("Filtering events by university:", userUniversity);
-      // Using the proper filter syntax with .or() and nested conditions
-      eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
+      // Use proper Supabase filter syntax
+      eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq."${userUniversity}")`);
     } else {
       console.log("No university, fetching public events only");
       eventsQuery = eventsQuery.eq('visibility', 'public');

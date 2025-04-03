@@ -65,12 +65,12 @@ export const fetchUpcomingEvents = async (userUniversity: string | null | undefi
     `)
     .eq('status', 'upcoming');
     
-  // Apply visibility filtering based on user's university
+  // Apply visibility filtering based on user's university with proper syntax
   if (userUniversity) {
     console.log("Filtering events by university:", userUniversity);
     
-    // Fixed OR syntax for Supabase
-    eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
+    // Use proper Supabase OR syntax with quoted university name
+    eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq."${userUniversity}")`);
   } else {
     console.log("No university, fetching public events only");
     eventsQuery = eventsQuery.eq('visibility', 'public');
