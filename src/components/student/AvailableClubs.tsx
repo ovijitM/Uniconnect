@@ -52,9 +52,10 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
     
     setJoiningClubId(clubId);
     try {
-      await onJoinClub(clubId);
-      // Add to local state immediately for UI feedback
+      // Optimistically update UI
       setLocalJoinedIds(prev => [...prev, clubId]);
+      
+      await onJoinClub(clubId);
       
       toast({
         title: "Success",
@@ -63,6 +64,9 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
       });
     } catch (error: any) {
       console.error('Error joining club:', error);
+      // Revert optimistic update on error
+      setLocalJoinedIds(prev => prev.filter(id => id !== clubId));
+      
       toast({
         title: "Failed to join club",
         description: error.message || "Please try again later",

@@ -133,7 +133,7 @@ export const useClubMembership = (
           if (!prev) return null;
           return {
             ...prev,
-            memberCount: prev.memberCount + 1
+            memberCount: (prev.memberCount || 0) + 1
           };
         });
         
