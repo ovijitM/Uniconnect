@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { EventReview } from './types/reviewTypes';
 import { 
   fetchReviewsWithProfiles, 
   checkExistingReview, 
@@ -10,7 +11,6 @@ import {
 } from './utils/review/fetchReviews';
 import { submitNewReview } from './utils/review/submitReviews';
 import { deleteUserReview } from './utils/review/deleteReviews';
-import { EventReview } from './types/reviewTypes';
 
 interface UseEventReviewsProps {
   eventId: string;
@@ -31,6 +31,8 @@ export interface EventReviewsResult {
   error: string | null;
   fetchReviews: () => Promise<void>;
   changePage: (page: number) => void;
+  submitReview: (rating: number, reviewText: string) => Promise<boolean>;
+  deleteReview: () => Promise<void>;
 }
 
 const REVIEWS_PER_PAGE = 5;
@@ -91,7 +93,8 @@ const useEventReviews = (eventId: string): EventReviewsResult => {
     loadReviews();
   }, [eventId, currentPage, user?.id]);
 
-  const submitReview = async (rating: number, reviewText: string) => {
+  // Fix parameter order to match interface definition
+  const addReview = async (comment: string, rating: number) => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -103,7 +106,7 @@ const useEventReviews = (eventId: string): EventReviewsResult => {
 
     setIsSubmitting(true);
     try {
-      await submitNewReview(eventId, user.id, rating, reviewText);
+      await submitNewReview(eventId, user.id, rating, comment);
       toast({
         title: "Review submitted",
         description: "Your review has been successfully submitted.",
@@ -127,26 +130,21 @@ const useEventReviews = (eventId: string): EventReviewsResult => {
     }
   };
 
-  const deleteReview = async () => {
-    if (!userReview) {
-      toast({
-        title: "No review found",
-        description: "You don't have a review to delete.",
-        variant: "destructive",
-      });
-      return;
-    }
+  // Implementation for submitReview that uses the same signature as EventReviewForm expects
+  const submitReview = async (rating: number, reviewText: string) => {
+    return addReview(reviewText, rating);
+  };
 
+  const removeReview = async (reviewId: string) => {
     setIsSubmitting(true);
     try {
-      await deleteUserReview(userReview.id);
+      await deleteUserReview(reviewId);
       toast({
         title: "Review deleted",
         description: "Your review has been successfully deleted.",
       });
       
       // Refresh reviews after deletion
-      setUserReview(null);
       await loadReviews();
     } catch (error: any) {
       console.error("Error deleting review:", error);
@@ -160,6 +158,21 @@ const useEventReviews = (eventId: string): EventReviewsResult => {
     }
   };
 
+  // Convenience method that wraps removeReview for the current user's review
+  const deleteReview = async () => {
+    if (!userReview) {
+      toast({
+        title: "No review found",
+        description: "You don't have a review to delete.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await removeReview(userReview.id);
+    setUserReview(null);
+  };
+
   const changePage = (page: number) => {
     setCurrentPage(page);
   };
@@ -167,8 +180,8 @@ const useEventReviews = (eventId: string): EventReviewsResult => {
   return {
     reviews,
     isLoading,
-    addReview: submitReview,
-    removeReview: deleteReview,
+    addReview,
+    removeReview,
     reloadReviews: loadReviews,
     averageRating,
     userReview,
@@ -178,7 +191,9 @@ const useEventReviews = (eventId: string): EventReviewsResult => {
     totalReviews,
     error,
     fetchReviews: loadReviews,
-    changePage
+    changePage,
+    submitReview,
+    deleteReview
   };
 };
 
