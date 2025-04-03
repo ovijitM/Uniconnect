@@ -55,15 +55,18 @@ export const useSocialFeed = (userId: string | undefined) => {
         
         const clubIds = clubData.map(item => item.club_id);
         
-        // Use raw SQL for more complex queries
-        const { data: postsData, error: postsError } = await supabase
-          .rpc('get_club_posts_with_details', { user_club_ids: clubIds })
-          .limit(10);
+        // Use Edge Function to get posts with details
+        const { data: postsData, error: postsError } = await supabase.functions.invoke(
+          'get_club_posts_with_details',
+          {
+            body: { clubIds }
+          }
+        );
         
         if (postsError) {
-          // Fallback to a simpler query if the RPC fails
-          console.error('Fallback to direct query due to RPC error:', postsError);
+          console.error('Error fetching posts from edge function:', postsError);
           
+          // Fallback to a simpler query if the edge function fails
           const { data: fallbackData, error: fallbackError } = await supabase
             .from('club_posts')
             .select(`
@@ -82,7 +85,12 @@ export const useSocialFeed = (userId: string | undefined) => {
           if (fallbackError) throw fallbackError;
           setPosts(fallbackData as Post[] || []);
         } else {
-          setPosts(postsData as Post[] || []);
+          if (postsData && Array.isArray(postsData.data)) {
+            setPosts(postsData.data as Post[]);
+          } else {
+            console.error('Invalid data format from edge function:', postsData);
+            setPosts([]);
+          }
         }
       } catch (err: any) {
         console.error('Error fetching social feed:', err);
@@ -123,34 +131,15 @@ export const createPost = async (userId: string, content: string) => {
   
   const clubId = clubData[0].club_id;
   
-  // Create post using direct SQL
-  const { data, error } = await supabase
-    .rpc('create_post', {
-      p_user_id: userId,
-      p_club_id: clubId,
-      p_content: content
-    });
+  // Use the Edge Function to create the post
+  const { data, error } = await supabase.functions.invoke(
+    'create_post',
+    {
+      body: { userId, clubId, content }
+    }
+  );
   
-  if (error) {
-    // Fallback to direct insert if RPC fails
-    console.error('Fallback to direct insert due to RPC error:', error);
-    
-    const { data: fallbackData, error: fallbackError } = await supabase
-      .from('club_posts')
-      .insert([
-        {
-          user_id: userId,
-          club_id: clubId,
-          content,
-          likes_count: 0,
-          comments_count: 0
-        }
-      ]);
-    
-    if (fallbackError) throw fallbackError;
-    return fallbackData;
-  }
-  
+  if (error) throw error;
   return data;
 };
 
@@ -160,64 +149,17 @@ export const likePost = async (userId: string, postId: string) => {
   }
   
   try {
-    // Use RPC for atomic operations
-    const { data, error } = await supabase
-      .rpc('toggle_post_like', {
-        p_user_id: userId,
-        p_post_id: postId
-      });
-    
-    if (error) {
-      // Fallback if RPC is not available
-      console.error('RPC error, using fallback:', error);
-      
-      // Check if user already liked this post
-      const { data: likeData, error: likeCheckError } = await supabase
-        .from('post_likes')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('post_id', postId);
-      
-      if (likeCheckError) throw likeCheckError;
-      
-      if (likeData && likeData.length > 0) {
-        // User already liked this post, so unlike it
-        const { error: unlikeError } = await supabase
-          .from('post_likes')
-          .delete()
-          .eq('id', likeData[0].id);
-        
-        if (unlikeError) throw unlikeError;
-        
-        // Execute raw SQL to decrement likes count
-        await supabase.query(`
-          UPDATE public.club_posts
-          SET likes_count = GREATEST(0, likes_count - 1)
-          WHERE id = '${postId}'
-        `);
-      } else {
-        // User hasn't liked this post yet, so like it
-        const { error: createLikeError } = await supabase
-          .from('post_likes')
-          .insert([
-            {
-              user_id: userId,
-              post_id: postId
-            }
-          ]);
-        
-        if (createLikeError) throw createLikeError;
-        
-        // Execute raw SQL to increment likes count
-        await supabase.query(`
-          UPDATE public.club_posts
-          SET likes_count = likes_count + 1
-          WHERE id = '${postId}'
-        `);
+    // Use the Edge Function to toggle the post like
+    const { data, error } = await supabase.functions.invoke(
+      'toggle_post_like',
+      {
+        body: { userId, postId }
       }
-    }
+    );
     
-    return true;
+    if (error) throw error;
+    
+    return data;
   } catch (err) {
     console.error('Error toggling post like:', err);
     throw err;
