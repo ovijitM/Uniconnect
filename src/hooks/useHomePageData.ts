@@ -115,7 +115,7 @@ export const useHomePageData = () => {
         
         // Fetch events with proper club details
         console.log("Fetching events...");
-        const eventsQuery = supabase
+        let eventsQuery = supabase
           .from('events')
           .select('*, clubs:club_id(*)');
         
