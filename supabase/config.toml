@@ -1,1 +1,11 @@
+
 project_id = "lrguqrperpqlaayuvipc"
+
+[functions.get_club_posts_with_details]
+verify_jwt = true
+
+[functions.toggle_post_like]
+verify_jwt = true
+
+[functions.create_post]
+verify_jwt = true

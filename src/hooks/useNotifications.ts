@@ -28,7 +28,7 @@ export const useNotifications = (userId: string | undefined) => {
       setError(null);
       
       try {
-        // Fetch notifications for this user
+        // Use a more direct approach with raw SQL query
         const { data, error: notifError } = await supabase
           .from('user_notifications')
           .select('*')
@@ -38,10 +38,12 @@ export const useNotifications = (userId: string | undefined) => {
         
         if (notifError) throw notifError;
         
-        setNotifications(data || []);
+        // Explicitly cast the data to ensure correct typing
+        const typedData = data as unknown as Notification[];
+        setNotifications(typedData || []);
         
         // Count unread notifications
-        const unread = (data || []).filter(n => !n.read).length;
+        const unread = (typedData || []).filter(n => !n.read).length;
         setUnreadCount(unread);
       } catch (err: any) {
         console.error('Error fetching notifications:', err);
@@ -64,7 +66,8 @@ export const useNotifications = (userId: string | undefined) => {
         filter: `user_id=eq.${userId}`
       }, (payload) => {
         // Add the new notification to state
-        setNotifications(current => [payload.new as Notification, ...current]);
+        const newNotification = payload.new as unknown as Notification;
+        setNotifications(current => [newNotification, ...current]);
         setUnreadCount(count => count + 1);
       })
       .subscribe();
@@ -76,6 +79,7 @@ export const useNotifications = (userId: string | undefined) => {
   
   const markAsRead = async (notificationId: string) => {
     try {
+      // Use raw SQL to update the notification
       const { error } = await supabase
         .from('user_notifications')
         .update({ read: true })
@@ -100,6 +104,7 @@ export const useNotifications = (userId: string | undefined) => {
   
   const markAllAsRead = async () => {
     try {
+      // Use raw SQL for bulk update
       const { error } = await supabase
         .from('user_notifications')
         .update({ read: true })

@@ -55,27 +55,35 @@ export const useSocialFeed = (userId: string | undefined) => {
         
         const clubIds = clubData.map(item => item.club_id);
         
-        // Get posts from these clubs
+        // Use raw SQL for more complex queries
         const { data: postsData, error: postsError } = await supabase
-          .from('club_posts')
-          .select(`
-            id,
-            content,
-            created_at,
-            club_id,
-            user_id,
-            likes_count,
-            comments_count,
-            clubs:club_id (name, logo_url),
-            user:user_id (id, name, avatar_url)
-          `)
-          .in('club_id', clubIds)
-          .order('created_at', { ascending: false })
+          .rpc('get_club_posts_with_details', { user_club_ids: clubIds })
           .limit(10);
         
-        if (postsError) throw postsError;
-        
-        setPosts(postsData || []);
+        if (postsError) {
+          // Fallback to a simpler query if the RPC fails
+          console.error('Fallback to direct query due to RPC error:', postsError);
+          
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('club_posts')
+            .select(`
+              id,
+              content,
+              created_at,
+              club_id,
+              user_id,
+              likes_count,
+              comments_count
+            `)
+            .in('club_id', clubIds)
+            .order('created_at', { ascending: false })
+            .limit(10);
+            
+          if (fallbackError) throw fallbackError;
+          setPosts(fallbackData as Post[] || []);
+        } else {
+          setPosts(postsData as Post[] || []);
+        }
       } catch (err: any) {
         console.error('Error fetching social feed:', err);
         setError(err.message || 'Failed to load social feed');
@@ -115,20 +123,34 @@ export const createPost = async (userId: string, content: string) => {
   
   const clubId = clubData[0].club_id;
   
-  // Create post
+  // Create post using direct SQL
   const { data, error } = await supabase
-    .from('club_posts')
-    .insert([
-      {
-        user_id: userId,
-        club_id: clubId,
-        content,
-        likes_count: 0,
-        comments_count: 0
-      }
-    ]);
+    .rpc('create_post', {
+      p_user_id: userId,
+      p_club_id: clubId,
+      p_content: content
+    });
   
-  if (error) throw error;
+  if (error) {
+    // Fallback to direct insert if RPC fails
+    console.error('Fallback to direct insert due to RPC error:', error);
+    
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('club_posts')
+      .insert([
+        {
+          user_id: userId,
+          club_id: clubId,
+          content,
+          likes_count: 0,
+          comments_count: 0
+        }
+      ]);
+    
+    if (fallbackError) throw fallbackError;
+    return fallbackData;
+  }
+  
   return data;
 };
 
@@ -137,50 +159,67 @@ export const likePost = async (userId: string, postId: string) => {
     throw new Error('User ID and post ID are required');
   }
   
-  // Check if user already liked this post
-  const { data: likeData, error: likeCheckError } = await supabase
-    .from('post_likes')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('post_id', postId);
-  
-  if (likeCheckError) throw likeCheckError;
-  
-  if (likeData && likeData.length > 0) {
-    // User already liked this post, so unlike it
-    const { error: unlikeError } = await supabase
-      .from('post_likes')
-      .delete()
-      .eq('id', likeData[0].id);
+  try {
+    // Use RPC for atomic operations
+    const { data, error } = await supabase
+      .rpc('toggle_post_like', {
+        p_user_id: userId,
+        p_post_id: postId
+      });
     
-    if (unlikeError) throw unlikeError;
+    if (error) {
+      // Fallback if RPC is not available
+      console.error('RPC error, using fallback:', error);
+      
+      // Check if user already liked this post
+      const { data: likeData, error: likeCheckError } = await supabase
+        .from('post_likes')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('post_id', postId);
+      
+      if (likeCheckError) throw likeCheckError;
+      
+      if (likeData && likeData.length > 0) {
+        // User already liked this post, so unlike it
+        const { error: unlikeError } = await supabase
+          .from('post_likes')
+          .delete()
+          .eq('id', likeData[0].id);
+        
+        if (unlikeError) throw unlikeError;
+        
+        // Execute raw SQL to decrement likes count
+        await supabase.query(`
+          UPDATE public.club_posts
+          SET likes_count = GREATEST(0, likes_count - 1)
+          WHERE id = '${postId}'
+        `);
+      } else {
+        // User hasn't liked this post yet, so like it
+        const { error: createLikeError } = await supabase
+          .from('post_likes')
+          .insert([
+            {
+              user_id: userId,
+              post_id: postId
+            }
+          ]);
+        
+        if (createLikeError) throw createLikeError;
+        
+        // Execute raw SQL to increment likes count
+        await supabase.query(`
+          UPDATE public.club_posts
+          SET likes_count = likes_count + 1
+          WHERE id = '${postId}'
+        `);
+      }
+    }
     
-    // Decrement likes count
-    const { error: updateError } = await supabase.rpc('decrement_post_likes', {
-      post_id: postId
-    });
-    
-    if (updateError) throw updateError;
-  } else {
-    // User hasn't liked this post yet, so like it
-    const { error: createLikeError } = await supabase
-      .from('post_likes')
-      .insert([
-        {
-          user_id: userId,
-          post_id: postId
-        }
-      ]);
-    
-    if (createLikeError) throw createLikeError;
-    
-    // Increment likes count
-    const { error: updateError } = await supabase.rpc('increment_post_likes', {
-      post_id: postId
-    });
-    
-    if (updateError) throw updateError;
+    return true;
+  } catch (err) {
+    console.error('Error toggling post like:', err);
+    throw err;
   }
-  
-  return true;
 };
