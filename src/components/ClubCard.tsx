@@ -6,19 +6,22 @@ import { Users, CalendarDays } from 'lucide-react';
 import { Club } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ClubCardProps {
   club: Club;
   index?: number;
   onJoin?: (clubId: string) => Promise<void>;
   isJoined?: boolean;
+  size?: 'default' | 'compact';
 }
 
 const ClubCard: React.FC<ClubCardProps> = ({ 
   club, 
   index = 0,
   onJoin,
-  isJoined = false
+  isJoined = false,
+  size = 'default'
 }) => {
   console.log("ClubCard rendering with club ID:", club.id, "Club name:", club.name);
   
@@ -31,15 +34,20 @@ const ClubCard: React.FC<ClubCardProps> = ({
   if (!hasValidId) {
     console.warn(`Invalid club ID for "${club.name}": ${String(club.id)}`);
   }
+
+  const isCompact = size === 'compact';
   
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-      className="rounded-lg overflow-hidden bg-card border shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col"
+      className={cn(
+        "rounded-lg overflow-hidden bg-card border shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col",
+        isCompact && "shadow-none"
+      )}
     >
-      <div className="h-36 sm:h-48 relative">
+      <div className={cn("relative", isCompact ? "h-28 sm:h-36" : "h-36 sm:h-48")}>
         {club.logoUrl ? (
           <img
             src={club.logoUrl}
@@ -62,24 +70,33 @@ const ClubCard: React.FC<ClubCardProps> = ({
         </Badge>
       </div>
       
-      <div className="p-4 flex-1 flex flex-col">
+      <div className={cn("p-4 flex-1 flex flex-col", isCompact && "p-3")}>
         {hasValidId ? (
           <Link 
             to={`/clubs/${club.id}`} 
             className="block hover:text-primary transition-colors"
             onClick={() => console.log("Navigating to club detail:", `/clubs/${club.id}`)}
           >
-            <h3 className="font-semibold text-lg mb-1 hover:text-primary transition-colors line-clamp-1">
+            <h3 className={cn(
+              "font-semibold text-lg mb-1 hover:text-primary transition-colors line-clamp-1",
+              isCompact && "text-base"
+            )}>
               {club.name}
             </h3>
           </Link>
         ) : (
-          <h3 className="font-semibold text-lg mb-1 text-muted-foreground line-clamp-1">
+          <h3 className={cn(
+            "font-semibold text-lg mb-1 text-muted-foreground line-clamp-1",
+            isCompact && "text-base"
+          )}>
             {club.name}
           </h3>
         )}
         
-        <p className="text-muted-foreground text-sm mb-3 line-clamp-2 h-10">
+        <p className={cn(
+          "text-muted-foreground text-sm mb-3 line-clamp-2",
+          isCompact ? "h-8 text-xs" : "h-10"
+        )}>
           {club.description}
         </p>
         
@@ -102,7 +119,7 @@ const ClubCard: React.FC<ClubCardProps> = ({
               onClick={() => onJoin(club.id)} 
               disabled={isJoined}
               variant={isJoined ? "outline" : "default"}
-              size="sm"
+              size={isCompact ? "sm" : "sm"}
               className="w-full"
             >
               {isJoined ? "Joined" : "Join Club"}

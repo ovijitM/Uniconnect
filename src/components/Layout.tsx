@@ -2,17 +2,21 @@
 import React from 'react';
 import Navbar from './Navbar';
 import { motion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+  
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       <motion.main 
-        className="flex-1 w-full max-w-full mx-auto"
+        className={`flex-1 w-full max-w-full mx-auto ${isHomePage ? 'pt-4' : 'pt-8'}`}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}

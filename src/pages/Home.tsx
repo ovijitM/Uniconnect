@@ -16,7 +16,7 @@ import { joinClub } from '@/hooks/student/utils/clubMembershipActions';
 import { useToast } from '@/hooks/use-toast';
 
 const Home = () => {
-  const { isLoading, featuredEvent, featuredClubs, categories, upcomingEvents } = useHomePageData();
+  const { isLoading, featuredEvent, featuredClubs, categories, upcomingEvents, clubs } = useHomePageData();
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -63,7 +63,7 @@ const Home = () => {
 
   return (
     <Layout>
-      <div className="flex flex-col gap-8 md:gap-16 py-4 md:py-8">
+      <div className="flex flex-col gap-8 md:gap-16">
         <HeroSection />
         
         <div className="container px-4 mx-auto">
@@ -94,7 +94,7 @@ const Home = () => {
           />
         </div>
         
-        <div className="bg-gray-50 dark:bg-gray-900 py-12 md:py-16">
+        <div className="bg-gray-50 dark:bg-gray-900 py-8 md:py-12">
           <div className="container px-4 mx-auto">
             <PopularCategoriesSection 
               categories={categories} 

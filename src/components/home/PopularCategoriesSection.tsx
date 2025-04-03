@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Lightbulb, 
@@ -13,10 +13,12 @@ import {
   Globe,
   Users,
   Dumbbell,
-  BookOpen 
+  BookOpen,
+  ChevronRight
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
 interface PopularCategoriesSectionProps {
   categories: string[];
@@ -48,6 +50,9 @@ const PopularCategoriesSection: React.FC<PopularCategoriesSectionProps> = ({
   categories = [],
   isLoading = false
 }) => {
+  const navigate = useNavigate();
+  const [showAll, setShowAll] = useState(false);
+  
   if (isLoading) {
     return (
       <div className="bg-card rounded-xl p-6 border">
@@ -70,15 +75,37 @@ const PopularCategoriesSection: React.FC<PopularCategoriesSectionProps> = ({
   );
   
   // Add default categories if we don't have enough
-  const displayCategories = categoriesWithIcons.length >= 5 
-    ? categoriesWithIcons.slice(0, 10) 
+  const allCategories = categoriesWithIcons.length >= 5 
+    ? categoriesWithIcons
     : [...categoriesWithIcons, ...defaultCategories.filter(cat => 
         !categoriesWithIcons.includes(cat)
-      )].slice(0, 10);
+      )];
+  
+  // Display limited categories initially, then all on button click
+  const displayCategories = showAll ? allCategories : allCategories.slice(0, 8);
+  
+  const handleViewAllCategories = () => {
+    if (allCategories.length > 8) {
+      setShowAll(prev => !prev);
+    } else {
+      navigate('/clubs');
+    }
+  };
 
   return (
     <div className="bg-card rounded-xl p-4 sm:p-6 border">
-      <h2 className="text-xl font-semibold mb-4">Popular Categories</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Popular Categories</h2>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate('/clubs')}
+          className="text-sm font-medium hidden sm:flex"
+        >
+          Browse All <ChevronRight className="ml-1 h-4 w-4" />
+        </Button>
+      </div>
+      
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {displayCategories.map((category, index) => {
           const icon = categoryIcons[category.toLowerCase()] || <Globe className="h-5 w-5" />;
@@ -104,6 +131,27 @@ const PopularCategoriesSection: React.FC<PopularCategoriesSectionProps> = ({
           );
         })}
       </div>
+      
+      {allCategories.length > 8 && (
+        <div className="mt-4 text-center">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleViewAllCategories}
+          >
+            {showAll ? "Show Less" : "Show More Categories"}
+          </Button>
+        </div>
+      )}
+      
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        onClick={() => navigate('/clubs')}
+        className="text-sm font-medium w-full mt-4 sm:hidden"
+      >
+        Browse All Categories <ChevronRight className="ml-1 h-4 w-4" />
+      </Button>
     </div>
   );
 };
