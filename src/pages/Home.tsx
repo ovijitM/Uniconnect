@@ -11,8 +11,9 @@ import RecommendedClubsSection from '@/components/home/RecommendedClubsSection';
 import { useHomePageData } from '@/hooks/useHomePageData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStudentClubs } from '@/hooks/student/useStudentClubs';
-import { useToast } from '@/hooks/use-toast';
+import { useClubRecommendations } from '@/hooks/student/useClubRecommendations';
 import { joinClub } from '@/hooks/student/utils/clubMembershipActions';
+import { useToast } from '@/hooks/use-toast';
 
 const Home = () => {
   const { isLoading, featuredEvent, featuredClubs, categories, upcomingEvents, clubs } = useHomePageData();
@@ -23,42 +24,14 @@ const Home = () => {
   const { 
     joinedClubs, 
     joinedClubIds, 
-    fetchClubs: refreshJoinedClubs,
-    isLoadingClubs
+    fetchClubs 
   } = useStudentClubs(user?.id);
   
   // Get personalized recommendations
-  const [recommendations, setRecommendations] = React.useState([]);
-  const [isLoadingRecommendations, setIsLoadingRecommendations] = React.useState(false);
-  
-  // Fetch recommendations when joinedClubIds changes
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      if (!user || !joinedClubIds) {
-        setRecommendations([]);
-        return;
-      }
-      
-      setIsLoadingRecommendations(true);
-      try {
-        // This would be replaced with actual recommendation logic
-        // For now, just use clubs that aren't already joined
-        const recommendedClubs = clubs
-          .filter(club => !joinedClubIds.includes(club.id))
-          .slice(0, 3);
-        
-        setRecommendations(recommendedClubs);
-      } catch (error) {
-        console.error("Error fetching recommendations:", error);
-      } finally {
-        setIsLoadingRecommendations(false);
-      }
-    };
-    
-    if (clubs.length > 0) {
-      fetchRecommendations();
-    }
-  }, [joinedClubIds, clubs, user]);
+  const { 
+    recommendations, 
+    isLoading: isLoadingRecommendations 
+  } = useClubRecommendations(joinedClubIds);
 
   // Handle joining a club
   const handleJoinClub = async (clubId: string) => {
@@ -75,8 +48,7 @@ const Home = () => {
       await joinClub(user.id, clubId, toast, {
         onSuccess: () => {
           // Refresh the clubs data after joining
-          console.log("Club join successful, refreshing clubs data");
-          refreshJoinedClubs();
+          fetchClubs();
         }
       });
     } catch (error: any) {
@@ -108,7 +80,7 @@ const Home = () => {
               recommendations={recommendations}
               isLoading={isLoadingRecommendations}
               onJoinClub={handleJoinClub}
-              joinedClubIds={joinedClubIds || []}
+              joinedClubIds={joinedClubIds}
             />
           </div>
         )}
@@ -118,7 +90,7 @@ const Home = () => {
             clubs={featuredClubs} 
             isLoading={isLoading}
             onJoinClub={handleJoinClub}
-            joinedClubIds={joinedClubIds || []}
+            joinedClubIds={joinedClubIds}
           />
         </div>
         
