@@ -17,13 +17,26 @@ serve(async (req) => {
     const { userId, clubId, content } = await req.json();
     
     if (!userId || !clubId || !content) {
-      throw new Error('User ID, Club ID, and content are required');
+      return new Response(
+        JSON.stringify({ error: 'User ID, Club ID, and content are required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Validate content length
+    if (content.trim().length < 1 || content.length > 1000) {
+      return new Response(
+        JSON.stringify({ error: 'Content must be between 1 and 1000 characters' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
     
     // Create a Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    console.log(`Creating post for user ${userId} in club ${clubId}`);
     
     // Create the post
     const { data, error } = await supabase
@@ -39,7 +52,12 @@ serve(async (req) => {
       ])
       .select();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error creating post:', error);
+      throw error;
+    }
+    
+    console.log(`Post created successfully with id: ${data?.[0]?.id}`);
     
     return new Response(JSON.stringify({ data }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

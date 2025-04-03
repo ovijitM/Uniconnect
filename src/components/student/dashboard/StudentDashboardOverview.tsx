@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -57,7 +56,7 @@ const StudentDashboardOverview: React.FC<StudentDashboardOverviewProps> = ({
   refreshData
 }) => {
   const navigate = useNavigate();
-  const { posts, isLoading: isLoadingPosts } = useSocialFeed(user?.id);
+  const { posts, isLoading: isLoadingPosts, refreshFeed } = useSocialFeed(user?.id);
   
   if (error) {
     return (
@@ -241,6 +240,7 @@ const StudentDashboardOverview: React.FC<StudentDashboardOverviewProps> = ({
                 posts={posts} 
                 isLoading={isLoadingPosts}
                 userId={user?.id}
+                refreshFeed={refreshFeed}
               />
             </CardContent>
           </Card>

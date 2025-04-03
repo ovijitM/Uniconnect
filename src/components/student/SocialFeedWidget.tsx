@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ThumbsUp, MessageSquare, Share2, Send } from 'lucide-react';
+import { ThumbsUp, MessageSquare, Share2, RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -13,15 +13,18 @@ interface SocialFeedWidgetProps {
   posts: any[];
   isLoading: boolean;
   userId: string;
+  refreshFeed?: () => void;
 }
 
 const SocialFeedWidget: React.FC<SocialFeedWidgetProps> = ({ 
   posts, 
   isLoading,
-  userId
+  userId,
+  refreshFeed
 }) => {
   const [newPostContent, setNewPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [likingPostId, setLikingPostId] = useState<string | null>(null);
   
   const handleSubmitPost = async () => {
     if (!newPostContent.trim()) return;
@@ -31,6 +34,11 @@ const SocialFeedWidget: React.FC<SocialFeedWidgetProps> = ({
       await createPost(userId, newPostContent);
       setNewPostContent('');
       toast.success('Post created successfully!');
+      
+      // Refresh the feed after posting
+      if (refreshFeed) {
+        refreshFeed();
+      }
     } catch (error: any) {
       toast.error('Failed to create post: ' + (error.message || 'Unknown error'));
     } finally {
@@ -39,11 +47,27 @@ const SocialFeedWidget: React.FC<SocialFeedWidgetProps> = ({
   };
   
   const handleLikePost = async (postId: string) => {
+    if (likingPostId) return; // Prevent multiple simultaneous likes
+    
+    setLikingPostId(postId);
     try {
-      await likePost(userId, postId);
-      toast.success('Post liked!');
+      const result = await likePost(userId, postId);
+      
+      // Update UI based on whether it was a like or unlike
+      if (result && result.action === 'liked') {
+        toast.success('Post liked!');
+      } else if (result && result.action === 'unliked') {
+        toast.success('Post unliked!');
+      }
+      
+      // Refresh the feed after liking
+      if (refreshFeed) {
+        refreshFeed();
+      }
     } catch (error: any) {
       toast.error('Failed to like post: ' + (error.message || 'Unknown error'));
+    } finally {
+      setLikingPostId(null);
     }
   };
   
@@ -103,6 +127,21 @@ const SocialFeedWidget: React.FC<SocialFeedWidgetProps> = ({
         </div>
       </div>
       
+      <div className="flex justify-between items-center">
+        <h3 className="font-medium">Latest Updates</h3>
+        {refreshFeed && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={refreshFeed} 
+            className="flex items-center gap-1"
+          >
+            <RefreshCw className="h-4 w-4 mr-1" />
+            Refresh
+          </Button>
+        )}
+      </div>
+      
       {posts.length > 0 ? (
         <div className="space-y-4">
           {posts.map((post) => (
@@ -132,6 +171,7 @@ const SocialFeedWidget: React.FC<SocialFeedWidgetProps> = ({
                     size="sm" 
                     className="flex items-center gap-1"
                     onClick={() => handleLikePost(post.id)}
+                    disabled={likingPostId === post.id}
                   >
                     <ThumbsUp className="h-4 w-4" />
                     <span>{post.likes_count || 0}</span>

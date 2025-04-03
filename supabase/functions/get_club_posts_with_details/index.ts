@@ -16,10 +16,20 @@ serve(async (req) => {
   try {
     const { clubIds } = await req.json();
     
+    if (!clubIds || !Array.isArray(clubIds) || clubIds.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid or missing clubIds parameter' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
     // Create a Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Log request information for debugging
+    console.log(`Fetching posts for clubs: ${clubIds.join(', ')}`);
     
     // Query posts with club and user details
     const { data, error } = await supabase
@@ -37,9 +47,14 @@ serve(async (req) => {
       `)
       .in('club_id', clubIds)
       .order('created_at', { ascending: false })
-      .limit(10);
+      .limit(15);
     
-    if (error) throw error;
+    if (error) {
+      console.error('Database query error:', error);
+      throw error;
+    }
+    
+    console.log(`Retrieved ${data?.length || 0} posts`);
     
     return new Response(JSON.stringify({ data }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
