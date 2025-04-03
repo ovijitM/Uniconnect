@@ -8,8 +8,13 @@ import {
   Bookmark, 
   LogOut,
   Search,
-  GraduationCap,
-  Settings
+  Settings,
+  Bell,
+  HelpCircle,
+  Home,
+  BarChart3,
+  MessagesSquare,
+  UserCircle
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -20,14 +25,19 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarSeparator
+  SidebarSeparator,
+  SidebarTooltip
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const StudentSidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { unreadCount } = useNotifications(user?.id);
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -56,9 +66,9 @@ const StudentSidebar: React.FC = () => {
               {user?.name ? getInitials(user.name) : 'ST'}
             </AvatarFallback>
           </Avatar>
-          <div>
-            <div className="font-semibold">{user?.name || 'Student'}</div>
-            <p className="text-xs text-muted-foreground">{user?.university || 'University Student'}</p>
+          <div className="space-y-1">
+            <div className="font-semibold line-clamp-1">{user?.name || 'Student'}</div>
+            <p className="text-xs text-muted-foreground line-clamp-1">{user?.university || 'University Student'}</p>
           </div>
         </div>
       </SidebarHeader>
@@ -101,6 +111,41 @@ const StudentSidebar: React.FC = () => {
             </SidebarMenuButton>
           </SidebarMenuItem>
           
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              isActive={isActive('/student-dashboard/notifications')}
+              onClick={() => navigate('/student-dashboard/notifications')}
+              tooltip="Notifications"
+              className="gap-3 relative"
+            >
+              <Bell className="h-5 w-5" />
+              <span>Notifications</span>
+              
+              {unreadCount > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className={cn(
+                    "absolute top-0 right-0 transform translate-x-1 -translate-y-1 px-1 py-0.5 min-w-[20px] h-5 flex items-center justify-center"
+                  )}
+                >
+                  {unreadCount}
+                </Badge>
+              )}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              isActive={isActive('/student-dashboard/messages')}
+              onClick={() => navigate('/student-dashboard/messages')}
+              tooltip="Messages"
+              className="gap-3"
+            >
+              <MessagesSquare className="h-5 w-5" />
+              <span>Messages</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          
           <SidebarSeparator />
           
           <SidebarMenuItem>
@@ -111,19 +156,33 @@ const StudentSidebar: React.FC = () => {
               className="gap-3"
             >
               <Search className="h-5 w-5" />
-              <span>Discover Events</span>
+              <span>Discover</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           
           <SidebarMenuItem>
             <SidebarMenuButton 
-              isActive={isActive('/clubs')}
-              onClick={() => navigate('/clubs')}
-              tooltip="Discover Clubs"
+              isActive={isActive('/')}
+              onClick={() => navigate('/')}
+              tooltip="Home"
               className="gap-3"
             >
-              <Bookmark className="h-5 w-5" />
-              <span>Discover Clubs</span>
+              <Home className="h-5 w-5" />
+              <span>Home</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          
+          <SidebarSeparator />
+          
+          <SidebarMenuItem>
+            <SidebarMenuButton 
+              isActive={isActive('/profile')}
+              onClick={() => navigate('/profile')}
+              tooltip="Profile"
+              className="gap-3"
+            >
+              <UserCircle className="h-5 w-5" />
+              <span>Profile</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           
@@ -142,9 +201,27 @@ const StudentSidebar: React.FC = () => {
       </SidebarContent>
       
       <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={() => navigate('/help')}
+              tooltip="Help & Support"
+              className="gap-3 text-muted-foreground"
+            >
+              <HelpCircle className="h-5 w-5" />
+              <span>Help & Support</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+        
         <SidebarSeparator />
+        
         <div className="p-4">
-          <SidebarMenuButton onClick={handleSignOut} tooltip="Sign Out" className="gap-3 text-destructive hover:text-destructive">
+          <SidebarMenuButton 
+            onClick={handleSignOut} 
+            tooltip="Sign Out" 
+            className="gap-3 text-destructive hover:text-destructive"
+          >
             <LogOut className="h-5 w-5" />
             <span>Sign Out</span>
           </SidebarMenuButton>
