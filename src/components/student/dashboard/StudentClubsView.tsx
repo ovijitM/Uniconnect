@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import StudentClubs from '@/components/student/StudentClubs';
 import AvailableClubs from '@/components/student/AvailableClubs';
 
@@ -20,20 +20,78 @@ const StudentClubsView: React.FC<StudentClubsViewProps> = ({
   onJoinClub,
   onLeaveClub
 }) => {
-  console.log("StudentClubsView - Joined Clubs:", joinedClubs);
-  console.log("StudentClubsView - Available Clubs:", clubs.filter(club => !joinedClubIds.includes(club.id)));
-  console.log("StudentClubsView - Joined Club IDs:", joinedClubIds);
-
-  // Filter clubs to only show those that are not joined
-  const availableClubs = clubs.filter(club => !joinedClubIds.includes(club.id));
-
+  // Local state to track joined clubs and IDs (for immediate UI updates)
+  const [localJoinedClubIds, setLocalJoinedClubIds] = useState<string[]>(joinedClubIds);
+  const [localJoinedClubs, setLocalJoinedClubs] = useState<any[]>(joinedClubs);
+  const [localAvailableClubs, setLocalAvailableClubs] = useState<any[]>([]);
+  
+  // Update local state when props change
   useEffect(() => {
-    // Log specific details to help debug
-    console.log("StudentClubsView - Club IDs check:");
-    clubs.forEach(club => {
-      console.log(`Club ${club.name} (${club.id}) - Joined: ${joinedClubIds.includes(club.id)}`);
-    });
-  }, [clubs, joinedClubIds]);
+    console.log("StudentClubsView - Joined Clubs updated:", joinedClubs);
+    console.log("StudentClubsView - Joined Club IDs updated:", joinedClubIds);
+    setLocalJoinedClubIds(joinedClubIds);
+    setLocalJoinedClubs(joinedClubs);
+    updateAvailableClubs();
+  }, [joinedClubs, joinedClubIds, clubs]);
+  
+  // Helper function to update available clubs
+  const updateAvailableClubs = () => {
+    const available = clubs.filter(club => !joinedClubIds.includes(club.id));
+    console.log("StudentClubsView - Available Clubs updated:", available);
+    setLocalAvailableClubs(available);
+  };
+  
+  // Enhanced join club handler with optimistic UI updates
+  const handleJoinClub = async (clubId: string) => {
+    try {
+      // Find the club being joined
+      const clubToJoin = clubs.find(club => club.id === clubId);
+      if (!clubToJoin) return;
+      
+      // Optimistically update UI
+      setLocalJoinedClubIds(prev => [...prev, clubId]);
+      setLocalJoinedClubs(prev => [...prev, clubToJoin]);
+      setLocalAvailableClubs(prev => prev.filter(club => club.id !== clubId));
+      
+      // Call the actual join function
+      await onJoinClub(clubId);
+    } catch (error) {
+      console.error("Error joining club:", error);
+      // Revert optimistic update on error
+      updateAvailableClubs();
+      setLocalJoinedClubIds(joinedClubIds);
+      setLocalJoinedClubs(joinedClubs);
+    }
+  };
+  
+  // Enhanced leave club handler with optimistic UI updates
+  const handleLeaveClub = async (clubId: string) => {
+    try {
+      // Find the club being left
+      const clubToLeave = localJoinedClubs.find(club => club.id === clubId);
+      if (!clubToLeave) return;
+      
+      // Optimistically update UI
+      setLocalJoinedClubIds(prev => prev.filter(id => id !== clubId));
+      setLocalJoinedClubs(prev => prev.filter(club => club.id !== clubId));
+      setLocalAvailableClubs(prev => [...prev, clubToLeave]);
+      
+      // Call the actual leave function
+      await onLeaveClub(clubId);
+    } catch (error) {
+      console.error("Error leaving club:", error);
+      // Revert optimistic update on error
+      updateAvailableClubs();
+      setLocalJoinedClubIds(joinedClubIds);
+      setLocalJoinedClubs(joinedClubs);
+    }
+  };
+
+  console.log("StudentClubsView - Rendering with:", {
+    localJoinedClubs,
+    localAvailableClubs,
+    localJoinedClubIds
+  });
 
   return (
     <div className="space-y-6">
@@ -46,18 +104,18 @@ const StudentClubsView: React.FC<StudentClubsViewProps> = ({
         <div className="space-y-2">
           <h2 className="text-xl font-semibold px-2">Joined Clubs</h2>
           <StudentClubs 
-            clubs={joinedClubs}
+            clubs={localJoinedClubs}
             isLoading={isLoading}
-            onLeaveClub={onLeaveClub}
+            onLeaveClub={handleLeaveClub}
           />
         </div>
         <div className="space-y-2">
           <h2 className="text-xl font-semibold px-2">Available Clubs</h2>
           <AvailableClubs 
-            clubs={availableClubs}
-            joinedClubIds={joinedClubIds}
+            clubs={localAvailableClubs}
+            joinedClubIds={localJoinedClubIds}
             isLoading={isLoading}
-            onJoinClub={onJoinClub}
+            onJoinClub={handleJoinClub}
           />
         </div>
       </div>
