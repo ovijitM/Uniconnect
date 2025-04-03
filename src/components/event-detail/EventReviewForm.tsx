@@ -10,7 +10,7 @@ import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 interface EventReviewFormProps {
   userReview: EventReview | null;
-  onSubmit: (rating: number, reviewText: string) => Promise<void>;
+  onSubmit: (rating: number, reviewText: string) => Promise<boolean>;
   onDelete: () => Promise<void>;
   isSubmitting: boolean;
   isLoggedIn: boolean;

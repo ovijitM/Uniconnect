@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,14 +49,12 @@ const useEventReviews = (eventId: string): EventReviewsResult => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Calculate total pages
   const totalPages = Math.max(1, Math.ceil(totalReviews / REVIEWS_PER_PAGE));
 
   const loadReviews = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Fetch reviews with pagination
       const { reviews: fetchedReviews, totalCount } = await fetchReviewsWithProfiles(
         eventId,
         currentPage,
@@ -67,11 +64,9 @@ const useEventReviews = (eventId: string): EventReviewsResult => {
       setReviews(fetchedReviews);
       setTotalReviews(totalCount);
       
-      // Fetch average rating
       const avgRating = await fetchAverageRating(eventId);
       setAverageRating(avgRating);
       
-      // Check if the current user has already reviewed this event
       if (user) {
         const existingReview = await checkExistingReview(eventId, user.id);
         setUserReview(existingReview);
@@ -93,7 +88,6 @@ const useEventReviews = (eventId: string): EventReviewsResult => {
     loadReviews();
   }, [eventId, currentPage, user?.id]);
 
-  // Fix parameter order to match interface definition
   const addReview = async (comment: string, rating: number) => {
     if (!user) {
       toast({
@@ -112,8 +106,6 @@ const useEventReviews = (eventId: string): EventReviewsResult => {
         description: "Your review has been successfully submitted.",
       });
       
-      // After submitting, refresh to show the updated reviews
-      // Return to the first page when a new review is added
       setCurrentPage(1);
       await loadReviews();
       return true;
@@ -130,7 +122,6 @@ const useEventReviews = (eventId: string): EventReviewsResult => {
     }
   };
 
-  // Implementation for submitReview that uses the same signature as EventReviewForm expects
   const submitReview = async (rating: number, reviewText: string) => {
     return addReview(reviewText, rating);
   };
@@ -144,7 +135,6 @@ const useEventReviews = (eventId: string): EventReviewsResult => {
         description: "Your review has been successfully deleted.",
       });
       
-      // Refresh reviews after deletion
       await loadReviews();
     } catch (error: any) {
       console.error("Error deleting review:", error);
@@ -158,7 +148,6 @@ const useEventReviews = (eventId: string): EventReviewsResult => {
     }
   };
 
-  // Convenience method that wraps removeReview for the current user's review
   const deleteReview = async () => {
     if (!userReview) {
       toast({
