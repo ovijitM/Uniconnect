@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { JoinClubOptions, LeaveClubOptions } from '../types/studentClubTypes';
@@ -8,14 +7,14 @@ export const joinClub = async (
   clubId: string,
   toast: ReturnType<typeof useToast>['toast'],
   options?: JoinClubOptions
-): Promise<void> => {
+): Promise<boolean> => {
   if (!userId) {
     toast({
       title: 'Authentication Required',
       description: 'Please log in to join clubs',
       variant: 'destructive',
     });
-    return;
+    return false;
   }
   
   try {
@@ -43,11 +42,14 @@ export const joinClub = async (
       });
       
       // Return success even though no new membership was created
-      if (options?.onSuccess) options.onSuccess();
-      return;
+      if (options?.onSuccess) {
+        console.log("Calling onSuccess callback for already-member case");
+        options.onSuccess();
+      }
+      return true;
     }
     
-    // Join the club - ensure we're inserting with correct user_id
+    // Join the club
     const { error } = await supabase
       .from('club_members')
       .insert({
@@ -66,13 +68,16 @@ export const joinClub = async (
           variant: 'default',
         });
         // Call onSuccess even for "already a member" case
-        if (options?.onSuccess) options.onSuccess();
+        if (options?.onSuccess) {
+          console.log("Calling onSuccess callback for duplicate-key case");
+          options.onSuccess();
+        }
+        return true;
       } else if (error.message?.includes('row-level security policy')) {
         throw new Error('Permission denied. You may not have the right privileges to join this club.');
       } else {
         throw error;
       }
-      return;
     }
     
     console.log("Successfully joined club:", clubId);
@@ -82,9 +87,18 @@ export const joinClub = async (
       variant: 'default',
     });
     
-    if (options?.onSuccess) options.onSuccess();
+    if (options?.onSuccess) {
+      console.log("Calling onSuccess callback for successful join");
+      options.onSuccess();
+    }
+    return true;
   } catch (error: any) {
     console.error('Error joining club:', error);
+    toast({
+      title: 'Error',
+      description: error.message || 'Failed to join club',
+      variant: 'destructive',
+    });
     throw error; // Re-throw to allow the component to handle the error
   }
 };
@@ -94,14 +108,14 @@ export const leaveClub = async (
   clubId: string,
   toast: ReturnType<typeof useToast>['toast'],
   options?: LeaveClubOptions
-): Promise<void> => {
+): Promise<boolean> => {
   if (!userId) {
     toast({
       title: 'Authentication Required',
       description: 'Please log in to leave clubs',
       variant: 'destructive',
     });
-    return;
+    return false;
   }
   
   try {
@@ -121,13 +135,18 @@ export const leaveClub = async (
       variant: 'default',
     });
     
-    if (options?.onSuccess) options.onSuccess();
-  } catch (error) {
+    if (options?.onSuccess) {
+      console.log("Calling onSuccess callback for successful leave");
+      options.onSuccess();
+    }
+    return true;
+  } catch (error: any) {
     console.error('Error leaving club:', error);
     toast({
       title: 'Error',
-      description: 'Failed to leave club',
+      description: error.message || 'Failed to leave club',
       variant: 'destructive',
     });
+    return false;
   }
 };

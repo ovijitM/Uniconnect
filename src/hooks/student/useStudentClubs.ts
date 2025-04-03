@@ -84,6 +84,12 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
     try {
       console.log(`Starting join club process for club ${clubId}`);
       
+      // Optimistically update UI
+      setState(prev => ({
+        ...prev,
+        joinedClubIds: [...prev.joinedClubIds, clubId]
+      }));
+      
       // Define a callback for when the join is successful
       const handleJoinSuccess = async () => {
         console.log(`Join club success callback triggered for club ${clubId}`);
@@ -93,24 +99,25 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
         await fetchJoinedClubsCallback();
       };
       
-      await joinClub(userId!, clubId, toast, { onSuccess: handleJoinSuccess });
+      const success = await joinClub(userId!, clubId, toast, { onSuccess: handleJoinSuccess });
       
-      // Immediately update UI before database refresh completes
-      const clubToAdd = state.clubs.find(c => c.id === clubId);
-      if (clubToAdd) {
-        console.log(`Updating local state for joined club ${clubId}`);
+      if (!success) {
+        // If join failed, revert the optimistic update
         setState(prev => ({
           ...prev,
-          joinedClubs: [...prev.joinedClubs, clubToAdd],
-          joinedClubIds: [...prev.joinedClubIds, clubId]
+          joinedClubIds: prev.joinedClubIds.filter(id => id !== clubId)
         }));
       }
     } catch (error: any) {
       console.error('Error joining club:', error);
+      
+      // Revert optimistic update on error
       setState(prev => ({
         ...prev,
+        joinedClubIds: prev.joinedClubIds.filter(id => id !== clubId),
         error: error?.message || 'Failed to join club'
       }));
+      
       throw error; // Re-throw to allow the component to handle the error
     }
   };
@@ -118,6 +125,13 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
   const handleLeaveClub = async (clubId: string) => {
     try {
       console.log(`Starting leave club process for club ${clubId}`);
+      
+      // Optimistically update UI
+      setState(prev => ({
+        ...prev,
+        joinedClubs: prev.joinedClubs.filter(club => club.id !== clubId),
+        joinedClubIds: prev.joinedClubIds.filter(id => id !== clubId)
+      }));
       
       // Define a callback for when the leave is successful
       const handleLeaveSuccess = async () => {
@@ -128,16 +142,18 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
         await fetchJoinedClubsCallback();
       };
       
-      await leaveClub(userId, clubId, toast, { onSuccess: handleLeaveSuccess });
+      const success = await leaveClub(userId, clubId, toast, { onSuccess: handleLeaveSuccess });
       
-      // Immediately update local state for UI
-      setState(prev => ({
-        ...prev,
-        joinedClubs: prev.joinedClubs.filter(club => club.id !== clubId),
-        joinedClubIds: prev.joinedClubIds.filter(id => id !== clubId)
-      }));
+      if (!success) {
+        // If leave failed, revert the optimistic update
+        await fetchJoinedClubsCallback(); // Refresh actual state from server
+      }
     } catch (error: any) {
       console.error('Error in handleLeaveClub:', error);
+      
+      // Revert optimistic update on error by refreshing data
+      await fetchJoinedClubsCallback();
+      
       setState(prev => ({
         ...prev,
         error: error?.message || 'Failed to leave club'
@@ -152,12 +168,6 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       fetchJoinedClubsCallback();
     }
   }, [userId, fetchJoinedClubsCallback]);
-
-  // Add useEffect to log joinedClubs whenever it changes
-  useEffect(() => {
-    console.log('Current joined clubs:', state.joinedClubs);
-    console.log('Current joined club IDs:', state.joinedClubIds);
-  }, [state.joinedClubs, state.joinedClubIds]);
 
   return {
     clubs: state.clubs,
