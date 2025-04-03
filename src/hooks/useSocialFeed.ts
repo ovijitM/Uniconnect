@@ -173,7 +173,7 @@ export const createPost = async (userId: string, content: string) => {
     if (error) throw error;
     
     // Invalidate cache to trigger a refresh
-    const queryClient = new useQueryClient();
+    const queryClient = useQueryClient();
     queryClient.invalidateQueries({ queryKey: [POSTS_QUERY_KEY, userId] });
     
     return data;
@@ -202,7 +202,7 @@ export const likePost = async (userId: string, postId: string) => {
     if (error) throw error;
     
     // Invalidate cache to trigger a refresh
-    const queryClient = new useQueryClient();
+    const queryClient = useQueryClient();
     queryClient.invalidateQueries({ queryKey: [POSTS_QUERY_KEY, userId] });
     
     return data;
