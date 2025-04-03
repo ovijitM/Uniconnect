@@ -9,6 +9,9 @@ export const useHomePageData = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [clubs, setClubs] = useState<Club[]>([]);
   const [featuredEvent, setFeaturedEvent] = useState<Event | null>(null);
+  const [featuredClubs, setFeaturedClubs] = useState<Club[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -210,11 +213,21 @@ export const useHomePageData = () => {
         setClubs(validClubs);
         setEvents(validEvents);
         
+        // Extract unique categories
+        const allCategories = validClubs.map(club => club.category);
+        setCategories([...new Set(allCategories)]);
+        
+        // Set featured clubs (first 4 clubs)
+        setFeaturedClubs(validClubs.slice(0, 4));
+        
+        // Set upcoming events
+        const upcoming = validEvents.filter(event => event.status === 'upcoming');
+        setUpcomingEvents(upcoming);
+        
         // Set featured event (first upcoming event)
-        const upcomingEvents = validEvents.filter(event => event.status === 'upcoming');
-        if (upcomingEvents.length > 0) {
-          setFeaturedEvent(upcomingEvents[0]);
-          console.log("Set featured event:", upcomingEvents[0].title);
+        if (upcoming.length > 0) {
+          setFeaturedEvent(upcoming[0]);
+          console.log("Set featured event:", upcoming[0].title);
         } else {
           console.log("No upcoming events found for featured event");
         }
@@ -237,6 +250,9 @@ export const useHomePageData = () => {
     events,
     clubs,
     featuredEvent,
+    featuredClubs,
+    categories,
+    upcomingEvents,
     isLoading
   };
 };

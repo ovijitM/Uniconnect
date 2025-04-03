@@ -5,13 +5,21 @@ import { motion } from 'framer-motion';
 import { Users, CalendarDays } from 'lucide-react';
 import { Club } from '@/types';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface ClubCardProps {
   club: Club;
-  index: number;
+  index?: number;
+  onJoin?: (clubId: string) => Promise<void>;
+  isJoined?: boolean;
 }
 
-const ClubCard: React.FC<ClubCardProps> = ({ club, index }) => {
+const ClubCard: React.FC<ClubCardProps> = ({ 
+  club, 
+  index = 0,
+  onJoin,
+  isJoined = false
+}) => {
   console.log("ClubCard rendering with club ID:", club.id, "Club name:", club.name);
   
   // Enhanced validation for club ID
@@ -75,7 +83,7 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, index }) => {
           {club.description}
         </p>
         
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
           <div className="flex items-center gap-1">
             <Users className="h-3 w-3" />
             <span>{club.memberCount || 0} members</span>
@@ -87,6 +95,20 @@ const ClubCard: React.FC<ClubCardProps> = ({ club, index }) => {
             </div>
           )}
         </div>
+
+        {onJoin && (
+          <div className="mt-2">
+            <Button 
+              onClick={() => onJoin(club.id)} 
+              disabled={isJoined}
+              variant={isJoined ? "outline" : "default"}
+              size="sm"
+              className="w-full"
+            >
+              {isJoined ? "Joined" : "Join Club"}
+            </Button>
+          </div>
+        )}
       </div>
     </motion.div>
   );

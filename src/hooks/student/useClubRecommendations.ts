@@ -94,20 +94,22 @@ export const useClubRecommendations = (joinedClubIds: string[] = []) => {
             
           if (popularError) throw popularError;
           
-          // Combine the recommendations
+          // Combine the recommendations and transform data to match Club type
           const combined = [...recommendedClubs, ...(popularClubs || [])];
           setRecommendations(combined.map(club => ({
             ...club,
+            logoUrl: club.logo_url, // Map logo_url to logoUrl
             memberCount: club.club_members[0]?.count || 0,
             events: []
-          })));
+          } as unknown as Club)));
         } else {
-          // Process the recommendations
+          // Process the recommendations and transform data to match Club type
           setRecommendations(recommendedClubs.map(club => ({
             ...club,
+            logoUrl: club.logo_url, // Map logo_url to logoUrl
             memberCount: club.club_members[0]?.count || 0,
             events: []
-          })));
+          } as unknown as Club)));
         }
         
       } catch (err: any) {

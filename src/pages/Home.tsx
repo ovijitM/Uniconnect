@@ -67,7 +67,7 @@ const Home = () => {
         <HeroSection />
         
         <FeaturedEventSection 
-          event={featuredEvent} 
+          featuredEvent={featuredEvent} 
           isLoading={isLoading} 
         />
         

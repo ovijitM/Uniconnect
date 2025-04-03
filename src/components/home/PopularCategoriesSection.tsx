@@ -16,9 +16,11 @@ import {
   BookOpen 
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface PopularCategoriesSectionProps {
   categories: string[];
+  isLoading?: boolean;
 }
 
 // Map of category names to icons
@@ -42,7 +44,23 @@ const defaultCategories = [
   'science', 'engineering', 'business', 'sports', 'literature'
 ];
 
-const PopularCategoriesSection: React.FC<PopularCategoriesSectionProps> = ({ categories = [] }) => {
+const PopularCategoriesSection: React.FC<PopularCategoriesSectionProps> = ({ 
+  categories = [],
+  isLoading = false
+}) => {
+  if (isLoading) {
+    return (
+      <div className="bg-card rounded-xl p-6 border">
+        <Skeleton className="h-8 w-48 mb-4" />
+        <div className="grid grid-cols-2 gap-3">
+          {[...Array(8)].map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full rounded-md" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   // Get unique categories, then get the top categories (preference to known ones with icons)
   const uniqueCategories = [...new Set(categories)];
   
