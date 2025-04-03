@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -6,11 +7,13 @@ import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
 import { ClubFormTabs, ClubFormButtons, clubCategories, clubFormFieldNames } from './components/club-form';
 import { parseExecutiveMembersRoles } from '@/hooks/club-admin/utils/dataTransformUtils';
+import { useQueryClient } from '@tanstack/react-query';
 
 const CreateClubForm: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [universities, setUniversities] = useState<any[]>([]);
   const [isLoadingUniversities, setIsLoadingUniversities] = useState(true);
@@ -147,74 +150,102 @@ const CreateClubForm: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      const socialMediaLinks = {
-        website: formData.social.website,
-        instagram: formData.social.instagram,
-        facebook: formData.social.facebook,
-        twitter: formData.social.twitter,
-        linkedin: formData.social.linkedin,
-        discord: formData.social.discord
+      // Optimize data preparation for better readability and maintenance
+      const prepareClubData = () => {
+        const regularEvents = formData.regularEvents 
+          ? formData.regularEvents.split(',').map(e => e.trim()) 
+          : null;
+        
+        const signatureEvents = formData.signatureEvents 
+          ? formData.signatureEvents.split(',').map(e => e.trim()) 
+          : null;
+          
+        return {
+          basicInfo: {
+            name: formData.name,
+            description: formData.description,
+            category: formData.category,
+            university: formData.university,
+            university_id: formData.university,
+            logo_url: formData.logoUrl,
+          },
+          details: {
+            tagline: formData.tagline || null,
+            established_year: formData.establishedYear ? parseInt(formData.establishedYear) : null,
+            affiliation: formData.affiliation || null,
+            why_join: formData.whyJoin || null,
+            regular_events: regularEvents,
+            signature_events: signatureEvents,
+            community_engagement: formData.communityEngagement || null,
+            who_can_join: formData.whoCanJoin || null,
+            membership_fee: formData.membershipFee || 'Free',
+            how_to_join: formData.howToJoin || null
+          },
+          leadership: {
+            executive_members: {},
+            president_chair_name: formData.presidentChairName || null,
+            president_chair_contact: formData.presidentChairContact || null,
+            executive_members_roles: formData.executiveMembersRoles 
+              ? parseExecutiveMembersRoles(formData.executiveMembersRoles) 
+              : null,
+            faculty_advisors: formData.facultyAdvisors 
+              ? formData.facultyAdvisors.split(',').map(a => a.trim()) 
+              : null,
+            primary_faculty_advisor: formData.primaryFacultyAdvisor || null,
+          },
+          contact: {
+            phone_number: formData.phoneNumber || null,
+            website: formData.social?.website || null,
+            facebook_link: formData.social?.facebook || null,
+            instagram_link: formData.social?.instagram || null,
+            twitter_link: formData.social?.twitter || null,
+            discord_link: formData.social?.discord || null,
+            document_url: formData.documentUrl || null,
+            document_name: formData.documentName || null,
+          },
+          misc: {
+            student_count: formData.studentCount ? parseInt(formData.studentCount) : null,
+            faculty_advisor: formData.facultyAdvisor || null,
+            meeting_info: formData.meetingInfo || null,
+            additional_notes: formData.additionalNotes || null,
+          }
+        };
       };
-
-      const regularEvents = formData.regularEvents 
-        ? formData.regularEvents.split(',').map(e => e.trim()) 
-        : null;
       
-      const signatureEvents = formData.signatureEvents 
-        ? formData.signatureEvents.split(',').map(e => e.trim()) 
-        : null;
-      
+      // Step 1: Create club with required fields via RPC function
+      const clubData = prepareClubData();
       const { data, error } = await supabase.rpc('insert_club', {
-        name: formData.name,
-        description: formData.description,
-        category: formData.category,
-        university: formData.university,
-        university_id: formData.university,
-        logo_url: formData.logoUrl,
+        name: clubData.basicInfo.name,
+        description: clubData.basicInfo.description,
+        category: clubData.basicInfo.category,
+        university: clubData.basicInfo.university,
+        university_id: clubData.basicInfo.university_id,
+        logo_url: clubData.basicInfo.logo_url,
         club_admin_id: user.id
       });
       
       if (error) throw error;
 
+      // Step 2: Update with additional information
       const clubId = data;
+      console.log('Club created with ID:', clubId);
+      
+      // Spread all properties from prepared data
       const { error: updateError } = await supabase
         .from('clubs')
         .update({
-          tagline: formData.tagline || null,
-          established_year: formData.establishedYear ? parseInt(formData.establishedYear) : null,
-          affiliation: formData.affiliation || null,
-          why_join: formData.whyJoin || null,
-          regular_events: regularEvents,
-          signature_events: signatureEvents,
-          community_engagement: formData.communityEngagement || null,
-          who_can_join: formData.whoCanJoin || null,
-          membership_fee: formData.membershipFee || 'Free',
-          how_to_join: formData.howToJoin || null,
-          executive_members: {},
-          phone_number: formData.phoneNumber || null,
-          website: formData.social.website || null,
-          facebook_link: formData.social.facebook || null,
-          instagram_link: formData.social.instagram || null,
-          twitter_link: formData.social.twitter || null,
-          discord_link: formData.social.discord || null,
-          document_url: formData.documentUrl || null,
-          document_name: formData.documentName || null,
-          student_count: formData.studentCount ? parseInt(formData.studentCount) : null,
-          faculty_advisor: formData.facultyAdvisor || null,
-          meeting_info: formData.meetingInfo || null,
-          president_chair_name: formData.presidentChairName || null,
-          president_chair_contact: formData.presidentChairContact || null,
-          executive_members_roles: formData.executiveMembersRoles 
-            ? parseExecutiveMembersRoles(formData.executiveMembersRoles) 
-            : null,
-          faculty_advisors: formData.facultyAdvisors 
-            ? formData.facultyAdvisors.split(',').map(a => a.trim()) 
-            : null,
-          primary_faculty_advisor: formData.primaryFacultyAdvisor || null,
+          ...clubData.details,
+          ...clubData.leadership,
+          ...clubData.contact,
+          ...clubData.misc
         })
         .eq('id', clubId);
 
       if (updateError) throw updateError;
+      
+      // Invalidate any cached queries related to clubs
+      queryClient.invalidateQueries({ queryKey: ['clubs'] });
+      queryClient.invalidateQueries({ queryKey: ['club-admin'] });
       
       toast({
         title: 'Club Created',

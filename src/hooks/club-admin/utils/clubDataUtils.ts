@@ -16,52 +16,21 @@ export const insertClubData = async (
   });
   
   try {
-    // Prepare the data for insertion
-    const clubData = {
-      name: formData.name,
-      description: formData.description,
-      tagline: formData.tagline || null,
-      category: formData.category,
-      university: formData.university,
-      university_id: universityId,
-      logo_url: formData.logoUrl,
-      established_year: formData.establishedYear ? parseInt(formData.establishedYear) : null,
-      affiliation: formData.affiliation || null,
-      why_join: formData.whyJoin || null,
-      regular_events: parseArrayField(formData.regularEvents),
-      signature_events: parseArrayField(formData.signatureEvents),
-      community_engagement: formData.communityEngagement || null,
-      who_can_join: formData.whoCanJoin || null,
-      membership_fee: formData.membershipFee || 'Free',
-      how_to_join: formData.howToJoin || null,
-      president_chair_name: formData.presidentChairName || formData.presidentName || null,
-      president_chair_contact: formData.presidentChairContact || formData.presidentContact || null,
-      executive_members: {},
-      executive_members_roles: parseExecutiveMembersRoles(formData.executiveMembersRoles),
-      faculty_advisors: parseArrayField(formData.facultyAdvisors || formData.advisors),
-      primary_faculty_advisor: formData.primaryFacultyAdvisor || formData.facultyAdvisor || null,
-      phone_number: formData.phoneNumber || formData.contactPhone || null,
-      website: formData.website || null,
-      facebook_link: formData.facebookLink || null,
-      instagram_link: formData.instagramLink || null,
-      twitter_link: formData.twitterLink || null,
-      discord_link: formData.discordLink || null,
-      document_url: formData.documentUrl || null,
-      document_name: formData.documentName || null
-    };
-    
-    console.log('Prepared club data for insertion:', clubData);
-    
-    // Check if the user already has an admin relationship for a club in this university
-    const { data: existingClubs, error: checkError } = await supabase
-      .from('clubs')
-      .select('id')
-      .eq('university_id', universityId);
+    // First check if user is already an admin for a club in this university
+    const checkUserClubs = async () => {
+      const { data: existingClubs, error: checkError } = await supabase
+        .from('clubs')
+        .select('id')
+        .eq('university_id', universityId);
+        
+      if (checkError) {
+        console.error('Error checking existing clubs:', checkError);
+        return [];
+      }
       
-    if (checkError) {
-      console.error('Error checking existing clubs:', checkError);
-    } else if (existingClubs && existingClubs.length > 0) {
-      console.log(`Found ${existingClubs.length} existing clubs at this university`);
+      if (!existingClubs || existingClubs.length === 0) {
+        return [];
+      }
       
       const clubIds = existingClubs.map(club => club.id);
       
@@ -73,21 +42,83 @@ export const insertClubData = async (
         
       if (adminCheckError) {
         console.error('Error checking existing admin roles:', adminCheckError);
-      } else if (existingAdminRoles && existingAdminRoles.length > 0) {
-        console.log('User already has admin roles for clubs at this university:', existingAdminRoles);
+        return [];
       }
+      
+      return existingAdminRoles || [];
+    };
+    
+    const existingUserRoles = await checkUserClubs();
+    console.log('User existing admin roles:', existingUserRoles);
+    
+    // Prepare the club data
+    const prepareClubData = () => {
+      return {
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
+        university: formData.university,
+        university_id: universityId,
+        logo_url: formData.logoUrl,
+        tagline: formData.tagline || null,
+        established_year: formData.establishedYear ? parseInt(formData.establishedYear) : null,
+        affiliation: formData.affiliation || null,
+        why_join: formData.whyJoin || null,
+        regular_events: parseArrayField(formData.regularEvents),
+        signature_events: parseArrayField(formData.signatureEvents),
+        community_engagement: formData.communityEngagement || null,
+        who_can_join: formData.whoCanJoin || null,
+        membership_fee: formData.membershipFee || 'Free',
+        how_to_join: formData.howToJoin || null,
+        president_chair_name: formData.presidentChairName || formData.presidentName || null,
+        president_chair_contact: formData.presidentChairContact || formData.presidentContact || null,
+        executive_members: {},
+        executive_members_roles: parseExecutiveMembersRoles(formData.executiveMembersRoles),
+        faculty_advisors: parseArrayField(formData.facultyAdvisors || formData.advisors),
+        primary_faculty_advisor: formData.primaryFacultyAdvisor || formData.facultyAdvisor || null,
+        phone_number: formData.phoneNumber || formData.contactPhone || null,
+        website: formData.website || formData.socialMediaLinks?.website || null,
+        facebook_link: formData.facebookLink || formData.socialMediaLinks?.facebook || null,
+        instagram_link: formData.instagramLink || formData.socialMediaLinks?.instagram || null,
+        twitter_link: formData.twitterLink || formData.socialMediaLinks?.twitter || null,
+        discord_link: formData.discordLink || formData.socialMediaLinks?.discord || null,
+        document_url: formData.documentUrl || null,
+        document_name: formData.documentName || null,
+        status: 'pending'
+      };
+    };
+    
+    // Create the club with transaction-like pattern
+    const clubData = prepareClubData();
+    console.log('Prepared club data for insertion');
+    
+    // Step 1: Use the insert_club RPC function which handles both club creation and admin assignment
+    const { data, error } = await supabase.rpc('insert_club', {
+      name: clubData.name,
+      description: clubData.description,
+      category: clubData.category,
+      university: clubData.university,
+      university_id: clubData.university_id,
+      logo_url: clubData.logo_url,
+      club_admin_id: userId
+    });
+    
+    if (error) {
+      console.error('Error inserting club:', error);
+      throw error;
     }
     
-    // Create the club
-    const { data, error } = await supabase
+    const clubId = data;
+    console.log('Club created with ID:', clubId);
+    
+    if (!clubId) {
+      throw new Error('Failed to get club ID after creation');
+    }
+    
+    // Step 2: Update the club with the remaining details
+    const { error: updateError } = await supabase
       .from('clubs')
-      .insert({
-        name: clubData.name,
-        description: clubData.description,
-        category: clubData.category,
-        university: clubData.university,
-        university_id: clubData.university_id,
-        logo_url: clubData.logo_url,
+      .update({
         tagline: clubData.tagline,
         established_year: clubData.established_year,
         affiliation: clubData.affiliation,
@@ -111,54 +142,13 @@ export const insertClubData = async (
         twitter_link: clubData.twitter_link,
         discord_link: clubData.discord_link,
         document_url: clubData.document_url,
-        document_name: clubData.document_name,
-        status: 'pending'
+        document_name: clubData.document_name
       })
-      .select();
-      
-    if (error) {
-      console.error('Error inserting club:', error);
-      throw error;
-    }
+      .eq('id', clubId);
     
-    const clubId = data?.[0]?.id;
-    console.log('Club created with ID:', clubId);
-    
-    if (!clubId) {
-      throw new Error('Failed to get club ID after creation');
-    }
-    
-    // Check if the club_admin entry already exists
-    const { data: existingAdmin, error: checkAdminError } = await supabase
-      .from('club_admins')
-      .select('*')
-      .eq('club_id', clubId)
-      .eq('user_id', userId)
-      .single();
-      
-    if (checkAdminError && checkAdminError.code !== 'PGRST116') { // PGRST116 means no rows returned
-      console.error('Error checking for existing admin relationship:', checkAdminError);
-    }
-    
-    // Only create the club_admin relationship if it doesn't already exist
-    if (!existingAdmin) {
-      console.log('Creating club admin relationship for club ID:', clubId, 'and user ID:', userId);
-      
-      const { error: adminError } = await supabase
-        .from('club_admins')
-        .insert({ club_id: clubId, user_id: userId });
-      
-      if (adminError) {
-        console.error('Error creating club admin relationship:', adminError);
-        
-        if (adminError.code === '23505') { // Duplicate key violation
-          console.log('Admin relationship already exists (duplicate key error)');
-        } else {
-          throw adminError;
-        }
-      }
-    } else {
-      console.log('Admin relationship already exists, no need to create');
+    if (updateError) {
+      console.error('Error updating club details:', updateError);
+      throw updateError;
     }
     
     // Get the complete club data to return
@@ -173,10 +163,90 @@ export const insertClubData = async (
       throw fetchError;
     }
     
-    console.log('Club creation and setup complete:', completeClub);
+    console.log('Club creation and setup complete');
     return completeClub;
   } catch (error) {
     console.error('Error in insertClubData:', error);
+    throw error;
+  }
+};
+
+// Optimized function to update an existing club
+export const updateClubData = async (
+  clubId: string,
+  formData: ClubFormData,
+  userId: string
+) => {
+  console.log('Updating club with ID:', clubId);
+  
+  try {
+    // Verify user has permission to edit this club
+    const { data: adminCheck, error: adminCheckError } = await supabase
+      .from('club_admins')
+      .select('club_id')
+      .eq('club_id', clubId)
+      .eq('user_id', userId)
+      .single();
+    
+    if (adminCheckError || !adminCheck) {
+      throw new Error('You do not have permission to edit this club');
+    }
+    
+    // Prepare update data similar to the insert function
+    const clubData = {
+      name: formData.name,
+      description: formData.description,
+      category: formData.category,
+      logo_url: formData.logoUrl || null,
+      tagline: formData.tagline || null,
+      established_year: formData.establishedYear ? parseInt(formData.establishedYear) : null,
+      affiliation: formData.affiliation || null,
+      why_join: formData.whyJoin || null,
+      regular_events: parseArrayField(formData.regularEvents),
+      signature_events: parseArrayField(formData.signatureEvents),
+      community_engagement: formData.communityEngagement || null,
+      who_can_join: formData.whoCanJoin || null,
+      membership_fee: formData.membershipFee || 'Free',
+      how_to_join: formData.howToJoin || null,
+      president_chair_name: formData.presidentChairName || null,
+      president_chair_contact: formData.presidentChairContact || null,
+      executive_members_roles: parseExecutiveMembersRoles(formData.executiveMembersRoles),
+      faculty_advisors: parseArrayField(formData.facultyAdvisors),
+      primary_faculty_advisor: formData.primaryFacultyAdvisor || null,
+      phone_number: formData.phoneNumber || null,
+      website: formData.website || formData.socialMediaLinks?.website || null,
+      facebook_link: formData.facebookLink || formData.socialMediaLinks?.facebook || null,
+      instagram_link: formData.instagramLink || formData.socialMediaLinks?.instagram || null,
+      twitter_link: formData.twitterLink || formData.socialMediaLinks?.twitter || null,
+      discord_link: formData.discordLink || formData.socialMediaLinks?.discord || null,
+      document_url: formData.documentUrl || null,
+      document_name: formData.documentName || null,
+    };
+    
+    const { error: updateError } = await supabase
+      .from('clubs')
+      .update(clubData)
+      .eq('id', clubId);
+    
+    if (updateError) {
+      throw updateError;
+    }
+    
+    // Get the updated club data
+    const { data: updatedClub, error: fetchError } = await supabase
+      .from('clubs')
+      .select('*')
+      .eq('id', clubId)
+      .single();
+    
+    if (fetchError) {
+      throw fetchError;
+    }
+    
+    console.log('Club updated successfully');
+    return updatedClub;
+  } catch (error) {
+    console.error('Error in updateClubData:', error);
     throw error;
   }
 };
