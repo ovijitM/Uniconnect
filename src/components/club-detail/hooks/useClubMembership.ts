@@ -13,6 +13,7 @@ export const useClubMembership = (
   const { clubId } = useParams<{ clubId: string }>();
   const [isMember, setIsMember] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
+  const [lastCheckTimestamp, setLastCheckTimestamp] = useState(0);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -22,6 +23,7 @@ export const useClubMembership = (
     
     try {
       console.log(`Checking membership for user ${user.id} in club ${clubId}`);
+      setLastCheckTimestamp(Date.now()); // Update timestamp for dependency tracking
       
       const { data: membershipData, error: membershipError } = await supabase
         .from('club_members')
@@ -43,7 +45,7 @@ export const useClubMembership = (
       console.error('Error in checkMembership:', error);
       return false;
     }
-  }, [user, clubId]);
+  }, [user, clubId, lastCheckTimestamp]);
 
   // Check membership on component mount and when dependencies change
   useEffect(() => {

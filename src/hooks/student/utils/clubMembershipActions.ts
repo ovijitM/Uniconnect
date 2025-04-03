@@ -43,7 +43,10 @@ export const joinClub = async (
       });
       
       // Return success even though no new membership was created
-      if (options?.onSuccess) options.onSuccess();
+      if (options?.onSuccess) {
+        console.log("Calling onSuccess callback for already-member case");
+        options.onSuccess();
+      }
       return true;
     }
     
@@ -66,7 +69,10 @@ export const joinClub = async (
           variant: 'default',
         });
         // Call onSuccess even for "already a member" case
-        if (options?.onSuccess) options.onSuccess();
+        if (options?.onSuccess) {
+          console.log("Calling onSuccess callback for duplicate-key case");
+          options.onSuccess();
+        }
         return true;
       } else if (error.message?.includes('row-level security policy')) {
         throw new Error('Permission denied. You may not have the right privileges to join this club.');
@@ -82,7 +88,10 @@ export const joinClub = async (
       variant: 'default',
     });
     
-    if (options?.onSuccess) options.onSuccess();
+    if (options?.onSuccess) {
+      console.log("Calling onSuccess callback for successful join");
+      options.onSuccess();
+    }
     return true;
   } catch (error: any) {
     console.error('Error joining club:', error);
@@ -127,7 +136,10 @@ export const leaveClub = async (
       variant: 'default',
     });
     
-    if (options?.onSuccess) options.onSuccess();
+    if (options?.onSuccess) {
+      console.log("Calling onSuccess callback for successful leave");
+      options.onSuccess();
+    }
     return true;
   } catch (error: any) {
     console.error('Error leaving club:', error);
