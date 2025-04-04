@@ -22,7 +22,11 @@ export const registerUserForEvent = async (
         title: "Authentication required",
         description: "Please log in to register for events",
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: {
+          label: "Try again",
+          altText: "Try again",
+          onClick: () => {}
+        }
       });
       return false;
     }
@@ -75,7 +79,11 @@ export const registerUserForEvent = async (
         title: "Registration failed",
         description: error.message || "Something went wrong",
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: {
+          label: "Try again",
+          altText: "Try again",
+          onClick: () => {}
+        }
       });
       return false;
     }
@@ -98,7 +106,11 @@ export const registerUserForEvent = async (
       title: "Registration failed",
       description: error.message || "Something went wrong",
       variant: "destructive",
-      action: <ToastAction altText="Try again">Try again</ToastAction>,
+      action: {
+        label: "Try again",
+        altText: "Try again",
+        onClick: () => {}
+      }
     });
     
     return false;
@@ -120,7 +132,11 @@ export const unregisterUserFromEvent = async (
         title: "Authentication required",
         description: "Please log in to unregister from events",
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: {
+          label: "Try again",
+          altText: "Try again",
+          onClick: () => {}
+        }
       });
       return false;
     }
@@ -138,7 +154,11 @@ export const unregisterUserFromEvent = async (
         title: "Unregistration failed",
         description: error.message || "Something went wrong",
         variant: "destructive",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
+        action: {
+          label: "Try again",
+          altText: "Try again",
+          onClick: () => {}
+        }
       });
       return false;
     }
@@ -161,7 +181,11 @@ export const unregisterUserFromEvent = async (
       title: "Unregistration failed",
       description: error.message || "Something went wrong",
       variant: "destructive",
-      action: <ToastAction altText="Try again">Try again</ToastAction>,
+      action: {
+        label: "Try again",
+        altText: "Try again",
+        onClick: () => {}
+      }
     });
     
     return false;
