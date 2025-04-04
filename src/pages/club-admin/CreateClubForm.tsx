@@ -7,13 +7,15 @@ import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
 import { ClubFormTabs, ClubFormButtons, clubCategories, clubFormFieldNames } from './components/club-form';
 import { parseExecutiveMembersRoles } from '@/hooks/club-admin/utils/dataTransformUtils';
-import { useQueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const CreateClubForm: React.FC = () => {
+// Create a client
+const queryClient = new QueryClient();
+
+const CreateClubFormContent: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [universities, setUniversities] = useState<any[]>([]);
   const [isLoadingUniversities, setIsLoadingUniversities] = useState(true);
@@ -292,6 +294,15 @@ const CreateClubForm: React.FC = () => {
         </div>
       </div>
     </Layout>
+  );
+};
+
+// Wrap the component with QueryClientProvider
+const CreateClubForm: React.FC = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <CreateClubFormContent />
+    </QueryClientProvider>
   );
 };
 
