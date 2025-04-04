@@ -118,12 +118,6 @@ export const useClubMembership = (
             variant: "default",
           });
           setIsMember(true); // Update state to reflect membership
-        } else if (error.message?.includes('row-level security policy')) {
-          toast({
-            title: "Permission denied",
-            description: "You don't have permission to join this club",
-            variant: "destructive",
-          });
         } else {
           throw error;
         }

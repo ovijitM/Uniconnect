@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Calendar, Mail, ExternalLink, Loader2, Check } from 'lucide-react';
@@ -35,64 +34,36 @@ const ClubSidebar: React.FC<ClubSidebarProps> = ({
   }, [isMember, club.id]);
   
   const renderJoinButton = () => {
-    if (club.status === 'approved') {
-      if (isMember) {
-        return (
-          <div className="w-full mb-4">
-            <Button className="w-full" variant="outline" disabled>
-              <Check className="mr-2 h-4 w-4 text-green-500" />
-              You are a member
-            </Button>
-            <Badge variant="secondary" className="mt-2 flex items-center justify-center gap-1 w-full">
-              <Check className="h-3 w-3" />
-              Joined
-            </Badge>
-          </div>
-        );
-      } else {
-        return (
-          <Button 
-            className="w-full mb-4" 
-            onClick={handleJoinClub} 
-            disabled={isJoining}
-          >
-            {isJoining ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Joining...
-              </>
-            ) : (
-              <>
-                <Users className="mr-2 h-4 w-4" />
-                Join Club
-              </>
-            )}
-          </Button>
-        );
-      }
-    } else {
+    if (club.status !== 'approved') {
       return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <Button className="w-full mb-4" disabled>
-                  <Users className="mr-2 h-4 w-4" />
-                  {club.status === 'pending' ? 'Pending Approval' : 'Club Rejected'}
-                </Button>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{club.status === 'pending' 
-                ? 'This club is waiting for admin approval' 
-                : 'This club has been rejected by admin'}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Alert variant="warning" className="mt-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>This club is not yet approved</AlertDescription>
+        </Alert>
       );
     }
+    
+    return isMember ? (
+      <Button className="w-full mt-4" disabled variant="outline">
+        <Check className="mr-2 h-4 w-4" /> Member
+      </Button>
+    ) : (
+      <Button 
+        className="w-full mt-4" 
+        onClick={handleJoinClub}
+        disabled={isJoining}
+      >
+        {isJoining ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Joining...
+          </>
+        ) : (
+          <>Join Club</>
+        )}
+      </Button>
+    );
   };
-
+  
   return (
     <div className="space-y-6">
       <div className="glass-panel rounded-xl p-6">

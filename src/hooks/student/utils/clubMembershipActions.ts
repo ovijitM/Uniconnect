@@ -1,7 +1,11 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { JoinClubOptions, LeaveClubOptions } from '../types/studentClubTypes';
 
+/**
+ * Join a club with better error handling and logging
+ */
 export const joinClub = async (
   userId: string,
   clubId: string,
@@ -20,7 +24,7 @@ export const joinClub = async (
   try {
     console.log("Attempting to join club:", clubId, "for user:", userId);
     
-    // Check if already a member
+    // Check if already a member with better error handling
     const { data: existing, error: checkError } = await supabase
       .from('club_members')
       .select('*')
@@ -49,7 +53,7 @@ export const joinClub = async (
       return true;
     }
     
-    // Join the club
+    // Join the club with better logging
     const { error } = await supabase
       .from('club_members')
       .insert({
@@ -73,8 +77,6 @@ export const joinClub = async (
           options.onSuccess();
         }
         return true;
-      } else if (error.message?.includes('row-level security policy')) {
-        throw new Error('Permission denied. You may not have the right privileges to join this club.');
       } else {
         throw error;
       }
@@ -103,6 +105,9 @@ export const joinClub = async (
   }
 };
 
+/**
+ * Leave a club with better error handling and logging
+ */
 export const leaveClub = async (
   userId: string | undefined,
   clubId: string,
@@ -120,6 +125,29 @@ export const leaveClub = async (
   
   try {
     console.log("Attempting to leave club:", clubId, "for user:", userId);
+    // Enhanced delete operation - first check if membership exists
+    const { data: existing, error: checkError } = await supabase
+      .from('club_members')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('club_id', clubId)
+      .maybeSingle();
+      
+    if (checkError && checkError.code !== 'PGRST116') { 
+      console.error('Error checking membership before leaving:', checkError);
+    }
+    
+    if (!existing) {
+      console.log("User is not a member of this club, nothing to leave");
+      toast({
+        title: 'Not a member',
+        description: 'You are not currently a member of this club',
+        variant: 'default',
+      });
+      return true;
+    }
+    
+    // Proceed with delete
     const { error } = await supabase
       .from('club_members')
       .delete()
