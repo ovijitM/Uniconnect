@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import React from 'react';
+import { RegisterOptions } from '../types/studentEventTypes';
 
 /**
  * Registers a user for an event
@@ -17,11 +18,10 @@ export const registerForEvent = async (
     
     toast.error('Registration failed', {
       description: 'Missing required information',
-      action: (
-        <Button variant="outline" size="sm">
-          Retry
-        </Button>
-      )
+      action: {
+        label: 'Retry',
+        onClick: () => {}
+      }
     });
     
     return false;
@@ -42,7 +42,7 @@ export const registerForEvent = async (
     
     if (existingRegistration) {
       toast.info('Already registered', {
-        description: 'You are already registered for this event',
+        description: 'You are already registered for this event'
       });
       return true;
     }
@@ -60,7 +60,7 @@ export const registerForEvent = async (
     }
     
     toast.success('Registration successful', {
-      description: 'You have been registered for this event',
+      description: 'You have been registered for this event'
     });
     
     return true;
@@ -69,11 +69,10 @@ export const registerForEvent = async (
     
     toast.error('Registration failed', {
       description: 'An error occurred while registering. Please try again.',
-      action: (
-        <Button variant="outline" size="sm" onClick={() => registerForEvent(userId, eventId)}>
-          Retry
-        </Button>
-      )
+      action: {
+        label: 'Retry',
+        onClick: () => registerForEvent(userId, eventId)
+      }
     });
     
     return false;
@@ -92,11 +91,10 @@ export const unregisterFromEvent = async (
     
     toast.error('Unregistration failed', {
       description: 'Missing required information',
-      action: (
-        <Button variant="outline" size="sm">
-          Retry
-        </Button>
-      )
+      action: {
+        label: 'Retry',
+        onClick: () => {}
+      }
     });
     
     return false;
@@ -115,7 +113,7 @@ export const unregisterFromEvent = async (
     }
     
     toast.success('Unregistered successfully', {
-      description: 'You have been removed from this event',
+      description: 'You have been removed from this event'
     });
     
     return true;
@@ -124,13 +122,41 @@ export const unregisterFromEvent = async (
     
     toast.error('Unregistration failed', {
       description: 'An error occurred. Please try again.',
-      action: (
-        <Button variant="outline" size="sm" onClick={() => unregisterFromEvent(userId, eventId)}>
-          Retry
-        </Button>
-      )
+      action: {
+        label: 'Retry',
+        onClick: () => unregisterFromEvent(userId, eventId)
+      }
     });
     
     return false;
   }
+};
+
+/**
+ * Helper functions for using in other components
+ */
+export const registerUserForEvent = async (
+  userId: string,
+  eventId: string,
+  toastFn: any,
+  options?: RegisterOptions
+): Promise<boolean> => {
+  const success = await registerForEvent(userId, eventId);
+  if (success && options?.onSuccess) {
+    options.onSuccess();
+  }
+  return success;
+};
+
+export const unregisterUserFromEvent = async (
+  userId: string,
+  eventId: string,
+  toastFn: any,
+  options?: RegisterOptions
+): Promise<boolean> => {
+  const success = await unregisterFromEvent(userId, eventId);
+  if (success && options?.onSuccess) {
+    options.onSuccess();
+  }
+  return success;
 };
