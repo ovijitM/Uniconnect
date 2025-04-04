@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast as useToastFunc } from '@/hooks/use-toast';
 
@@ -122,9 +121,8 @@ export const registerUserForEvent = async (
       title: 'Registration failed',
       description: error.message || 'Failed to register for event',
       variant: 'destructive',
-      // Create action without JSX
       action: {
-        label: 'Try again',
+        label: "Try again",
         onClick: () => registerUserForEvent(userId, eventId, toast, options)
       }
     });

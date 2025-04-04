@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Club, Event } from '@/types';
+import { formatClubData } from '@/hooks/utils/clubFormatter';
 
 /**
  * Optimized service layer for club admin operations
@@ -37,7 +38,7 @@ export const clubAdminService = {
       
       // Update additional club details
       if (clubId) {
-        const { data: updatedClub, error: updateError } = await supabase
+        const { data: updatedClubData, error: updateError } = await supabase
           .from('clubs')
           .update({
             tagline: clubData.tagline,
@@ -50,9 +51,12 @@ export const clubAdminService = {
           
         if (updateError) throw updateError;
         
+        // Convert raw DB data to Club type using formatter
+        const formattedClub = await formatClubData(updatedClubData);
+        
         return { 
           success: true, 
-          club: updatedClub 
+          club: formattedClub || undefined
         };
       }
       
@@ -73,7 +77,7 @@ export const clubAdminService = {
   async updateClub(clubId: string, clubData: any, userId: string): Promise<{ success: boolean; club?: Club; error?: string }> {
     try {
       // First check if user is admin for this club
-      const { data: adminCheck, error: adminCheckError } = await supabase
+      const { count: adminCount, error: adminCheckError } = await supabase
         .from('club_admins')
         .select('*', { count: 'exact', head: true })
         .eq('club_id', clubId)
@@ -81,7 +85,7 @@ export const clubAdminService = {
         
       if (adminCheckError) throw adminCheckError;
       
-      if (!adminCheck || adminCheck === 0) {
+      if (!adminCount || adminCount === 0) {
         return { 
           success: false, 
           error: 'You do not have permission to update this club' 
@@ -89,7 +93,7 @@ export const clubAdminService = {
       }
       
       // Update club with optimized query
-      const { data: updatedClub, error: updateError } = await supabase
+      const { data: updatedClubData, error: updateError } = await supabase
         .from('clubs')
         .update(clubData)
         .eq('id', clubId)
@@ -98,9 +102,12 @@ export const clubAdminService = {
         
       if (updateError) throw updateError;
       
+      // Convert raw DB data to Club type using formatter
+      const formattedClub = await formatClubData(updatedClubData);
+      
       return { 
         success: true, 
-        club: updatedClub 
+        club: formattedClub || undefined
       };
       
     } catch (error: any) {
@@ -118,7 +125,7 @@ export const clubAdminService = {
   async deleteClub(clubId: string, userId: string): Promise<{ success: boolean; error?: string }> {
     try {
       // First check if user is admin for this club
-      const { data: adminCheck, error: adminCheckError } = await supabase
+      const { count: adminCount, error: adminCheckError } = await supabase
         .from('club_admins')
         .select('*', { count: 'exact', head: true })
         .eq('club_id', clubId)
@@ -126,7 +133,7 @@ export const clubAdminService = {
         
       if (adminCheckError) throw adminCheckError;
       
-      if (!adminCheck || adminCheck === 0) {
+      if (!adminCount || adminCount === 0) {
         return { 
           success: false, 
           error: 'You do not have permission to delete this club' 
@@ -158,7 +165,7 @@ export const clubAdminService = {
   async createEvent(eventData: any, userId: string): Promise<{ success: boolean; event?: Event; error?: string }> {
     try {
       // Validate club ownership
-      const { data: adminCheck, error: adminCheckError } = await supabase
+      const { count: adminCount, error: adminCheckError } = await supabase
         .from('club_admins')
         .select('*', { count: 'exact', head: true })
         .eq('club_id', eventData.club_id)
@@ -166,7 +173,7 @@ export const clubAdminService = {
         
       if (adminCheckError) throw adminCheckError;
       
-      if (!adminCheck || adminCheck === 0) {
+      if (!adminCount || adminCount === 0) {
         return { 
           success: false, 
           error: 'You do not have permission to create events for this club' 
@@ -174,7 +181,7 @@ export const clubAdminService = {
       }
       
       // Create event
-      const { data: newEvent, error: createError } = await supabase
+      const { data: newEventData, error: createError } = await supabase
         .from('events')
         .insert(eventData)
         .select('*')
@@ -182,9 +189,23 @@ export const clubAdminService = {
         
       if (createError) throw createError;
       
+      // Create an Event object from raw data
+      const event: Event = {
+        id: newEventData.id,
+        title: newEventData.title,
+        description: newEventData.description,
+        date: newEventData.date,
+        location: newEventData.location,
+        imageUrl: newEventData.image_url || '',
+        organizer: { id: newEventData.club_id, name: '', description: '', logoUrl: '', category: '', memberCount: 0, events: [] },
+        category: newEventData.category,
+        status: newEventData.status as 'upcoming' | 'ongoing' | 'past',
+        participants: 0
+      };
+      
       return { 
         success: true, 
-        event: newEvent 
+        event: event
       };
       
     } catch (error: any) {

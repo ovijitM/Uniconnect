@@ -10,7 +10,7 @@ export const isUserClubAdmin = async (userId: string, clubId: string): Promise<b
   
   try {
     // Use a specialized query with head: true to optimize performance
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from('club_admins')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
@@ -19,7 +19,7 @@ export const isUserClubAdmin = async (userId: string, clubId: string): Promise<b
     if (error) throw error;
     
     // Return boolean directly based on the count
-    return !!data && data > 0;
+    return !!count && count > 0;
   } catch (error) {
     console.error('Error checking club admin status:', error);
     return false;

@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Club } from '@/types';
 import { memoize } from '@/hooks/utils/dataFetching';
+import { formatClubData } from '@/hooks/utils/clubFormatter';
 
 /**
  * Fetches clubs administered by a specific user with efficient data loading
@@ -52,13 +53,16 @@ export const fetchAdminClubs = async (userId: string): Promise<Club[]> => {
     }
     
     // Transform and filter the data
-    const clubs = adminClubs
+    const clubsPromises = adminClubs
       .map(item => item.clubs)
-      .filter(Boolean) as Club[];
+      .filter(Boolean)
+      .map(clubData => formatClubData(clubData));
+    
+    const clubs = await Promise.all(clubsPromises);
     
     console.log(`Found ${clubs.length} club(s) administered by user`);
     
-    return clubs;
+    return clubs.filter(Boolean) as Club[];
   } catch (error) {
     console.error('Error in fetchAdminClubs:', error);
     throw error;
@@ -128,14 +132,29 @@ export const fetchEventStatistics = async (clubIds: string[]) => {
     if (pastError) throw pastError;
 
     // Calculate average attendance (can be optimized with a custom DB function)
+    // First get all events for these clubs
+    const { data: clubEvents, error: clubEventsError } = await supabase
+      .from('events')
+      .select('id')
+      .in('club_id', clubIds);
+      
+    if (clubEventsError) throw clubEventsError;
+    
+    if (!clubEvents || clubEvents.length === 0) {
+      return {
+        activeEventCount: activeCount || 0,
+        pastEventCount: pastCount || 0,
+        averageAttendance: 0
+      };
+    }
+    
+    const eventIds = clubEvents.map(event => event.id);
+    
+    // Then get participants for those events
     const { data: participants, error: attendanceError } = await supabase
       .from('event_participants')
       .select('event_id')
-      .in('event_id', function(query) {
-        return query.from('events')
-          .select('id')
-          .in('club_id', clubIds);
-      });
+      .in('event_id', eventIds);
 
     if (attendanceError) throw attendanceError;
 

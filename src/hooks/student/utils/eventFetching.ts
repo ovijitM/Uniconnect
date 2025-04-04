@@ -6,6 +6,7 @@ import { Event } from '@/types';
 
 export interface EventParticipant {
   event_id: string;
+  count?: number;
 }
 
 /**
@@ -109,25 +110,28 @@ export const enrichEventsWithParticipantCounts = async (events: any[]): Promise<
   // Batch fetch all participant counts in a single query
   const { data: participantCounts, error } = await supabase
     .from('event_participants')
-    .select('event_id')
-    .in('event_id', eventIds)
-    .select('event_id', { count: 'exact', by: 'event_id' });
+    .select('event_id, count', { count: 'exact', by: 'event_id' });
     
   if (error) {
     console.error("Error fetching participant counts:", error);
     // Continue without participant counts rather than failing completely
-    return events;
+    return events.map(event => ({
+      ...event,
+      participants: 0
+    })) as Event[];
   }
   
   // Create a map of event_id -> count for quick lookups
   const countsMap = new Map();
-  participantCounts?.forEach(item => {
-    countsMap.set(item.event_id, item.count || 0);
-  });
+  if (participantCounts) {
+    participantCounts.forEach((item: EventParticipant) => {
+      countsMap.set(item.event_id, item.count || 0);
+    });
+  }
   
   // Enrich events with participant counts
   return events.map(event => ({
     ...event,
     participants: countsMap.get(event.id) || 0
-  }));
+  })) as Event[];
 };
