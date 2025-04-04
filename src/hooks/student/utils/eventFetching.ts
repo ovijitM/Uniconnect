@@ -12,7 +12,7 @@ export const fetchRegisteredEventIds = async (userId: string): Promise<string[]>
     console.log(`Fetching registered events for user: ${userId}`);
     
     const { data, error } = await supabase
-      .from('event_attendees')
+      .from('event_participants')
       .select('event_id')
       .eq('user_id', userId);
     

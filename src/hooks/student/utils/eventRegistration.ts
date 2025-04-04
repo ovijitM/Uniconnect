@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ToastAction } from '@/components/ui/toast';
 
 // Define a type for registration options
 interface RegisterOptions {
@@ -33,7 +32,7 @@ export const registerUserForEvent = async (
     
     // Check if already registered
     const { data: existingRegistration } = await supabase
-      .from('event_attendees')
+      .from('event_participants')
       .select('*')
       .eq('event_id', eventId)
       .eq('user_id', userId)
@@ -50,12 +49,12 @@ export const registerUserForEvent = async (
     
     // Register for the event
     const { error } = await supabase
-      .from('event_attendees')
+      .from('event_participants')
       .insert({
         event_id: eventId,
         user_id: userId,
-        registration_date: new Date().toISOString(),
-        status: 'registered'
+        created_at: new Date().toISOString(),
+        checked_in: false
       });
     
     if (error) {
@@ -143,7 +142,7 @@ export const unregisterUserFromEvent = async (
     
     // Unregister from the event
     const { error } = await supabase
-      .from('event_attendees')
+      .from('event_participants')
       .delete()
       .eq('event_id', eventId)
       .eq('user_id', userId);
