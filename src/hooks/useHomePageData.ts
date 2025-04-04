@@ -56,7 +56,10 @@ export const useHomePageData = () => {
       // Apply visibility filtering based on user university
       const visibilityFilter = createVisibilityFilter(userUniversity);
       if (visibilityFilter.type === 'or') {
-        eventsQuery = eventsQuery.or(visibilityFilter.filter);
+        // Apply proper OR filter syntax
+        if (userUniversity) {
+          eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq."${userUniversity}")`);
+        }
       } else {
         eventsQuery = eventsQuery.eq('visibility', visibilityFilter.filter);
       }

@@ -1,130 +1,79 @@
-import { supabase } from '@/integrations/supabase/client';
-import { toast as useToastFunc } from '@/hooks/use-toast';
 
-interface RegistrationOptions {
-  onSuccess?: () => void;
-  optimistic?: boolean;
-}
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
+import React from 'react';
 
 /**
- * Register a user for an event with optimistic UI updates
+ * Registers a user for an event
  */
-export const registerUserForEvent = async (
-  userId: string, 
-  eventId: string, 
-  toast: typeof useToastFunc,
-  options: RegistrationOptions = {}
+export const registerForEvent = async (
+  userId: string,
+  eventId: string
 ): Promise<boolean> => {
   if (!userId || !eventId) {
-    toast({
-      title: 'Registration failed',
-      description: 'Missing user or event information',
-      variant: 'destructive',
+    console.error('Missing user ID or event ID');
+    
+    toast.error('Registration failed', {
+      description: 'Missing required information',
+      action: (
+        <Button variant="outline" size="sm">
+          Retry
+        </Button>
+      )
     });
+    
     return false;
   }
-
+  
   try {
     // Check if already registered
     const { data: existingRegistration, error: checkError } = await supabase
       .from('event_participants')
       .select('*')
-      .eq('event_id', eventId)
       .eq('user_id', userId)
+      .eq('event_id', eventId)
       .maybeSingle();
-
+    
     if (checkError) {
-      console.error('Error checking registration status:', checkError);
       throw checkError;
     }
-
+    
     if (existingRegistration) {
-      toast({
-        title: 'Already registered',
+      toast.info('Already registered', {
         description: 'You are already registered for this event',
-        variant: 'default',
       });
       return true;
     }
-
-    // Check event capacity
-    const { data: eventData, error: eventError } = await supabase
-      .from('events')
-      .select('max_participants')
-      .eq('id', eventId)
-      .single();
-
-    if (eventError) {
-      console.error('Error checking event capacity:', eventError);
-      throw eventError;
-    }
-
-    // Check current participant count
-    const { count: currentCount, error: countError } = await supabase
-      .from('event_participants')
-      .select('*', { count: 'exact', head: true })
-      .eq('event_id', eventId);
-
-    if (countError) {
-      console.error('Error checking participant count:', countError);
-      throw countError;
-    }
-
-    if (eventData.max_participants && currentCount >= eventData.max_participants) {
-      toast({
-        title: 'Event is full',
-        description: 'This event has reached its maximum capacity',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    // Register for the event
-    const { error: registrationError } = await supabase
+    
+    // Insert new registration
+    const { error: insertError } = await supabase
       .from('event_participants')
       .insert({
-        event_id: eventId,
         user_id: userId,
+        event_id: eventId
       });
-
-    if (registrationError) {
-      throw registrationError;
+    
+    if (insertError) {
+      throw insertError;
     }
-
-    // Success
-    toast({
-      title: 'Registration successful',
-      description: 'You are now registered for this event',
-      variant: 'default',
+    
+    toast.success('Registration successful', {
+      description: 'You have been registered for this event',
     });
-
-    if (options.onSuccess) {
-      options.onSuccess();
-    }
-
+    
     return true;
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error registering for event:', error);
     
-    // Handle unique constraint violation (already registered) gracefully
-    if (error.code === '23505') {
-      toast({
-        title: 'Already registered',
-        description: 'You are already registered for this event',
-        variant: 'default',
-      });
-      return true;
-    }
-    
-    // Use action creator function instead of JSX
-    toast({
-      title: 'Registration failed',
-      description: error.message || 'Failed to register for event',
-      variant: 'destructive',
-      action: {
-        label: "Try again",
-        onClick: () => registerUserForEvent(userId, eventId, toast, options)
-      }
+    toast.error('Registration failed', {
+      description: 'An error occurred while registering. Please try again.',
+      action: (
+        <Button variant="outline" size="sm" onClick={() => registerForEvent(userId, eventId)}>
+          Retry
+        </Button>
+      )
     });
     
     return false;
@@ -132,101 +81,56 @@ export const registerUserForEvent = async (
 };
 
 /**
- * Unregister a user from an event with optimistic UI updates
+ * Unregisters a user from an event
  */
-export const unregisterUserFromEvent = async (
-  userId: string | undefined,
-  eventId: string,
-  toast: typeof useToastFunc,
-  options: RegistrationOptions = {}
+export const unregisterFromEvent = async (
+  userId: string,
+  eventId: string
 ): Promise<boolean> => {
   if (!userId || !eventId) {
-    toast({
-      title: 'Error',
-      description: 'Unable to unregister: Missing user or event information',
-      variant: 'destructive',
+    console.error('Missing user ID or event ID');
+    
+    toast.error('Unregistration failed', {
+      description: 'Missing required information',
+      action: (
+        <Button variant="outline" size="sm">
+          Retry
+        </Button>
+      )
     });
+    
     return false;
   }
-
+  
   try {
+    // Delete registration
     const { error } = await supabase
       .from('event_participants')
       .delete()
-      .eq('event_id', eventId)
-      .eq('user_id', userId);
-
-    if (error) throw error;
-
-    toast({
-      title: 'Success',
-      description: 'You have been unregistered from this event',
-      variant: 'default',
-    });
-
-    if (options.onSuccess) {
-      options.onSuccess();
+      .eq('user_id', userId)
+      .eq('event_id', eventId);
+    
+    if (error) {
+      throw error;
     }
-
+    
+    toast.success('Unregistered successfully', {
+      description: 'You have been removed from this event',
+    });
+    
     return true;
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error unregistering from event:', error);
-    toast({
-      title: 'Error',
-      description: error.message || 'Failed to unregister from event',
-      variant: 'destructive',
+    
+    toast.error('Unregistration failed', {
+      description: 'An error occurred. Please try again.',
+      action: (
+        <Button variant="outline" size="sm" onClick={() => unregisterFromEvent(userId, eventId)}>
+          Retry
+        </Button>
+      )
     });
-    return false;
-  }
-};
-
-/**
- * Batch register for multiple events
- */
-export const batchRegisterForEvents = async (
-  userId: string,
-  eventIds: string[],
-  toast: typeof useToastFunc
-): Promise<boolean> => {
-  if (!userId || !eventIds.length) {
-    toast({
-      title: 'Registration failed',
-      description: 'No events selected for registration',
-      variant: 'destructive',
-    });
-    return false;
-  }
-
-  try {
-    // Create registration entries for all events
-    const registrations = eventIds.map(eventId => ({
-      event_id: eventId,
-      user_id: userId
-    }));
-
-    const { error } = await supabase
-      .from('event_participants')
-      .upsert(registrations, { 
-        onConflict: 'event_id,user_id',
-        ignoreDuplicates: true
-      });
-
-    if (error) throw error;
-
-    toast({
-      title: 'Registration successful',
-      description: `You are now registered for ${eventIds.length} events`,
-      variant: 'default',
-    });
-
-    return true;
-  } catch (error: any) {
-    console.error('Error batch registering for events:', error);
-    toast({
-      title: 'Registration failed',
-      description: error.message || 'Failed to register for selected events',
-      variant: 'destructive',
-    });
+    
     return false;
   }
 };

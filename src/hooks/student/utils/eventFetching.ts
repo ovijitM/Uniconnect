@@ -82,7 +82,10 @@ export const fetchUpcomingEvents = async (userUniversity: string | null | undefi
   
   if (visibilityFilter.type === 'or') {
     console.log("Filtering events by university:", userUniversity);
-    eventsQuery = eventsQuery.or(visibilityFilter.filter);
+    // For university users, use multiple filters in an array
+    eventsQuery = eventsQuery.or(
+      `visibility.eq.public,visibility.eq.university_only,and(visibility.eq.university_only,clubs.university.eq.${encodeURIComponent(userUniversity as string)})`
+    );
   } else {
     console.log("No university, fetching public events only");
     eventsQuery = eventsQuery.eq('visibility', visibilityFilter.filter);
@@ -110,7 +113,7 @@ export const enrichEventsWithParticipantCounts = async (events: any[]): Promise<
   // Batch fetch all participant counts in a single query
   const { data: participantCounts, error } = await supabase
     .from('event_participants')
-    .select('event_id, count', { count: 'exact', by: 'event_id' });
+    .select('event_id', { count: 'exact' });
     
   if (error) {
     console.error("Error fetching participant counts:", error);
@@ -124,8 +127,13 @@ export const enrichEventsWithParticipantCounts = async (events: any[]): Promise<
   // Create a map of event_id -> count for quick lookups
   const countsMap = new Map();
   if (participantCounts) {
-    participantCounts.forEach((item: EventParticipant) => {
-      countsMap.set(item.event_id, item.count || 0);
+    const eventGroups = participantCounts.reduce((acc: Record<string, number>, item: EventParticipant) => {
+      acc[item.event_id] = (acc[item.event_id] || 0) + 1;
+      return acc;
+    }, {});
+    
+    Object.entries(eventGroups).forEach(([eventId, count]) => {
+      countsMap.set(eventId, count);
     });
   }
   

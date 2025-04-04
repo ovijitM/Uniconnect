@@ -26,11 +26,18 @@ export const fetchUserUniversity = async (userId: string): Promise<string | null
  * Creates a visibility filter for queries based on user's university
  * Optimized to use proper Supabase Filter syntax
  */
-export const createVisibilityFilter = (userUniversity: string | null) => {
+export const createVisibilityFilter = (userUniversity: string | null | undefined) => {
   if (userUniversity) {
-    // For university users, show both public events and events from their university
+    // For university users, construct a filter that correctly handles spaces in university name
+    // Using an array of conditions that will be joined with OR
     return {
-      filter: `visibility.eq.public,visibility.eq.university_only,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`,
+      filter: [
+        { visibility: 'public' },
+        { 
+          visibility: 'university_only',
+          clubs: { university: userUniversity }
+        }
+      ],
       type: 'or' as const
     };
   } 

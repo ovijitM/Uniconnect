@@ -28,7 +28,10 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
     
     if (visibilityFilter.type === 'or') {
       console.log("Filtering events by university:", userUniversity);
-      eventsQuery = eventsQuery.or(visibilityFilter.filter);
+      // Fix the filter syntax for OR conditions with proper string escaping
+      if (userUniversity) {
+        eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq."${userUniversity}")`);
+      }
     } else {
       console.log("No university, fetching public events only");
       eventsQuery = eventsQuery.eq('visibility', visibilityFilter.filter);
