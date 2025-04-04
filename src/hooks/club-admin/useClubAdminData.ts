@@ -1,96 +1,90 @@
 
-import { useState, useEffect } from 'react';
-import { useClubMembers } from './useClubMembers';
-import { useClubEvents } from './useClubEvents';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { 
+  fetchAdminClubsMemoized, 
+  fetchClubEvents, 
+  fetchEventStatistics 
+} from './utils/clubFetching';
+import { useClubMembers } from './useClubMembers';
+import { Club } from '@/types';
 
 export const useClubAdminData = (userId: string | undefined) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [adminClubs, setAdminClubs] = useState<any[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [selectedEventTitle, setSelectedEventTitle] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  
   const { toast } = useToast();
-  const { clubEvents, activeEventCount, pastEventCount, averageAttendance, fetchClubEvents } = useClubEvents();
+  
+  // State
+  const [adminClubs, setAdminClubs] = useState<Club[]>([]);
+  const [clubEvents, setClubEvents] = useState<any[]>([]);
+  const [activeEventCount, setActiveEventCount] = useState(0);
+  const [pastEventCount, setPastEventCount] = useState(0);
+  const [averageAttendance, setAverageAttendance] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedEventTitle, setSelectedEventTitle] = useState('');
+  
   const { clubMembers, totalMembersCount, fetchClubMembers } = useClubMembers();
   
-  const fetchClubAdminData = async () => {
-    if (!userId) {
-      setIsLoading(false);
-      return;
-    }
+  // Fetch club admin data with efficient error handling and loading state management
+  const fetchClubAdminData = useCallback(async () => {
+    if (!userId) return;
     
     setIsLoading(true);
     setErrorMessage(null);
     
     try {
-      console.log('Fetching club admin data');
+      // Fetch clubs administered by the user (using memoized function)
+      const clubs = await fetchAdminClubsMemoized(userId);
+      setAdminClubs(clubs);
       
-      // First, get the clubs this user is an admin for
-      const { data: clubsData, error: clubsError } = await supabase
-        .from('club_admins')
-        .select('club_id')
-        .eq('user_id', userId);
-      
-      if (clubsError) {
-        console.error('Error fetching club admin data:', clubsError);
-        throw clubsError;
-      }
-      
-      const clubIds = clubsData.map(item => item.club_id);
-      
-      if (clubIds.length === 0) {
-        console.log('No clubs found for this admin');
-        setAdminClubs([]);
+      if (clubs.length === 0) {
         setIsLoading(false);
         return;
       }
       
-      // Now, fetch the club details
-      const { data: clubs, error: clubDetailsError } = await supabase
-        .from('clubs')
-        .select('*')
-        .in('id', clubIds);
+      const clubIds = clubs.map(club => club.id);
       
-      if (clubDetailsError) {
-        console.error('Error fetching club details:', clubDetailsError);
-        throw clubDetailsError;
-      }
+      // Parallel fetching for better performance
+      const [events, members, statistics] = await Promise.all([
+        fetchClubEvents(clubIds),
+        fetchClubMembers(clubIds, clubs),
+        fetchEventStatistics(clubIds)
+      ]);
       
-      setAdminClubs(clubs || []);
+      setClubEvents(events || []);
+      setActiveEventCount(statistics.activeEventCount);
+      setPastEventCount(statistics.pastEventCount);
+      setAverageAttendance(statistics.averageAttendance);
       
-      // Fetch events for these clubs
-      await fetchClubEvents(clubIds);
-      
-      // Fetch members for these clubs
-      await fetchClubMembers(clubIds, clubs || []);
+      console.log(`Dashboard data loaded: ${clubs.length} clubs, ${events?.length || 0} events, ${totalMembersCount} members`);
       
     } catch (error: any) {
-      console.error('Error fetching club admin data:', error);
-      setErrorMessage(error.message || 'Failed to load dashboard data. Please refresh the page.');
+      console.error('Error in fetchClubAdminData:', error);
+      setErrorMessage(error.message || 'Failed to load dashboard data');
       
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to load dashboard data. Please refresh the page.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load club admin dashboard data. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const selectEventForAttendeeManagement = (eventId: string, eventTitle: string) => {
-    setSelectedEventId(eventId);
-    setSelectedEventTitle(eventTitle);
-  };
-
+  }, [userId, toast, fetchClubMembers, totalMembersCount]);
+  
+  // Initialize data fetching
   useEffect(() => {
     if (userId) {
       fetchClubAdminData();
     }
-  }, [userId]);
+  }, [userId, fetchClubAdminData]);
+  
+  // Optimize event selection with useCallback
+  const selectEventForAttendeeManagement = useCallback((eventId: string, eventTitle: string) => {
+    setSelectedEventId(eventId);
+    setSelectedEventTitle(eventTitle);
+  }, []);
 
   return {
     adminClubs,

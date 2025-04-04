@@ -109,9 +109,9 @@ export const enrichEventsWithParticipantCounts = async (events: any[]): Promise<
   // Batch fetch all participant counts in a single query
   const { data: participantCounts, error } = await supabase
     .from('event_participants')
-    .select('event_id, count')
+    .select('event_id')
     .in('event_id', eventIds)
-    .select('event_id', { count: 'exact', head: true, by: 'event_id' });
+    .select('event_id', { count: 'exact', by: 'event_id' });
     
   if (error) {
     console.error("Error fetching participant counts:", error);
@@ -122,7 +122,7 @@ export const enrichEventsWithParticipantCounts = async (events: any[]): Promise<
   // Create a map of event_id -> count for quick lookups
   const countsMap = new Map();
   participantCounts?.forEach(item => {
-    countsMap.set(item.event_id, item.count);
+    countsMap.set(item.event_id, item.count || 0);
   });
   
   // Enrich events with participant counts
