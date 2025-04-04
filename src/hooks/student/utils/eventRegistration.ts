@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ToastAction } from '@/components/ui/toast';
 import { toast as useToastFunc } from '@/hooks/use-toast';
 
 interface RegistrationOptions {
@@ -118,15 +117,16 @@ export const registerUserForEvent = async (
       return true;
     }
     
+    // Use action creator function instead of JSX
     toast({
       title: 'Registration failed',
       description: error.message || 'Failed to register for event',
       variant: 'destructive',
-      action: (
-        <ToastAction altText="Try again" onClick={() => registerUserForEvent(userId, eventId, toast, options)}>
-          Try again
-        </ToastAction>
-      ),
+      // Create action without JSX
+      action: {
+        label: 'Try again',
+        onClick: () => registerUserForEvent(userId, eventId, toast, options)
+      }
     });
     
     return false;
