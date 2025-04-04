@@ -1,6 +1,8 @@
 
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Event } from '@/types';
+import { createVisibilityFilter } from '@/hooks/utils/dataFetching';
 
 export const fetchEvents = async (userUniversity: string | null | undefined): Promise<Event[]> => {
   try {
@@ -19,13 +21,14 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
       `);
     
     // Apply visibility filters correctly with proper Supabase filter syntax
-    if (userUniversity) {
+    const visibilityFilter = createVisibilityFilter(userUniversity);
+    
+    if (visibilityFilter.type === 'or') {
       console.log("Filtering events by university:", userUniversity);
-      // Use proper Supabase filter syntax
-      eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq."${userUniversity}")`);
+      eventsQuery = eventsQuery.or(visibilityFilter.filter);
     } else {
       console.log("No university, fetching public events only");
-      eventsQuery = eventsQuery.eq('visibility', 'public');
+      eventsQuery = eventsQuery.eq('visibility', visibilityFilter.filter);
     }
     
     const { data, error } = await eventsQuery.order('date', { ascending: true });
@@ -43,8 +46,8 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
       return [];
     }
     
-    // Transform the data to match the Event type
-    const transformedEvents = (data || []).map(event => ({
+    // Transform the data to match the Event type - using map for better performance
+    const transformedEvents = data.map(event => ({
       id: event.id,
       title: event.title,
       description: event.description,
@@ -76,4 +79,33 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
     console.error('Error in fetchEvents:', error);
     throw error;
   }
+};
+
+// Create a hook version with state management
+export const useEventsFetching = () => {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  
+  const fetchEventsForUniversity = useCallback(async (userUniversity: string | null | undefined) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const eventsData = await fetchEvents(userUniversity);
+      setEvents(eventsData);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to fetch events'));
+      console.error('Error fetching events:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+  
+  return {
+    events,
+    isLoading,
+    error,
+    fetchEventsForUniversity
+  };
 };

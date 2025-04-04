@@ -1,11 +1,15 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { createVisibilityFilter } from '@/hooks/utils/dataFetching';
 
 export interface EventParticipant {
   event_id: string;
 }
 
+/**
+ * Fetches events a user has registered for
+ */
 export const fetchRegisteredEventIds = async (userId: string): Promise<string[]> => {
   if (!userId) {
     console.log("Cannot fetch registered event IDs: No user ID");
@@ -25,6 +29,9 @@ export const fetchRegisteredEventIds = async (userId: string): Promise<string[]>
   return data?.map(item => item.event_id) || [];
 };
 
+/**
+ * Fetches complete event details for a list of event IDs
+ */
 export const fetchRegisteredEvents = async (eventIds: string[]): Promise<any[]> => {
   if (!eventIds.length) {
     return [];
@@ -51,8 +58,11 @@ export const fetchRegisteredEvents = async (eventIds: string[]): Promise<any[]> 
   return data || [];
 };
 
+/**
+ * Fetches upcoming events with proper visibility filtering
+ */
 export const fetchUpcomingEvents = async (userUniversity: string | null | undefined): Promise<any[]> => {
-  // Start with the basic query
+  // Create the base query for upcoming events
   let eventsQuery = supabase
     .from('events')
     .select(`
@@ -65,15 +75,15 @@ export const fetchUpcomingEvents = async (userUniversity: string | null | undefi
     `)
     .eq('status', 'upcoming');
     
-  // Apply visibility filtering based on user's university with proper syntax
-  if (userUniversity) {
+  // Apply visibility filtering based on user's university
+  const visibilityFilter = createVisibilityFilter(userUniversity);
+  
+  if (visibilityFilter.type === 'or') {
     console.log("Filtering events by university:", userUniversity);
-    
-    // Use proper Supabase OR syntax with quoted university name
-    eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq."${userUniversity}")`);
+    eventsQuery = eventsQuery.or(visibilityFilter.filter);
   } else {
     console.log("No university, fetching public events only");
-    eventsQuery = eventsQuery.eq('visibility', 'public');
+    eventsQuery = eventsQuery.eq('visibility', visibilityFilter.filter);
   }
   
   const { data, error } = await eventsQuery.order('date', { ascending: true });
