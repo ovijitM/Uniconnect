@@ -1,78 +1,104 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
-import React from 'react';
-import { RegisterOptions } from '../types/studentEventTypes';
+import { ToastAction } from '@/components/ui/toast';
+
+// Define a type for registration options
+interface RegisterOptions {
+  onSuccess?: () => void;
+}
 
 /**
  * Registers a user for an event
  */
-export const registerForEvent = async (
-  userId: string,
-  eventId: string
-): Promise<boolean> => {
-  if (!userId || !eventId) {
-    console.error('Missing user ID or event ID');
-    
-    toast.error('Registration failed', {
-      description: 'Missing required information',
-      action: {
-        label: 'Retry',
-        onClick: () => {}
-      }
-    });
-    
-    return false;
-  }
-  
+export const registerUserForEvent = async (
+  userId: string, 
+  eventId: string, 
+  toast: any,
+  options?: RegisterOptions
+) => {
   try {
+    if (!userId) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to register for events",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+      return false;
+    }
+    
     // Check if already registered
-    const { data: existingRegistration, error: checkError } = await supabase
-      .from('event_participants')
+    const { data: existingRegistration } = await supabase
+      .from('event_attendees')
       .select('*')
-      .eq('user_id', userId)
       .eq('event_id', eventId)
+      .eq('user_id', userId)
       .maybeSingle();
     
-    if (checkError) {
-      throw checkError;
-    }
-    
     if (existingRegistration) {
-      toast.info('Already registered', {
-        description: 'You are already registered for this event'
+      toast({
+        title: "Already registered",
+        description: "You are already registered for this event",
+        variant: "default",
       });
-      return true;
+      return false;
     }
     
-    // Insert new registration
-    const { error: insertError } = await supabase
-      .from('event_participants')
+    // Register for the event
+    const { error } = await supabase
+      .from('event_attendees')
       .insert({
+        event_id: eventId,
         user_id: userId,
-        event_id: eventId
+        registration_date: new Date().toISOString(),
+        status: 'registered'
       });
     
-    if (insertError) {
-      throw insertError;
+    if (error) {
+      console.error('Error registering for event:', error);
+      
+      if (error.code === '23505') { // Duplicate key error
+        toast({
+          title: "Already registered",
+          description: "You are already registered for this event",
+          variant: "default",
+        });
+        
+        if (options?.onSuccess) {
+          options.onSuccess();
+        }
+        
+        return true; // Consider this a success since the user is registered
+      }
+      
+      toast({
+        title: "Registration failed",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+      return false;
     }
     
-    toast.success('Registration successful', {
-      description: 'You have been registered for this event'
+    toast({
+      title: "Successfully registered!",
+      description: "You have successfully registered for this event",
+      variant: "default",
     });
     
+    if (options?.onSuccess) {
+      options.onSuccess();
+    }
+    
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error registering for event:', error);
     
-    toast.error('Registration failed', {
-      description: 'An error occurred while registering. Please try again.',
-      action: {
-        label: 'Retry',
-        onClick: () => registerForEvent(userId, eventId)
-      }
+    toast({
+      title: "Registration failed",
+      description: error.message || "Something went wrong",
+      variant: "destructive",
+      action: <ToastAction altText="Try again">Try again</ToastAction>,
     });
     
     return false;
@@ -82,81 +108,62 @@ export const registerForEvent = async (
 /**
  * Unregisters a user from an event
  */
-export const unregisterFromEvent = async (
-  userId: string,
-  eventId: string
-): Promise<boolean> => {
-  if (!userId || !eventId) {
-    console.error('Missing user ID or event ID');
-    
-    toast.error('Unregistration failed', {
-      description: 'Missing required information',
-      action: {
-        label: 'Retry',
-        onClick: () => {}
-      }
-    });
-    
-    return false;
-  }
-  
+export const unregisterUserFromEvent = async (
+  userId: string | undefined, 
+  eventId: string, 
+  toast: any,
+  options?: RegisterOptions
+) => {
   try {
-    // Delete registration
-    const { error } = await supabase
-      .from('event_participants')
-      .delete()
-      .eq('user_id', userId)
-      .eq('event_id', eventId);
-    
-    if (error) {
-      throw error;
+    if (!userId) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to unregister from events",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+      return false;
     }
     
-    toast.success('Unregistered successfully', {
-      description: 'You have been removed from this event'
+    // Unregister from the event
+    const { error } = await supabase
+      .from('event_attendees')
+      .delete()
+      .eq('event_id', eventId)
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error unregistering from event:', error);
+      toast({
+        title: "Unregistration failed",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+      return false;
+    }
+    
+    toast({
+      title: "Successfully unregistered",
+      description: "You have been unregistered from this event",
+      variant: "default",
     });
     
+    if (options?.onSuccess) {
+      options.onSuccess();
+    }
+    
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error unregistering from event:', error);
     
-    toast.error('Unregistration failed', {
-      description: 'An error occurred. Please try again.',
-      action: {
-        label: 'Retry',
-        onClick: () => unregisterFromEvent(userId, eventId)
-      }
+    toast({
+      title: "Unregistration failed",
+      description: error.message || "Something went wrong",
+      variant: "destructive",
+      action: <ToastAction altText="Try again">Try again</ToastAction>,
     });
     
     return false;
   }
-};
-
-/**
- * Helper functions for using in other components
- */
-export const registerUserForEvent = async (
-  userId: string,
-  eventId: string,
-  toastFn: any,
-  options?: RegisterOptions
-): Promise<boolean> => {
-  const success = await registerForEvent(userId, eventId);
-  if (success && options?.onSuccess) {
-    options.onSuccess();
-  }
-  return success;
-};
-
-export const unregisterUserFromEvent = async (
-  userId: string,
-  eventId: string,
-  toastFn: any,
-  options?: RegisterOptions
-): Promise<boolean> => {
-  const success = await unregisterFromEvent(userId, eventId);
-  if (success && options?.onSuccess) {
-    options.onSuccess();
-  }
-  return success;
 };
