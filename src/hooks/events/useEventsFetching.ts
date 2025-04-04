@@ -4,6 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Event } from '@/types';
 import { createVisibilityFilter } from '@/hooks/utils/dataFetching';
 
+/**
+ * Optimized events fetching function with proper typing and error handling
+ */
 export const fetchEvents = async (userUniversity: string | null | undefined): Promise<Event[]> => {
   try {
     console.log("Fetching events, user university:", userUniversity);
@@ -45,6 +48,9 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
       console.log("No events found in the database");
       return [];
     }
+
+    // Use batch processing for participant counts if needed
+    // const eventsWithCounts = await enrichEventsWithParticipantCounts(data);
     
     // Transform the data to match the Event type - using map for better performance
     const transformedEvents = data.map(event => ({
@@ -81,7 +87,9 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
   }
 };
 
-// Create a hook version with state management
+/**
+ * Custom hook for event fetching with state management and performance optimizations
+ */
 export const useEventsFetching = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(false);

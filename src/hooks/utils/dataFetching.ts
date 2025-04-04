@@ -24,12 +24,13 @@ export const fetchUserUniversity = async (userId: string): Promise<string | null
 
 /**
  * Creates a visibility filter for queries based on user's university
+ * Optimized to use proper Supabase Filter syntax
  */
 export const createVisibilityFilter = (userUniversity: string | null) => {
   if (userUniversity) {
     // For university users, show both public events and events from their university
     return {
-      filter: `visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq."${userUniversity}")`,
+      filter: `visibility.eq.public,visibility.eq.university_only,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`,
       type: 'or' as const
     };
   } 
@@ -38,5 +39,29 @@ export const createVisibilityFilter = (userUniversity: string | null) => {
   return {
     filter: 'public',
     type: 'eq' as const
+  };
+};
+
+/**
+ * Memoizes data fetching functions to prevent redundant network calls
+ */
+export const memoize = <T, R>(fn: (arg: T) => Promise<R>) => {
+  const cache = new Map<string, { timestamp: number, value: R }>();
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+  
+  return async (arg: T): Promise<R> => {
+    const key = JSON.stringify(arg);
+    const cached = cache.get(key);
+    const now = Date.now();
+    
+    if (cached && now - cached.timestamp < CACHE_TTL) {
+      console.log("Using cached data for", key);
+      return cached.value;
+    }
+    
+    console.log("Cache miss for", key);
+    const result = await fn(arg);
+    cache.set(key, { timestamp: now, value: result });
+    return result;
   };
 };

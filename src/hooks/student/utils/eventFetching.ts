@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { createVisibilityFilter } from '@/hooks/utils/dataFetching';
+import { Event } from '@/types';
 
 export interface EventParticipant {
   event_id: string;
@@ -94,4 +95,39 @@ export const fetchUpcomingEvents = async (userUniversity: string | null | undefi
   }
   
   return data || [];
+};
+
+/**
+ * Batch processes events to add participant counts efficiently
+ */
+export const enrichEventsWithParticipantCounts = async (events: any[]): Promise<Event[]> => {
+  if (!events.length) return [];
+  
+  // Get all event IDs
+  const eventIds = events.map(event => event.id);
+  
+  // Batch fetch all participant counts in a single query
+  const { data: participantCounts, error } = await supabase
+    .from('event_participants')
+    .select('event_id, count')
+    .in('event_id', eventIds)
+    .select('event_id', { count: 'exact', head: true, by: 'event_id' });
+    
+  if (error) {
+    console.error("Error fetching participant counts:", error);
+    // Continue without participant counts rather than failing completely
+    return events;
+  }
+  
+  // Create a map of event_id -> count for quick lookups
+  const countsMap = new Map();
+  participantCounts?.forEach(item => {
+    countsMap.set(item.event_id, item.count);
+  });
+  
+  // Enrich events with participant counts
+  return events.map(event => ({
+    ...event,
+    participants: countsMap.get(event.id) || 0
+  }));
 };

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, AuthState } from '@/types/auth';
 import { Session } from '@supabase/supabase-js';
@@ -11,7 +11,8 @@ export const useAuthSession = () => {
     error: null
   });
 
-  const fetchUserProfile = async (session: Session) => {
+  // Memoized function to fetch user profile
+  const fetchUserProfile = useCallback(async (session: Session) => {
     try {
       console.log("Fetching user profile for session user:", session.user.id);
       console.log("User metadata:", session.user.user_metadata);
@@ -150,9 +151,10 @@ export const useAuthSession = () => {
         error: error instanceof Error ? error.message : 'Error fetching profile'
       });
     }
-  };
+  }, []);
 
-  const checkCurrentSession = async () => {
+  // Memoized function to check current session
+  const checkCurrentSession = useCallback(async () => {
     try {
       // First try to get user from localStorage to prevent flashing
       const storedUser = localStorage.getItem('authUser');
@@ -192,16 +194,20 @@ export const useAuthSession = () => {
         error: error instanceof Error ? error.message : 'Error checking session'
       });
     }
-  };
+  }, [fetchUserProfile]);
 
+  // Set up auth state listener
   useEffect(() => {
     // Check if user is already logged in using Supabase
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state changed:', event, !!session);
         
         if (session) {
-          await fetchUserProfile(session);
+          // Use setTimeout to prevent potential deadlocks with Supabase client
+          setTimeout(() => {
+            fetchUserProfile(session);
+          }, 0);
         } else if (event === 'SIGNED_OUT') {
           // Only clear user on explicit sign out
           localStorage.removeItem('authUser');
@@ -221,7 +227,7 @@ export const useAuthSession = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchUserProfile, checkCurrentSession]);
 
   return {
     authState,
