@@ -16,7 +16,7 @@ export const fetchJoinedClubs = async (
   try {
     console.log("Fetching joined clubs for user:", userId);
     
-    // Fetch clubs the student has joined with better error handling
+    // Fetch clubs the student has joined
     const { data: membershipData, error: membershipError } = await supabase
       .from('club_members')
       .select('club_id')
@@ -41,9 +41,13 @@ export const fetchJoinedClubs = async (
       return { joinedClubs: [], joinedClubIds: [] };
     }
     
+    // Use a more direct query approach to ensure we get all clubs
     const { data: joinedClubsData, error: joinedClubsError } = await supabase
       .from('clubs')
-      .select('*')
+      .select(`
+        *,
+        club_members(count)
+      `)
       .in('id', clubIds);
       
     if (joinedClubsError) {
@@ -51,14 +55,14 @@ export const fetchJoinedClubs = async (
       throw new Error(`Failed to fetch joined clubs: ${joinedClubsError.message}`);
     }
     
-    console.log('Joined clubs data:', joinedClubsData?.length || 0, 'clubs found');
+    console.log('Joined clubs data:', joinedClubsData);
     
     // Transform raw club data to match the Club type
     const transformedClubs = (joinedClubsData || []).map(club => 
       transformClubData({
         ...club,
         logo_url: club.logo_url,
-        club_members: [{ count: 0 }] // Default to 0 members, we'll fetch actual counts separately if needed
+        club_members: club.club_members || [{ count: 0 }] // Use the actual count or default to 0
       })
     );
     

@@ -28,7 +28,7 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       setState(prev => ({ ...prev, isLoadingClubs: true }));
       
       const result = await fetchJoinedClubs(userId, toast);
-      console.log("Fetched joined clubs:", result.joinedClubs);
+      console.log("Fetched joined clubs:", result.joinedClubs.length);
       console.log("Fetched joined club IDs:", result.joinedClubIds);
       
       setState(prev => ({
@@ -55,24 +55,25 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
     
     setState(prev => ({ ...prev, isLoadingClubs: true, error: null }));
     try {
-      // First fetch joined clubs to update IDs
+      // First fetch joined clubs to update IDs - this is critical for showing correct membership status
       const joinedClubsResult = await fetchJoinedClubsCallback();
       
       // Fetch all available clubs
       const allClubs = await fetchAllClubs(userId, userUniversity, toast);
       
       // Use the freshly fetched joinedClubIds to filter availableClubs
-      const joinedIds = joinedClubsResult?.joinedClubIds || state.joinedClubIds;
+      const joinedIds = joinedClubsResult?.joinedClubIds || [];
       
       setState(prev => ({
         ...prev,
         clubs: allClubs,
-        joinedClubs: joinedClubsResult?.joinedClubs || prev.joinedClubs,
+        joinedClubs: joinedClubsResult?.joinedClubs || [],
         joinedClubIds: joinedIds,
         isLoadingClubs: false
       }));
       
       console.log("fetchClubs completed with joined IDs:", joinedIds);
+      return { clubs: allClubs, joinedClubs: joinedClubsResult?.joinedClubs || [], joinedClubIds: joinedIds };
     } catch (error: any) {
       console.error('Error fetching clubs:', error);
       setState(prev => ({ 
@@ -80,6 +81,7 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
         isLoadingClubs: false,
         error: error?.message || 'Failed to fetch clubs'
       }));
+      return null;
     }
   };
 
@@ -88,9 +90,11 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       console.log(`Starting join club process for club ${clubId}`);
       
       // Optimistically update UI
+      const clubToJoin = state.clubs.find(club => club.id === clubId);
       setState(prev => ({
         ...prev,
-        joinedClubIds: [...prev.joinedClubIds, clubId]
+        joinedClubIds: [...prev.joinedClubIds, clubId],
+        joinedClubs: clubToJoin ? [...prev.joinedClubs, clubToJoin] : prev.joinedClubs
       }));
       
       // Define a callback for when the join is successful
@@ -109,7 +113,8 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
           // Revert optimistic update in case of error
           setState(prev => ({
             ...prev,
-            joinedClubIds: prev.joinedClubIds.filter(id => id !== clubId)
+            joinedClubIds: prev.joinedClubIds.filter(id => id !== clubId),
+            joinedClubs: prev.joinedClubs.filter(club => club.id !== clubId)
           }));
         }
       });
@@ -118,7 +123,8 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
         // If join failed, revert the optimistic update
         setState(prev => ({
           ...prev,
-          joinedClubIds: prev.joinedClubIds.filter(id => id !== clubId)
+          joinedClubIds: prev.joinedClubIds.filter(id => id !== clubId),
+          joinedClubs: prev.joinedClubs.filter(club => club.id !== clubId)
         }));
       }
     } catch (error: any) {
@@ -128,6 +134,7 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       setState(prev => ({
         ...prev,
         joinedClubIds: prev.joinedClubIds.filter(id => id !== clubId),
+        joinedClubs: prev.joinedClubs.filter(club => club.id !== clubId),
         error: error?.message || 'Failed to join club'
       }));
       
