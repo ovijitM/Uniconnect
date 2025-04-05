@@ -99,6 +99,9 @@ export const useClubMembership = (
         return;
       }
       
+      // Optimistically update UI
+      setIsMember(true);
+      
       // Join the club
       const { error } = await supabase
         .from('club_members')
@@ -117,13 +120,12 @@ export const useClubMembership = (
             description: "You're already a member of this club",
             variant: "default",
           });
-          setIsMember(true); // Update state to reflect membership
+          // We already set isMember to true above, so no need to update again
         } else {
+          setIsMember(false); // Revert optimistic update
           throw error;
         }
       } else {
-        setIsMember(true);
-        
         // Update the club member count
         setClub(prev => {
           if (!prev) return null;
@@ -141,6 +143,7 @@ export const useClubMembership = (
       }
     } catch (error: any) {
       console.error('Error joining club:', error);
+      setIsMember(false); // Revert optimistic update
       toast({
         title: "Failed to join club",
         description: error.message || "There was an error joining the club. Please try again later.",

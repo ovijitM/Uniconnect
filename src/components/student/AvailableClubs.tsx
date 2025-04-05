@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, ExternalLink, Loader2, PlusCircle, Check } from 'lucide-react';
@@ -126,7 +127,7 @@ const AvailableClubs: React.FC<AvailableClubsProps> = ({
                     <Button 
                       variant="outline"
                       size="sm"
-                      className="text-green-500"
+                      className="text-green-600 border-green-200 bg-green-50 hover:bg-green-100 hover:text-green-700"
                       disabled
                     >
                       <Check className="h-4 w-4 mr-1" />

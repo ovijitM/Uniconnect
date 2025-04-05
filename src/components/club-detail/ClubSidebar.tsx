@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Calendar, Mail, ExternalLink, Loader2, Check } from 'lucide-react';
@@ -44,7 +45,7 @@ const ClubSidebar: React.FC<ClubSidebarProps> = ({
     }
     
     return isMember ? (
-      <Button className="w-full mt-4" disabled variant="outline">
+      <Button className="w-full mt-4 bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 border border-green-200" disabled variant="outline">
         <Check className="mr-2 h-4 w-4" /> Member
       </Button>
     ) : (

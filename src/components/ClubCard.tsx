@@ -120,7 +120,7 @@ const ClubCard: React.FC<ClubCardProps> = ({
               disabled={isJoined}
               variant={isJoined ? "outline" : "default"}
               size={isCompact ? "sm" : "sm"}
-              className={cn("w-full", isJoined && "bg-green-50")}
+              className={cn("w-full", isJoined && "bg-green-50 text-green-600 hover:bg-green-50 hover:text-green-600")}
             >
               {isJoined ? "Joined" : "Join Club"}
             </Button>

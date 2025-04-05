@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, ExternalLink, LogOut, Loader2, Check, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -93,7 +93,7 @@ const StudentClubs: React.FC<StudentClubsProps> = ({ clubs, isLoading, onLeaveCl
                     {club.description}
                   </p>
                   <div className="mt-1">
-                    <Badge variant="secondary" className="flex items-center gap-1">
+                    <Badge variant="secondary" className="flex items-center gap-1 bg-green-100 text-green-600">
                       <Check className="h-3 w-3" />
                       Joined
                     </Badge>
