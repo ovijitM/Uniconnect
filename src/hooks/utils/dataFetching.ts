@@ -28,6 +28,7 @@ export const fetchUserUniversity = async (userId: string | undefined) => {
 
 /**
  * Creates a visibility filter for database queries
+ * Updated to handle SQL escaping properly
  */
 export const createVisibilityFilter = (userUniversity: string | null | undefined) => {
   if (!userUniversity) {
@@ -38,10 +39,12 @@ export const createVisibilityFilter = (userUniversity: string | null | undefined
     };
   }
   
-  // Has university, use complex filter
+  // Has university, use complex filter with properly escaped university name
   return { 
     type: 'or', 
-    university: userUniversity 
+    university: userUniversity,
+    // Ensure university is JSON-escaped when used in a filter
+    escapedUniversity: JSON.stringify(userUniversity)
   };
 };
 

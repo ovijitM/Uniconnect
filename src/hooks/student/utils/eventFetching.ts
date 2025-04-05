@@ -87,8 +87,9 @@ export const fetchUpcomingEvents = async (userUniversity?: string | null): Promi
     if (userUniversity) {
       console.log(`Filtering events with university: ${userUniversity}`);
       
-      // Use proper filter syntax with escaped values and correctly parenthesized logic
-      query = query.or(`visibility.eq.public,and(visibility.eq.university_only,club.university.eq."${userUniversity}")`);
+      // FIX: Properly escape the university name and fix the OR filter syntax
+      // The main issue was with quotes and parentheses in the filter
+      query = query.or(`visibility.eq.public,and(visibility.eq.university_only,club.university.eq.${JSON.stringify(userUniversity)})`);
     } else {
       // If no university, only fetch public events
       console.log("No university provided, fetching only public events");
