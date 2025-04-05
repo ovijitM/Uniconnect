@@ -35,11 +35,12 @@ export const fetchRegisteredEvents = async (eventIds: string[]): Promise<any[]> 
   try {
     if (eventIds.length === 0) return [];
     
+    // Use a cleaner approach to join tables
     const { data, error } = await supabase
       .from('events')
       .select(`
         *,
-        clubs (
+        club:club_id(
           id,
           name,
           university,
@@ -61,18 +62,18 @@ export const fetchRegisteredEvents = async (eventIds: string[]): Promise<any[]> 
 
 /**
  * Fetches upcoming events visible to the student
- * Fixed query syntax for proper filtering
+ * Fixed query syntax for proper filtering and relationship handling
  */
 export const fetchUpcomingEvents = async (userUniversity?: string | null): Promise<any[]> => {
   try {
     console.log(`Starting to fetch upcoming events. User university: ${userUniversity || 'none'}`);
     
-    // Base query to fetch upcoming events
+    // Base query to fetch upcoming events with proper relationship naming
     let query = supabase
       .from('events')
       .select(`
         *,
-        clubs (
+        club:club_id(
           id,
           name,
           university,
@@ -86,8 +87,8 @@ export const fetchUpcomingEvents = async (userUniversity?: string | null): Promi
     if (userUniversity) {
       console.log(`Filtering events with university: ${userUniversity}`);
       
-      // Use proper filter syntax: either public events OR university-specific events for the user's university
-      query = query.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
+      // Use proper filter syntax with escaped values and correctly parenthesized logic
+      query = query.or(`visibility.eq.public,and(visibility.eq.university_only,club.university.eq."${userUniversity}")`);
     } else {
       // If no university, only fetch public events
       console.log("No university provided, fetching only public events");

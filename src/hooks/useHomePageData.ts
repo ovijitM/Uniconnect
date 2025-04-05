@@ -28,7 +28,7 @@ export const useHomePageData = () => {
       // Fetch user university if logged in
       const userUniversity = user ? await fetchUserUniversity(user.id) : null;
       
-      // Fetch approved clubs
+      // Fetch approved clubs with proper relationship field naming
       console.log("Fetching clubs...");
       const { data: clubsData, error: clubsError } = await supabase
         .from('clubs')
@@ -48,18 +48,17 @@ export const useHomePageData = () => {
       const validClubs = formattedClubs.filter(club => club !== null) as Club[];
       
       // Fetch events with proper club details and visibility filtering
+      // Using explicit alias for the club relationship
       console.log("Fetching events...");
       let eventsQuery = supabase
         .from('events')
-        .select('*, clubs:club_id(*)');
+        .select('*, club:club_id(*)');
       
       // Apply visibility filtering based on user university
       const visibilityFilter = createVisibilityFilter(userUniversity);
-      if (visibilityFilter.type === 'or') {
-        // Apply proper OR filter syntax
-        if (userUniversity) {
-          eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq."${userUniversity}")`);
-        }
+      if (visibilityFilter.type === 'or' && userUniversity) {
+        // Apply proper OR filter syntax with explicit alias
+        eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,club.university.eq."${userUniversity}")`);
       } else {
         eventsQuery = eventsQuery.eq('visibility', visibilityFilter.filter);
       }
@@ -74,9 +73,9 @@ export const useHomePageData = () => {
       console.log(`Fetched ${eventsData?.length || 0} events`);
       console.log("Raw events data:", eventsData);
       
-      // Process events
+      // Process events - adapted to handle the explicitly named club relationship
       const eventPromises = (eventsData || []).map(async (event) => {
-        const clubData = event.clubs || {};
+        const clubData = event.club || {};
         const safeClub = formatEventClub(clubData as Record<string, any>);
         return formatEventData(event as Record<string, any>, safeClub);
       });

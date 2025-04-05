@@ -15,12 +15,12 @@ export const fetchAllClubs = async (
   try {
     console.log("Fetching all clubs, user university:", userUniversity);
     
-    // Fetch all approved clubs
+    // Fetch all approved clubs with cleaner query for member counts
     const { data, error } = await supabase
       .from('clubs')
       .select(`
         *,
-        club_members(count)
+        members:club_members(count)
       `)
       .eq('status', 'approved'); // Only approved clubs
     
