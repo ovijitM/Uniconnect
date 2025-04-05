@@ -46,7 +46,7 @@ export const fetchJoinedClubs = async (
       throw new Error(`Failed to fetch joined clubs: ${joinedClubsError.message}`);
     }
     
-    console.log('Joined clubs data:', joinedClubsData || []);
+    console.log('Joined clubs data:', joinedClubsData?.length || 0, 'clubs found');
     
     // Transform raw club data to match the Club type
     const transformedClubs = (joinedClubsData || []).map(club => 
@@ -63,7 +63,6 @@ export const fetchJoinedClubs = async (
     };
   } catch (error: any) {
     console.error('Error fetching joined clubs:', error);
-    // Don't show toast here - let the caller handle it for better UX
     throw error; // Re-throw to allow the calling function to handle it
   }
 };

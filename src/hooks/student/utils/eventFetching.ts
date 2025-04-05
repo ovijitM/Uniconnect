@@ -61,10 +61,12 @@ export const fetchRegisteredEvents = async (eventIds: string[]): Promise<any[]> 
 
 /**
  * Fetches upcoming events visible to the student
- * Fixed the SQL query syntax for university filtering
+ * Fixed query syntax for proper filtering
  */
 export const fetchUpcomingEvents = async (userUniversity?: string | null): Promise<any[]> => {
   try {
+    console.log(`Starting to fetch upcoming events. User university: ${userUniversity || 'none'}`);
+    
     // Base query to fetch upcoming events
     let query = supabase
       .from('events')
@@ -80,25 +82,27 @@ export const fetchUpcomingEvents = async (userUniversity?: string | null): Promi
       .gt('date', new Date().toISOString())
       .order('date', { ascending: true });
     
-    // Filter logic based on university
+    // Apply filter based on university
     if (userUniversity) {
-      console.log(`Filtering events by university: ${userUniversity}`);
+      console.log(`Filtering events with university: ${userUniversity}`);
       
-      // This is the fix: use proper OR/AND logic instead of the problematic syntax
+      // Use proper filter syntax: either public events OR university-specific events for the user's university
       query = query.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${userUniversity})`);
     } else {
-      console.log("No university, fetching public events only");
+      // If no university, only fetch public events
+      console.log("No university provided, fetching only public events");
       query = query.eq('visibility', 'public');
     }
     
     const { data, error } = await query;
     
     if (error) {
-      console.error('Error fetching upcoming events:', error);
+      console.error('Error in fetchUpcomingEvents query:', error);
       throw error;
     }
     
     console.log(`Successfully loaded ${data?.length || 0} upcoming events`);
+    console.log('Event visibility breakdown:', data?.map(e => e.visibility));
     
     return data || [];
   } catch (error) {

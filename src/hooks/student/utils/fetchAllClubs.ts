@@ -4,38 +4,57 @@ import { Club } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { transformClubData } from '@/components/club-detail/hooks/transformers/clubTransformer';
 
+/**
+ * Fetches all clubs available to the student with proper filtering and error handling
+ */
 export const fetchAllClubs = async (
   userId: string | undefined,
   userUniversity: string | null | undefined,
   toast: ReturnType<typeof useToast>['toast']
 ): Promise<Club[]> => {
-  if (!userId) return [];
-  
   try {
-    console.log('Fetching all clubs for user:', userId);
+    console.log("Fetching all clubs, user university:", userUniversity);
     
-    // Fetch all approved clubs without university filter
-    const { data: allClubs, error: allClubsError } = await supabase
+    // Fetch all approved clubs
+    const { data, error } = await supabase
       .from('clubs')
-      .select('*')
-      .eq('status', 'approved');
+      .select(`
+        *,
+        club_members(count)
+      `)
+      .eq('status', 'approved'); // Only approved clubs
     
-    if (allClubsError) {
-      console.error('Supabase error fetching clubs:', allClubsError);
-      throw new Error(`Failed to fetch clubs: ${allClubsError.message}`);
+    if (error) {
+      console.error('Error fetching clubs:', error);
+      throw error;
     }
     
-    // Transform raw club data to match the Club type
-    return (allClubs || []).map(club => 
-      transformClubData({
-        ...club,
-        logo_url: club.logo_url,
-        club_members: [0] // Default to 0 members, we'll fetch actual counts separately if needed
+    console.log(`Fetched ${data?.length || 0} total clubs`);
+    
+    // Transform club data
+    const transformedClubs = await Promise.all(
+      (data || []).map(async (club) => {
+        try {
+          return transformClubData(club);
+        } catch (error) {
+          console.error('Error transforming club data:', error, 'for club:', club);
+          return null;
+        }
       })
     );
-  } catch (error) {
-    console.error('Error fetching club data:', error);
-    // Don't show toast here - let the caller handle it for better UX
-    throw error; // Re-throw to allow the calling function to handle it
+    
+    // Filter out any null values from failed transformations
+    const validClubs = transformedClubs.filter(club => club !== null) as Club[];
+    console.log(`Successfully transformed ${validClubs.length} clubs`);
+    
+    return validClubs;
+  } catch (error: any) {
+    console.error('Error in fetchAllClubs:', error);
+    toast({
+      title: 'Error',
+      description: 'Failed to load clubs. Please try again.',
+      variant: 'destructive',
+    });
+    return [];
   }
 };
