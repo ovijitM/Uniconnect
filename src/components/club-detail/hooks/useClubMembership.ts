@@ -149,8 +149,8 @@ export const useClubMembership = (
     } finally {
       setIsJoining(false);
       
-      // Recheck membership status after join attempt
-      checkMembership();
+      // Force recheck membership status after join attempt
+      await checkMembership();
     }
   };
 

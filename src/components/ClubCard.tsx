@@ -23,7 +23,7 @@ const ClubCard: React.FC<ClubCardProps> = ({
   isJoined = false,
   size = 'default'
 }) => {
-  console.log("ClubCard rendering with club ID:", club.id, "Club name:", club.name);
+  console.log("ClubCard rendering with club ID:", club.id, "Club name:", club.name, "isJoined:", isJoined);
   
   // Enhanced validation for club ID
   const hasValidId = Boolean(club.id) && 
@@ -120,7 +120,7 @@ const ClubCard: React.FC<ClubCardProps> = ({
               disabled={isJoined}
               variant={isJoined ? "outline" : "default"}
               size={isCompact ? "sm" : "sm"}
-              className="w-full"
+              className={cn("w-full", isJoined && "bg-green-50")}
             >
               {isJoined ? "Joined" : "Join Club"}
             </Button>
