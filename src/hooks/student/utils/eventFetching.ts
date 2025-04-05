@@ -62,7 +62,7 @@ export const fetchRegisteredEvents = async (eventIds: string[]): Promise<any[]> 
 
 /**
  * Fetches upcoming events visible to the student
- * Fixed query syntax for proper filtering and relationship handling
+ * Fixed to handle university names with special characters properly
  */
 export const fetchUpcomingEvents = async (userUniversity?: string | null): Promise<any[]> => {
   try {
@@ -87,26 +87,79 @@ export const fetchUpcomingEvents = async (userUniversity?: string | null): Promi
     if (userUniversity) {
       console.log(`Filtering events with university: ${userUniversity}`);
       
-      // FIX: Properly escape the university name and fix the OR filter syntax
-      // The main issue was with quotes and parentheses in the filter
-      query = query.or(`visibility.eq.public,and(visibility.eq.university_only,club.university.eq.${JSON.stringify(userUniversity)})`);
+      // Use separate queries with match instead of complex OR conditions to avoid SQL parsing issues
+      const publicEvents = supabase
+        .from('events')
+        .select(`
+          *,
+          club:club_id(
+            id,
+            name,
+            university,
+            logo_url
+          )
+        `)
+        .eq('visibility', 'public')
+        .gt('date', new Date().toISOString())
+        .order('date', { ascending: true });
+        
+      const universityEvents = supabase
+        .from('events')
+        .select(`
+          *,
+          club:club_id(
+            id,
+            name,
+            university,
+            logo_url
+          )
+        `)
+        .eq('visibility', 'university_only')
+        .eq('club.university', userUniversity)
+        .gt('date', new Date().toISOString())
+        .order('date', { ascending: true });
+      
+      // Fetch both sets of events
+      const [publicResult, universityResult] = await Promise.all([
+        publicEvents,
+        universityEvents
+      ]);
+      
+      if (publicResult.error) {
+        console.error('Error fetching public events:', publicResult.error);
+        throw publicResult.error;
+      }
+      
+      if (universityResult.error) {
+        console.error('Error fetching university events:', universityResult.error);
+        // Continue with just the public events if university events fail
+      }
+      
+      // Combine the results
+      const combinedEvents = [
+        ...(publicResult.data || []),
+        ...(universityResult.data || [])
+      ];
+      
+      console.log(`Successfully loaded ${combinedEvents.length} upcoming events`);
+      
+      return combinedEvents;
     } else {
       // If no university, only fetch public events
       console.log("No university provided, fetching only public events");
       query = query.eq('visibility', 'public');
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Error in fetchUpcomingEvents query:', error);
+        throw error;
+      }
+      
+      console.log(`Successfully loaded ${data?.length || 0} upcoming events`);
+      
+      return data || [];
     }
-    
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error('Error in fetchUpcomingEvents query:', error);
-      throw error;
-    }
-    
-    console.log(`Successfully loaded ${data?.length || 0} upcoming events`);
-    console.log('Event visibility breakdown:', data?.map(e => e.visibility));
-    
-    return data || [];
   } catch (error) {
     console.error('Error fetching upcoming events:', error);
     throw error;

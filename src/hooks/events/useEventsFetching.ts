@@ -11,54 +11,87 @@ export const fetchEvents = async (userUniversity: string | null | undefined): Pr
   try {
     console.log("Fetching events, user university:", userUniversity);
     
-    // Start with the basic query
-    let eventsQuery = supabase
-      .from('events')
-      .select(`
-        *,
-        clubs:clubs!events_club_id_fkey (
-          id,
-          name,
-          university
-        )
-      `);
+    let events: any[] = [];
     
-    // Apply visibility filters correctly with proper Supabase filter syntax
-    const visibilityFilter = createVisibilityFilter(userUniversity);
-    
-    if (visibilityFilter.type === 'or') {
-      console.log("Filtering events by university:", userUniversity);
-      // Fix the filter syntax for OR conditions with proper string escaping
-      if (userUniversity) {
-        // Properly escape the university name
-        const escapedUniversity = JSON.stringify(userUniversity);
-        eventsQuery = eventsQuery.or(`visibility.eq.public,and(visibility.eq.university_only,clubs.university.eq.${escapedUniversity})`);
+    // Handle public events and university-specific events separately to avoid SQL parsing issues
+    if (userUniversity) {
+      // Fetch public events
+      const { data: publicEvents, error: publicError } = await supabase
+        .from('events')
+        .select(`
+          *,
+          clubs:clubs!events_club_id_fkey (
+            id,
+            name,
+            university
+          )
+        `)
+        .eq('visibility', 'public')
+        .order('date', { ascending: true });
+      
+      if (publicError) {
+        console.error("Error fetching public events:", publicError);
+        throw publicError;
       }
+      
+      // Fetch university-specific events
+      const { data: universityEvents, error: uniError } = await supabase
+        .from('events')
+        .select(`
+          *,
+          clubs:clubs!events_club_id_fkey (
+            id,
+            name,
+            university
+          )
+        `)
+        .eq('visibility', 'university_only')
+        .eq('clubs.university', userUniversity)
+        .order('date', { ascending: true });
+      
+      if (uniError) {
+        console.error("Error fetching university events:", uniError);
+        // Continue with just public events
+      }
+      
+      // Combine the results
+      events = [
+        ...(publicEvents || []),
+        ...(universityEvents || [])
+      ];
+      
     } else {
-      console.log("No university, fetching public events only");
-      eventsQuery = eventsQuery.eq('visibility', visibilityFilter.filter);
+      // No university, fetch only public events
+      const { data: publicEvents, error: publicError } = await supabase
+        .from('events')
+        .select(`
+          *,
+          clubs:clubs!events_club_id_fkey (
+            id,
+            name,
+            university
+          )
+        `)
+        .eq('visibility', 'public')
+        .order('date', { ascending: true });
+      
+      if (publicError) {
+        console.error("Error fetching public events:", publicError);
+        throw publicError;
+      }
+      
+      events = publicEvents || [];
     }
     
-    const { data, error } = await eventsQuery.order('date', { ascending: true });
+    console.log("Number of events fetched:", events.length);
     
-    if (error) {
-      console.error("Error fetching events:", error);
-      throw error;
-    }
-
-    console.log("Raw events data from database:", data);
-    console.log("Number of events fetched:", data ? data.length : 0);
-    
-    if (!data || data.length === 0) {
+    if (events.length === 0) {
       console.log("No events found in the database");
       return [];
     }
 
-    // Use batch processing for participant counts if needed
-    // const eventsWithCounts = await enrichEventsWithParticipantCounts(data);
-    
     // Transform the data to match the Event type - using map for better performance
-    const transformedEvents = data.map(event => ({
+    const transformedEvents = events.map(event => ({
       id: event.id,
       title: event.title,
       description: event.description,
