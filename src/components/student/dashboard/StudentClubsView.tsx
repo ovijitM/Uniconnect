@@ -21,23 +21,35 @@ const StudentClubsView: React.FC<StudentClubsViewProps> = ({
   onLeaveClub
 }) => {
   // Local state to track joined clubs and IDs (for immediate UI updates)
-  const [localJoinedClubIds, setLocalJoinedClubIds] = useState<string[]>(joinedClubIds);
-  const [localJoinedClubs, setLocalJoinedClubs] = useState<any[]>(joinedClubs);
+  const [localJoinedClubIds, setLocalJoinedClubIds] = useState<string[]>(joinedClubIds || []);
+  const [localJoinedClubs, setLocalJoinedClubs] = useState<any[]>(joinedClubs || []);
   const [localAvailableClubs, setLocalAvailableClubs] = useState<any[]>([]);
   
   // Update local state when props change
   useEffect(() => {
-    console.log("StudentClubsView - Joined Clubs updated:", joinedClubs);
+    console.log("StudentClubsView - Joined Clubs updated:", joinedClubs?.length || 0);
     console.log("StudentClubsView - Joined Club IDs updated:", joinedClubIds);
-    setLocalJoinedClubIds(joinedClubIds);
-    setLocalJoinedClubs(joinedClubs);
+    
+    if (joinedClubIds && joinedClubIds.length > 0) {
+      setLocalJoinedClubIds(joinedClubIds);
+    }
+    
+    if (joinedClubs && joinedClubs.length > 0) {
+      setLocalJoinedClubs(joinedClubs);
+    }
+    
     updateAvailableClubs();
   }, [joinedClubs, joinedClubIds, clubs]);
   
   // Helper function to update available clubs
   const updateAvailableClubs = () => {
-    const available = clubs.filter(club => !joinedClubIds.includes(club.id));
-    console.log("StudentClubsView - Available Clubs updated:", available);
+    if (!clubs || !joinedClubIds) return;
+    
+    const available = clubs.filter(club => 
+      joinedClubIds ? !joinedClubIds.includes(club.id) : true
+    );
+    
+    console.log("StudentClubsView - Available Clubs updated:", available.length);
     setLocalAvailableClubs(available);
   };
   
@@ -59,8 +71,8 @@ const StudentClubsView: React.FC<StudentClubsViewProps> = ({
       console.error("Error joining club:", error);
       // Revert optimistic update on error
       updateAvailableClubs();
-      setLocalJoinedClubIds(joinedClubIds);
-      setLocalJoinedClubs(joinedClubs);
+      setLocalJoinedClubIds(joinedClubIds || []);
+      setLocalJoinedClubs(joinedClubs || []);
     }
   };
   
@@ -82,16 +94,10 @@ const StudentClubsView: React.FC<StudentClubsViewProps> = ({
       console.error("Error leaving club:", error);
       // Revert optimistic update on error
       updateAvailableClubs();
-      setLocalJoinedClubIds(joinedClubIds);
-      setLocalJoinedClubs(joinedClubs);
+      setLocalJoinedClubIds(joinedClubIds || []);
+      setLocalJoinedClubs(joinedClubs || []);
     }
   };
-
-  console.log("StudentClubsView - Rendering with:", {
-    localJoinedClubs,
-    localAvailableClubs,
-    localJoinedClubIds
-  });
 
   return (
     <div className="space-y-6">

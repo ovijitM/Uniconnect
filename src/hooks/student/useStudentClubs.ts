@@ -67,9 +67,12 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
       setState(prev => ({
         ...prev,
         clubs: allClubs,
+        joinedClubs: joinedClubsResult?.joinedClubs || prev.joinedClubs,
         joinedClubIds: joinedIds,
         isLoadingClubs: false
       }));
+      
+      console.log("fetchClubs completed with joined IDs:", joinedIds);
     } catch (error: any) {
       console.error('Error fetching clubs:', error);
       setState(prev => ({ 
@@ -95,11 +98,21 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
         console.log(`Join club success callback triggered for club ${clubId}`);
         if (onSuccess) onSuccess();
         
-        // Refresh the joined clubs immediately
+        // Force refresh the joined clubs immediately
         await fetchJoinedClubsCallback();
       };
       
-      const success = await joinClub(userId!, clubId, toast, { onSuccess: handleJoinSuccess });
+      const success = await joinClub(userId!, clubId, toast, { 
+        onSuccess: handleJoinSuccess,
+        onError: (error) => {
+          console.error("Error in join club callback:", error);
+          // Revert optimistic update in case of error
+          setState(prev => ({
+            ...prev,
+            joinedClubIds: prev.joinedClubIds.filter(id => id !== clubId)
+          }));
+        }
+      });
       
       if (!success) {
         // If join failed, revert the optimistic update
@@ -138,11 +151,18 @@ export const useStudentClubs = (userId: string | undefined, onSuccess?: () => vo
         console.log(`Leave club success callback triggered for club ${clubId}`);
         if (onSuccess) onSuccess();
         
-        // Refresh the joined clubs immediately
+        // Force refresh the joined clubs immediately
         await fetchJoinedClubsCallback();
       };
       
-      const success = await leaveClub(userId, clubId, toast, { onSuccess: handleLeaveSuccess });
+      const success = await leaveClub(userId, clubId, toast, { 
+        onSuccess: handleLeaveSuccess,
+        onError: (error) => {
+          console.error("Error in leave club callback:", error);
+          // Refresh data on error to get accurate state
+          fetchJoinedClubsCallback();
+        }
+      });
       
       if (!success) {
         // If leave failed, revert the optimistic update

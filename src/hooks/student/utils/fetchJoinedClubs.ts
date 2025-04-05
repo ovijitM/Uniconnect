@@ -32,10 +32,15 @@ export const fetchJoinedClubs = async (
       return { joinedClubs: [], joinedClubIds: [] };
     }
     
-    const clubIds = membershipData.map(item => item.club_id);
+    // Force club IDs to be strings and log for debugging
+    const clubIds = membershipData.map(item => String(item.club_id));
     console.log('Joined club IDs:', clubIds);
     
-    // Fetch detailed club information for joined clubs
+    // Fetch detailed club information for joined clubs if we have IDs
+    if (clubIds.length === 0) {
+      return { joinedClubs: [], joinedClubIds: [] };
+    }
+    
     const { data: joinedClubsData, error: joinedClubsError } = await supabase
       .from('clubs')
       .select('*')

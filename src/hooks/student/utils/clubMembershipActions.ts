@@ -1,180 +1,169 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { JoinClubOptions, LeaveClubOptions } from '../types/studentClubTypes';
 
-/**
- * Join a club with better error handling and logging
- */
+export interface ClubActionCallbacks {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}
+
 export const joinClub = async (
   userId: string,
   clubId: string,
   toast: ReturnType<typeof useToast>['toast'],
-  options?: JoinClubOptions
+  callbacks?: ClubActionCallbacks
 ): Promise<boolean> => {
-  if (!userId) {
+  if (!userId || !clubId) {
+    console.error(`Invalid parameters: userId=${userId}, clubId=${clubId}`);
     toast({
-      title: 'Authentication Required',
-      description: 'Please log in to join clubs',
+      title: 'Error',
+      description: 'Unable to join club due to missing information',
       variant: 'destructive',
     });
     return false;
   }
-  
+
   try {
-    console.log("Attempting to join club:", clubId, "for user:", userId);
+    console.log(`Attempting to join club ${clubId} for user ${userId}`);
     
-    // Check if already a member with better error handling
-    const { data: existing, error: checkError } = await supabase
+    // First check if user is already a member
+    const { data: existingMembership, error: checkError } = await supabase
       .from('club_members')
       .select('*')
       .eq('user_id', userId)
       .eq('club_id', clubId)
       .maybeSingle();
-    
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
-      console.error('Error checking membership:', checkError);
-      throw checkError;
+      
+    if (checkError) {
+      console.error('Error checking existing membership:', checkError);
     }
     
-    if (existing) {
-      console.log("User is already a member of club:", clubId);
+    if (existingMembership) {
+      console.log(`User ${userId} is already a member of club ${clubId}`);
       toast({
         title: 'Already a member',
         description: 'You are already a member of this club',
         variant: 'default',
       });
-      
-      // Return success even though no new membership was created
-      if (options?.onSuccess) {
-        console.log("Calling onSuccess callback for already-member case");
-        options.onSuccess();
-      }
+      if (callbacks?.onSuccess) callbacks.onSuccess();
       return true;
     }
-    
-    // Join the club with better logging
+
+    // Join the club
     const { error } = await supabase
       .from('club_members')
       .insert({
+        club_id: clubId,
         user_id: userId,
-        club_id: clubId
       });
-    
+
     if (error) {
-      console.error('Error joining club:', error);
-      
-      if (error.code === '23505') {
-        console.log("Duplicate key error - already a member");
+      if (error.code === '23505') {  // Duplicate key error
+        console.log(`User ${userId} is already a member of club ${clubId} (detected by constraint)`);
         toast({
           title: 'Already a member',
           description: 'You are already a member of this club',
           variant: 'default',
         });
-        // Call onSuccess even for "already a member" case
-        if (options?.onSuccess) {
-          console.log("Calling onSuccess callback for duplicate-key case");
-          options.onSuccess();
-        }
+        
+        if (callbacks?.onSuccess) callbacks.onSuccess();
         return true;
       } else {
-        throw error;
+        console.error('Error joining club:', error);
+        toast({
+          title: 'Error',
+          description: error.message || 'Failed to join club',
+          variant: 'destructive',
+        });
+        
+        if (callbacks?.onError) callbacks.onError(new Error(error.message));
+        return false;
       }
     }
-    
-    console.log("Successfully joined club:", clubId);
+
+    console.log(`Successfully joined club ${clubId} for user ${userId}`);
     toast({
       title: 'Success',
-      description: 'You have joined the club successfully',
+      description: 'You have successfully joined this club',
       variant: 'default',
     });
     
-    if (options?.onSuccess) {
-      console.log("Calling onSuccess callback for successful join");
-      options.onSuccess();
+    if (callbacks?.onSuccess) {
+      console.log("Calling onSuccess callback after joining club");
+      callbacks.onSuccess();
     }
     return true;
   } catch (error: any) {
-    console.error('Error joining club:', error);
+    console.error('Error in joinClub function:', error);
     toast({
       title: 'Error',
-      description: error.message || 'Failed to join club',
+      description: error.message || 'An unexpected error occurred',
       variant: 'destructive',
     });
-    throw error; // Re-throw to allow the component to handle the error
+    
+    if (callbacks?.onError) callbacks.onError(error);
+    return false;
   }
 };
 
-/**
- * Leave a club with better error handling and logging
- */
 export const leaveClub = async (
   userId: string | undefined,
   clubId: string,
   toast: ReturnType<typeof useToast>['toast'],
-  options?: LeaveClubOptions
+  callbacks?: ClubActionCallbacks
 ): Promise<boolean> => {
-  if (!userId) {
+  if (!userId || !clubId) {
+    console.error(`Invalid parameters for leaveClub: userId=${userId}, clubId=${clubId}`);
     toast({
-      title: 'Authentication Required',
-      description: 'Please log in to leave clubs',
+      title: 'Error',
+      description: 'Unable to leave club due to missing information',
       variant: 'destructive',
     });
     return false;
   }
-  
+
   try {
-    console.log("Attempting to leave club:", clubId, "for user:", userId);
-    // Enhanced delete operation - first check if membership exists
-    const { data: existing, error: checkError } = await supabase
-      .from('club_members')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('club_id', clubId)
-      .maybeSingle();
-      
-    if (checkError && checkError.code !== 'PGRST116') { 
-      console.error('Error checking membership before leaving:', checkError);
-    }
+    console.log(`Attempting to leave club ${clubId} for user ${userId}`);
     
-    if (!existing) {
-      console.log("User is not a member of this club, nothing to leave");
-      toast({
-        title: 'Not a member',
-        description: 'You are not currently a member of this club',
-        variant: 'default',
-      });
-      return true;
-    }
-    
-    // Proceed with delete
     const { error } = await supabase
       .from('club_members')
       .delete()
       .eq('user_id', userId)
       .eq('club_id', clubId);
-    
-    if (error) throw error;
-    
-    console.log("Successfully left club:", clubId);
+
+    if (error) {
+      console.error('Error leaving club:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to leave club',
+        variant: 'destructive',
+      });
+      
+      if (callbacks?.onError) callbacks.onError(new Error(error.message));
+      return false;
+    }
+
+    console.log(`Successfully left club ${clubId} for user ${userId}`);
     toast({
       title: 'Success',
-      description: 'You have left the club',
+      description: 'You have successfully left this club',
       variant: 'default',
     });
     
-    if (options?.onSuccess) {
-      console.log("Calling onSuccess callback for successful leave");
-      options.onSuccess();
+    if (callbacks?.onSuccess) {
+      console.log("Calling onSuccess callback after leaving club");
+      callbacks.onSuccess();
     }
     return true;
   } catch (error: any) {
-    console.error('Error leaving club:', error);
+    console.error('Error in leaveClub function:', error);
     toast({
       title: 'Error',
-      description: error.message || 'Failed to leave club',
+      description: error.message || 'An unexpected error occurred',
       variant: 'destructive',
     });
+    
+    if (callbacks?.onError) callbacks.onError(error);
     return false;
   }
 };
