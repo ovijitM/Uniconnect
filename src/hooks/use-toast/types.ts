@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { Toast, ToastActionElement } from "@/components/ui/toast";
+import { Toast } from "@/components/ui/toast";
 
 export type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>;
 
@@ -8,7 +8,7 @@ export interface ToasterToast extends ToastProps {
   id: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
-  action?: ToastActionElement;
+  action?: React.ReactElement;
 }
 
 export const TOAST_LIMIT = 5;
